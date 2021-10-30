@@ -6,7 +6,7 @@ Unit tests for mkname.roll.
 """
 import unittest as ut
 
-from mkname import roll as r
+from mkname import dice as r
 
 
 # Test cases.
