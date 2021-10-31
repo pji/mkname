@@ -122,8 +122,7 @@ def compound_names(mod_name: str,
     # for debugging.
     else:
         msg = ('Names must start with either vowels or consonants. '
-               f'Names started with {front_name[0]} and {back_name[0]}')
+               f'Names started with {mod_name[0]} and {root_name[0]}')
         raise ValueError(msg)
-    
 
     return name[0].upper() + name[1:]

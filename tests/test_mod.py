@@ -18,14 +18,14 @@ class CompoundNamesTestCase(ut.TestCase):
         """
         # Expected value.
         exp = 'Dallory'
-        
+
         # Test data and state.
         a = 'Donatello'
         b = 'Mallory'
-        
+
         # Run test.
         act = mod.compound_names(a, b)
-        
+
         # Determine test result.
         self.assertEqual(exp, act)
 
