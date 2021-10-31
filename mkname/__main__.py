@@ -1,9 +1,10 @@
 """
 __main__
 
-The mainline for makname.
+The mainline for mkname.
 """
 from mkname import db
+from mkname.dice import roll
 from mkname.mkname import load_config, build_compound_name, select_name
 from mkname.mod import add_scifi_letters, garble
 
