@@ -11,6 +11,25 @@ from mkname import mod
 
 
 # Test cases.
+class CompoundNamesTestCase(ut.TestCase):
+    def test_compound_names(self):
+        """Given two names, return a string that combines the two
+        names.
+        """
+        # Expected value.
+        exp = 'Dallory'
+        
+        # Test data and state.
+        a = 'Donatello'
+        b = 'Mallory'
+        
+        # Run test.
+        act = mod.compound_names(a, b)
+        
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+
 class SimpleModifiersTestCase(ut.TestCase):
     def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
         """Core of the name modifier (mod) tests."""
