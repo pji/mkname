@@ -30,6 +30,28 @@ class CompoundNamesTestCase(ut.TestCase):
         self.assertEqual(exp, act)
 
 
+class TranslateLettersTestCase(ut.TestCase):
+    def test_translate_characters(self):
+        """Given a mapping that maps characters in the name to different
+        characters, return the translated name.
+        """
+        # Expected value.
+        exp = 'sanatella'
+
+        # Test data and state.
+        name = 'donatello'
+        char_map = {
+            'd': 's',
+            'o': 'a',
+        }
+
+        # Run test.
+        act = mod.translate_characters(name, char_map)
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+
 class SimpleModifiersTestCase(ut.TestCase):
     def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
         """Core of the name modifier (mod) tests."""

@@ -6,7 +6,7 @@ Functions for modifying names.
 """
 import base64 as b64
 import random
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from mkname.constants import CONSONANTS, SCIFI_LETTERS, VOWELS
 from mkname.dice import roll
@@ -126,3 +126,14 @@ def compound_names(mod_name: str,
         raise ValueError(msg)
 
     return name[0].upper() + name[1:]
+
+
+def translate_characters(name: str,
+                         char_map: Mapping[str, str],
+                         casefold: bool = True) -> str:
+    """Translate characters in the name to different characters."""
+    if casefold:
+        name = name.casefold()
+    char_dict = dict(char_map)
+    trans_map = str.maketrans(char_dict)
+    return name.translate(trans_map)
