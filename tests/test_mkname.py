@@ -37,6 +37,25 @@ class BuildingNamesTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    def test_build_from_syllables(self):
+        """Given a sequence of names, return a name build from one
+        syllable from each name.
+        """
+        # Expected value.
+        exp = 'liamjosnoah'
+
+        # Test data and state.
+        names = ('william', 'joseph', 'noah')
+        rolls = (2, 1, 1)
+        with patch('mkname.mkname.roll') as mock_roll:
+            mock_roll.side_effect = rolls
+
+            # Run test.
+            act = mn.build_from_syllables(names)
+
+        # Determine test results.
+        self.assertEqual(exp, act)
+
     def test_select_random_name(self):
         """Given a list of names, return a random name."""
         # Expected value.
