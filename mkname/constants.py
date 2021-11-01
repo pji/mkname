@@ -8,6 +8,7 @@ Default configuration values for mknames.
 CONFIG_FILE = 'setup.cfg'
 
 # Word structure.
+PUNCTUATION = "'- "
 CONSONANTS = 'bcdfghjklmnpqrstvwxz'
 VOWELS = 'aeiouy'
 SCIFI_LETTERS = 'kqxz'
