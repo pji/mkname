@@ -13,6 +13,7 @@ def calc_cv_pattern(name: str,
                     consonants: Sequence[str] = CONSONANTS,
                     vowels: Sequence[str] = VOWELS) -> str:
     """Determine the pattern of consonants and vowels in the name."""
+    name = name.casefold()
     pattern = ''
     for char in name:
         if char in consonants:

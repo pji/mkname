@@ -32,19 +32,23 @@ def build_compound_name(names: Sequence[str],
     return compound_names(start, end, consonants, vowels)
 
 
-def build_from_syllables(names: Sequence[str],
+def build_from_syllables(num_syllables: int,
+                         names: Sequence[str],
                          consonants: Sequence[str] = CONSONANTS,
                          vowels: Sequence[str] = VOWELS) -> str:
     """Build a name from the syllables of the given names."""
+    base_names = [select_name(names) for _ in range(num_syllables)]
+    
     result = ''
-    for name in names:
+    for name in base_names:
         syllables = split_into_syllables(name)
         index = roll(f'1d{len(syllables)}') - 1
         syllable = syllables[index]
         result = f'{result}{syllable}'
-    return result
+    return result.title()
 
 
 def select_name(names: Sequence[str]) -> str:
     """Select a name from the given list."""
-    return random.choice(names)
+    index = roll(f'1d{len(names)}') - 1
+    return names[index]

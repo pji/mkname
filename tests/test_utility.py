@@ -44,3 +44,19 @@ class SplitIntoSyllablesTestCase(ut.TestCase):
 
         # Determine test result.
         self.assertTupleEqual(exp, act)
+
+    def test_split_into_syllables_start_w_vowel(self):
+        """Given a name, return a tuple of substrings that are the
+        syllables of the name even if the name starts with a vowel.
+        """
+        # Expected value.
+        exp = ('al', 'ic', 'e')
+
+        # Test data and state.
+        name = 'alice'
+
+        # Run test.
+        act = u.split_into_syllables(name)
+
+        # Determine test result.
+        self.assertTupleEqual(exp, act)

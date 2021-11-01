@@ -42,16 +42,25 @@ class BuildingNamesTestCase(ut.TestCase):
         syllable from each name.
         """
         # Expected value.
-        exp = 'liamjosnoah'
+        exp = 'Ertalan'
 
         # Test data and state.
-        names = ('william', 'joseph', 'noah')
-        rolls = (2, 1, 1)
+        num_syllables = 3
+        names = [
+            'Alice',
+            'Robert',
+            'Mallory',
+            'Donatello',
+            'Michealangelo',
+            'Leonardo',
+            'Raphael',
+        ]
+        rolls = (2, 1, 5, 2, 1, 3)
         with patch('mkname.mkname.roll') as mock_roll:
             mock_roll.side_effect = rolls
 
             # Run test.
-            act = mn.build_from_syllables(names)
+            act = mn.build_from_syllables(num_syllables, names)
 
         # Determine test results.
         self.assertEqual(exp, act)
