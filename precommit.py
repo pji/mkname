@@ -53,13 +53,21 @@ def check_doctests(names):
 
 def check_requirements():
     """Check requirements."""
+    def clean_requirements(lines):
+        lines = [line for line in lines if not line.startswith('#')]
+        lines = [line for line in lines if not line.startswith('-')]
+        lines = [line for line in lines if line]
+        return lines
+
     print('Checking requirements...')
     os.putenv('PIPENV_VERBOSITY', '-1')
     cmd = '.venv/bin/python -m pipenv lock -r'
     current = os.popen(cmd).readlines()
+    current = clean_requirements(current)
     current = wrap_lines(current, 35, '', '  ')
     with open('requirements.txt') as fh:
         old = fh.readlines()
+    old = clean_requirements(old)
     old = wrap_lines(old, 35, '', '  ')
 
     # If the packages installed don't match the requirements, it's
