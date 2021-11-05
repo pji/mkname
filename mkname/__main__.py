@@ -10,7 +10,7 @@ from mkname.mod import add_scifi_letters, garble
 
 
 # Default values.
-CONFIG_FILE = 'setup.cfg'
+CONFIG_FILE = 'mkname/data/defaults.cfg'
 
 
 def main() -> None:

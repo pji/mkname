@@ -19,7 +19,7 @@ def load_config(filepath: str) -> Mapping:
     """Load the configuration."""
     config = configparser.ConfigParser()
     config.read(filepath)
-    return config['mkname']
+    return config['DEFAULT']
 
 
 # Name making functions.
