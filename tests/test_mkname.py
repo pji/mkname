@@ -2,6 +2,7 @@
 test_mkname
 ~~~~~~~~~~~
 """
+from pathlib import Path
 import unittest as ut
 from unittest.mock import patch
 from typing import Mapping
@@ -100,6 +101,42 @@ class InitializationTestCase(ut.TestCase):
                 self.assertConfigEqual(a[key], b[key])
             else:
                 self.assertEqual(a[key], b[key])
+
+    def test_init_config(self):
+        """If a config file doesn't exist for mkname in the current
+        working directory, create it using the package's default
+        configuration and return that the file was created.
+        """
+        # Expected value.
+        exp_status = 'created'
+        with open('mkname/data/defaults.cfg') as fh:
+            exp_file = fh.read()
+
+        # Test data and state.
+        filepath = 'mkname.cfg'
+        path = Path(filepath)
+        if path.is_file():
+            msg = f'{filepath} exists.'
+            raise RuntimeError(msg)
+
+        # Run test.
+        try:
+            act_status = mn.init_config()
+
+            # Gather actual data.
+            with open(filepath) as fh:
+                act_file = fh.read()
+
+            # Determine test result.
+            self.assertEqual(exp_status, act_status)
+            self.assertEqual(exp_file, act_file)
+
+        # Clean up test.
+        finally:
+            if path.is_file():
+                path.unlink()
+
+
 
     def test_load_config(self):
         """When called, load_config() should return a mapping that

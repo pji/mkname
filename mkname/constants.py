@@ -5,7 +5,9 @@ constants
 Default configuration values for mknames.
 """
 # Configuration file location.
-CONFIG_FILE = 'setup.cfg'
+CONFIG_FILE = 'mkname/data/defaults.cfg'
+DEFAULT_CONFIG = 'mkname/data/defaults.cfg'
+LOCAL_CONFIG = 'mkname.cfg'
 
 # Word structure.
 PUNCTUATION = "'- "

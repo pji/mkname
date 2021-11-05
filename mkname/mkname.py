@@ -5,16 +5,33 @@ mkname
 Tools for building names.
 """
 import configparser
+from pathlib import Path
 import random
 from typing import Mapping, Sequence
 
-from mkname.constants import CONSONANTS, VOWELS
+from mkname.constants import CONSONANTS, DEFAULT_CONFIG, LOCAL_CONFIG, VOWELS
 from mkname.dice import roll
 from mkname.mod import compound_names
 from mkname.utility import split_into_syllables
 
 
 # Initialization functions.
+def init_config() -> str:
+    """Initialize a config file on the first run of the module."""
+    p = Path(LOCAL_CONFIG)
+    
+    # If the local configuration file doesn't exist, create it.
+    if not p.is_file():
+        with open(DEFAULT_CONFIG) as fh:
+            contents = fh.read()
+        with open(LOCAL_CONFIG, 'w') as fh:
+            fh.write(contents)
+        return 'created'
+    
+    # Otherwise, just return that the config existed.
+    return 'exists'
+
+
 def load_config(filepath: str) -> Mapping:
     """Load the configuration."""
     config = configparser.ConfigParser()
