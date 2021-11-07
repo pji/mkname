@@ -7,7 +7,7 @@ Tools for building names.
 import configparser
 from pathlib import Path
 import random
-from typing import Mapping, Sequence
+from typing import Mapping, Sequence, Union
 
 from mkname.constants import (
     CONSONANTS,
@@ -23,9 +23,11 @@ from mkname.utility import split_into_syllables
 
 
 # Initialization functions.
-def init_config() -> str:
+def init_config(filepath: Union[str, Path] = '') -> str:
     """Initialize a config file on the first run of the module."""
-    p = Path(LOCAL_CONFIG)
+    if not filepath:
+        filepath = LOCAL_CONFIG
+    p = Path(filepath)
     
     # If the local configuration file doesn't exist, create it.
     if not p.is_file():
@@ -55,8 +57,11 @@ def init_db() -> str:
     return 'exists'
 
 
-def load_config(filepath: str) -> Mapping:
+def load_config(filepath: Union[str, Path]) -> Mapping:
     """Load the configuration."""
+    # If the config doesn't exist in the given location, initialize it.
+    _ = init_config(filepath)
+    
     config = configparser.ConfigParser()
     config.read(filepath)
     return config['DEFAULT']

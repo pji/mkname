@@ -211,6 +211,7 @@ class InitializationTestCase(ut.TestCase):
         self.assertEqual(exp, act)
         self.assertTrue(act_path.is_file())
 
+    # Tests for load_config.
     def test_load_config(self):
         """When called, load_config() should return a mapping that
         contains the mkname configuration from the given configuration
@@ -229,3 +230,25 @@ class InitializationTestCase(ut.TestCase):
 
         # Determine test result.
         self.assertConfigEqual(exp, act)
+
+    def test_load_config_uninitialized(self):
+        """If the given configuration file doesn't exist, load_config()
+        should create it with the default settings.
+        """
+        # Expected values.
+        exp_path = Path(LOCAL_CONFIG)
+        exp_return = {
+            'db_path': 'mkname/data/names.db',
+        }
+
+        # Test data and state.
+        if exp_path.exists():
+            msg = f'{exp_path} exists.'
+            raise RuntimeError(msg)
+
+        # Run test.
+        act_return = mn.load_config(exp_path)
+
+        # Determine test result.
+        self.assertTrue(exp_path.is_file())
+        self.assertConfigEqual(exp_return, act_return)
