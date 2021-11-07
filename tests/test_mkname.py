@@ -3,12 +3,14 @@ test_mkname
 ~~~~~~~~~~~
 """
 from pathlib import Path
+import shutil
 import unittest as ut
 from unittest.mock import patch
 from typing import Mapping
 
 from mkname import mkname as mn
 from mkname import dice as r
+from mkname.constants import LOCAL_CONFIG, LOCAL_DB
 
 
 # Test cases.
@@ -102,6 +104,17 @@ class InitializationTestCase(ut.TestCase):
             else:
                 self.assertEqual(a[key], b[key])
 
+    def tearDown(self):
+        """Post-test clean up."""
+        path_strs = [
+            LOCAL_CONFIG,
+            LOCAL_DB,
+        ]
+        paths = [Path(s) for s in path_strs]
+        for path in paths:
+            if path.is_file():
+                path.unlink()
+
     def test_init_config(self):
         """If a config file doesn't exist for mkname in the current
         working directory, create it using the package's default
@@ -113,30 +126,90 @@ class InitializationTestCase(ut.TestCase):
             exp_file = fh.read()
 
         # Test data and state.
-        filepath = 'mkname.cfg'
+        filepath = LOCAL_CONFIG
         path = Path(filepath)
         if path.is_file():
             msg = f'{filepath} exists.'
             raise RuntimeError(msg)
 
         # Run test.
-        try:
-            act_status = mn.init_config()
+        act_status = mn.init_config()
 
-            # Gather actual data.
-            with open(filepath) as fh:
-                act_file = fh.read()
+        # Gather actual data.
+        with open(filepath) as fh:
+            act_file = fh.read()
 
-            # Determine test result.
-            self.assertEqual(exp_status, act_status)
-            self.assertEqual(exp_file, act_file)
+        # Determine test result.
+        self.assertEqual(exp_status, act_status)
+        self.assertEqual(exp_file, act_file)
 
-        # Clean up test.
-        finally:
-            if path.is_file():
-                path.unlink()
+    def test_init_config_already_exists(self):
+        """If the local config file already exists in the current
+        working directory, return that it exists.
+        """
+        # Expected value.
+        exp = 'exists'
 
+        # Test data and state.
+        src = 'mkname/data/defaults.cfg'
+        dst = LOCAL_CONFIG
+        shutil.copy2(src, dst)
+        act_path = Path(dst)
 
+        # Run test.
+        act = mn.init_config()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+        self.assertTrue(act_path.is_file())
+
+    def test_init_db(self):
+        """If a name database doesn't exist for mkname in the current
+        working directory, create it using the package's default
+        name database and return that the database was created.
+        """
+        # Expected values.
+        exp_status = 'created'
+        with open('mkname/data/names.db', 'rb') as fh:
+            exp_file = fh.read()
+
+        # Test data and state.
+        filepath = LOCAL_DB
+        path = Path(filepath)
+        if path.is_file():
+            msg = f'{filepath} exists.'
+            raise RuntimeError(msg)
+
+        # Run test.
+        act_status = mn.init_db()
+
+        # Gather actual data.
+        with open(filepath, 'rb') as fh:
+            act_file = fh.read()
+
+        # Determine test result.
+        self.assertEqual(exp_status, act_status)
+        self.assertEqual(exp_file, act_file)
+
+    def test_init_db_already_exists(self):
+        """If the local database file already exists in the current
+        working directory, return that it exists.
+        """
+        # Expected value.
+        exp = 'exists'
+
+        # Test data and state.
+        src = 'mkname/data/names.db'
+        dst = LOCAL_DB
+        shutil.copy2(src, dst)
+        act_path = Path(dst)
+
+        # Run test.
+        act = mn.init_db()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+        self.assertTrue(act_path.is_file())
 
     def test_load_config(self):
         """When called, load_config() should return a mapping that

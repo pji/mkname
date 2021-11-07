@@ -9,7 +9,14 @@ from pathlib import Path
 import random
 from typing import Mapping, Sequence
 
-from mkname.constants import CONSONANTS, DEFAULT_CONFIG, LOCAL_CONFIG, VOWELS
+from mkname.constants import (
+    CONSONANTS,
+    DEFAULT_CONFIG,
+    DEFAULT_DB,
+    LOCAL_CONFIG,
+    LOCAL_DB,
+    VOWELS
+)
 from mkname.dice import roll
 from mkname.mod import compound_names
 from mkname.utility import split_into_syllables
@@ -29,6 +36,22 @@ def init_config() -> str:
         return 'created'
     
     # Otherwise, just return that the config existed.
+    return 'exists'
+
+
+def init_db() -> str:
+    """Initialize a names database on the first run of the module."""
+    p = Path(LOCAL_DB)
+    
+    # If the local names database doesn't exist, create it.
+    if not p.is_file():
+        with open(DEFAULT_DB, 'rb') as fh:
+            contents = fh.read()
+        with open(LOCAL_DB, 'wb') as fh:
+            fh.write(contents)
+        return 'created'
+    
+    # Otherwise, just return that the database existed.
     return 'exists'
 
 
