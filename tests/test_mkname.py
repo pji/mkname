@@ -2,6 +2,7 @@
 test_mkname
 ~~~~~~~~~~~
 """
+import filecmp
 from pathlib import Path
 import shutil
 import unittest as ut
@@ -10,7 +11,7 @@ from typing import Mapping
 
 from mkname import mkname as mn
 from mkname import dice as r
-from mkname.constants import LOCAL_CONFIG, LOCAL_DB
+from mkname.constants import DEFAULT_DB, LOCAL_CONFIG, LOCAL_DB
 
 
 # Test cases.
@@ -93,6 +94,12 @@ class BuildingNamesTestCase(ut.TestCase):
 
 
 class InitializationTestCase(ut.TestCase):
+    default_db_loc = DEFAULT_DB
+    local_config_loc = LOCAL_CONFIG
+    local_db_loc = 'test_names.db'
+    test_config_loc = 'tests/data/test_load_config.conf'
+    test_db_loc = 'tests/data/names.db'
+
     def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
         """Assert that two ParserConfig objects are equal."""
         a_keylist = list(a.keys())
@@ -104,6 +111,109 @@ class InitializationTestCase(ut.TestCase):
             else:
                 self.assertEqual(a[key], b[key])
 
+    def assertFileEqual(self, a, b):
+        """Compare the files as two paths."""
+        a_path = Path(a)
+        b_path = Path(b)
+        for path in a_path, b_path:
+            if not path.is_file():
+                msg = f'{path} is not a file.'
+                raise RuntimeError(msg)
+
+        self.assertTrue(filecmp.cmp(a, b, shallow=False))
+
+    def get_common_paths(self):
+        return (
+            Path(self.local_config_loc),
+            Path(self.local_db_loc),
+        )
+
+    def setUp(self):
+        paths = self.get_common_paths()
+        msg = '{} exists. Aborting test.'
+        for path in paths:
+            if path.exists():
+                raise RuntimeError(msg.format(path))
+
+    def tearDown(self):
+        paths = self.get_common_paths()
+        for path in paths:
+            if path.exists():
+                path.unlink()
+
+    # Tests for init_db.
+    def test_init_db_with_location_as_str_and_exists(self):
+        """Given the path to a database as a string, check if the
+        database exists. If it does, return 'exists'."""
+        # Expected value.
+        exp = 'exists'
+
+        # Test data and state.
+        location = 'tests/data/names.db'
+
+        # Run test.
+        act = mn.init_db(location)
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_init_db_with_location_as_path_and_exists(self):
+        """Given the path to a database as a string, check if the
+        database exists. If it does, return 'exists'."""
+        # Expected value.
+        exp = 'exists'
+
+        # Test data and state.
+        location = self.test_db_loc
+        path = Path(location)
+
+        # Run test.
+        act = mn.init_db(path)
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_init_db_with_location_as_str_and_not_eists(self):
+        """Given the path to a database as a string, check if the
+        database exists. If it doesn't, create the database and
+        return 'created'.
+        """
+        # Expected value.
+        exp_file = self.default_db_loc
+        exp_return = 'created'
+
+        # Test data and state.
+        act_file = self.local_db_loc
+
+        # Run test.
+        act_return = mn.init_db(act_file)
+
+        # Determine test results.
+        self.assertFileEqual(exp_file, act_file)
+        self.assertEqual(exp_return, act_return)
+
+    # Tests for get_config.
+    def test_get_config_in_cwd(self):
+        """If no path is given, check if there is a config file in
+        the current working directory. If there is, return the mkname
+        section from that config.
+        """
+        # Expected value.
+        exp = {
+            'db_path': 'spam.db',
+        }
+
+        # Test data and state.
+        src = self.test_config_loc
+        dst = self.local_config_loc
+        shutil.copy2(src, dst)
+
+        # Run test.
+        act = mn.get_config()
+
+        # Determine test result.
+        self.assertConfigEqual(exp, act)
+
     def test_get_config_with_file_as_str(self):
         """Given the path to a configuration file as a string,
         return the mkname configuration found in that file.
@@ -114,7 +224,7 @@ class InitializationTestCase(ut.TestCase):
         }
 
         # Test data and state.
-        path_str = 'tests/data/test_load_config.conf'
+        path_str = self.test_config_loc
 
         # Run test.
         act = mn.get_config(path_str)
@@ -122,7 +232,27 @@ class InitializationTestCase(ut.TestCase):
         # Determine test result.
         self.assertConfigEqual(exp, act)
 
+    def test_get_config_with_file_as_path(self):
+        """Given the path to a configuration file as a string,
+        return the mkname configuration found in that file.
+        """
+        # Expected value.
+        exp = {
+            'db_path': 'spam.db',
+        }
 
+        # Test data and state.
+        path_str = self.test_config_loc
+        path = Path(path_str)
+
+        # Run test.
+        act = mn.get_config(path)
+
+        # Determine test result.
+        self.assertConfigEqual(exp, act)
+
+
+@ut.skip
 class OldInitializationTestCase(ut.TestCase):
     def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
         """Assert that two ParserConfig objects are equal."""

@@ -23,56 +23,37 @@ from mkname.utility import split_into_syllables
 
 
 # Initialization functions.
-def get_config(path: Union[str, Path]) -> Mapping:
+def get_config(path: Union[str, Path] = '') -> Mapping:
     """Get the configuration."""
+    if not path:
+        path = LOCAL_CONFIG
+
     path = Path(path)
     config = configparser.ConfigParser()
     config.read(path)
     return config['mkname']
 
 
-def init_config(filepath: Union[str, Path] = '') -> str:
-    """Initialize a config file on the first run of the module."""
-    if not filepath:
-        filepath = LOCAL_CONFIG
-    p = Path(filepath)
+def init_db(path: Union[str, Path]) -> str:
+    """Initialize the names database."""
+    path = Path(path)
+    msg = 'failed'
     
-    # If the local configuration file doesn't exist, create it.
-    if not p.is_file():
-        with open(DEFAULT_CONFIG) as fh:
-            contents = fh.read()
-        with open(LOCAL_CONFIG, 'w') as fh:
-            fh.write(contents)
-        return 'created'
+    # If the path is a file, return that the database exists.
+    if path.is_file():
+        msg = 'exists'
     
-    # Otherwise, just return that the config existed.
-    return 'exists'
-
-
-def init_db() -> str:
-    """Initialize a names database on the first run of the module."""
-    p = Path(LOCAL_DB)
-    
-    # If the local names database doesn't exist, create it.
-    if not p.is_file():
+    # Otherwise, if there is nothing at the path, copy the default
+    # database there.
+    if not path.exists():
         with open(DEFAULT_DB, 'rb') as fh:
             contents = fh.read()
-        with open(LOCAL_DB, 'wb') as fh:
+        with open(path, 'wb') as fh:
             fh.write(contents)
-        return 'created'
+        msg = 'created'
     
-    # Otherwise, just return that the database existed.
-    return 'exists'
-
-
-def load_config(filepath: Union[str, Path]) -> Mapping:
-    """Load the configuration."""
-    # If the config doesn't exist in the given location, initialize it.
-    _ = init_config(filepath)
-    
-    config = configparser.ConfigParser()
-    config.read(filepath)
-    return config['DEFAULT']
+    # Return the status message.
+    return msg
 
 
 # Name making functions.

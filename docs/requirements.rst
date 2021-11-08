@@ -136,11 +136,11 @@ Initialization Requirements
 Based on the discussion of database and config file locations, the
 following are now requirements for `mkname`:
 
-*   `mkname` can be passed the location of a name database.
-*   `mkname` can be passed the location of a config file.
-*   `mkname` can look in the current working directory for a
+*   (x)`mkname` can be passed the location of a name database.
+*   (x)`mkname` can be passed the location of a config file.
+*   (x)`mkname` can look in the current working directory for a
     config file.
-*   `mkname` can create a new database in a given location.
+*   (x)`mkname` can create a new database in a given location.
 *   `mkname` can create a new configuration file in a given
     location.
 *   `mkname` can default to using the base database from the
