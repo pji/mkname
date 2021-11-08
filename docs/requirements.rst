@@ -184,7 +184,7 @@ The goals for command line usage are:
 *   `mkname` can generate one name.
 *   `mkname` can generate multiple names.
 *   `mkname` allows users to modify names.
-*   `mkname` allows users to display the names in the database.
+*   x `mkname` allows users to display the names in the database.
 *   `mkname` allows users to add names to the database.
 *   `mkname` allows users to remove names from the database.
 *   `mkname` allows users to backup the database.
