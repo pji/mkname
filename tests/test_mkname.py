@@ -11,7 +11,12 @@ from typing import Mapping
 
 from mkname import mkname as mn
 from mkname import dice as r
-from mkname.constants import DEFAULT_DB, LOCAL_CONFIG, LOCAL_DB
+from mkname.constants import (
+    DEFAULT_DB,
+    DEFAULT_CONFIG,
+    DEFAULT_CONFIG_DATA,
+    LOCAL_CONFIG
+)
 
 
 # Test cases.
@@ -94,11 +99,20 @@ class BuildingNamesTestCase(ut.TestCase):
 
 
 class InitializationTestCase(ut.TestCase):
+    default_config_loc = DEFAULT_CONFIG
     default_db_loc = DEFAULT_DB
     local_config_loc = LOCAL_CONFIG
     local_db_loc = 'test_names.db'
     test_config_loc = 'tests/data/test_load_config.conf'
     test_db_loc = 'tests/data/names.db'
+    test_dir_loc = 'tests/data/__test_mkname_test_dir'
+    test_full_config = {
+        'consonants': 'bcd',
+        'db_path': 'spam.db',
+        'punctuation': "'-",
+        'scifi_letters': 'eggs',
+        'vowels': 'aei'
+    }
 
     def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
         """Assert that two ParserConfig objects are equal."""
@@ -106,7 +120,7 @@ class InitializationTestCase(ut.TestCase):
         b_keylist = list(b.keys())
         self.assertListEqual(a_keylist, b_keylist)
         for key in a:
-            if not isinstance(a[key], str):
+            if isinstance(a[key], Mapping):
                 self.assertConfigEqual(a[key], b[key])
             else:
                 self.assertEqual(a[key], b[key])
@@ -133,7 +147,7 @@ class InitializationTestCase(ut.TestCase):
         msg = '{} exists. Aborting test.'
         for path in paths:
             if path.exists():
-                raise RuntimeError(msg.format(path))
+                raise FileExistsError(msg.format(path))
 
     def tearDown(self):
         paths = self.get_common_paths()
@@ -142,14 +156,26 @@ class InitializationTestCase(ut.TestCase):
                 path.unlink()
 
     # Tests for init_db.
-    def test_init_db_with_location_as_str_and_exists(self):
+    def test_init_db_with_path_and_exists(self):
         """Given the path to a database as a string, check if the
-        database exists. If it does, return 'exists'."""
+        database exists and return the path to the db."""
         # Expected value.
-        exp = 'exists'
+        exp = Path(self.test_db_loc)
+
+        # Run test.
+        act = mn.init_db(exp)
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_init_db_with_str_and_exists(self):
+        """Given the path to a database as a string, check if the
+        database exists and return the path to the database."""
+        # Expected value.
+        exp = Path(self.default_db_loc)
 
         # Test data and state.
-        location = 'tests/data/names.db'
+        location = self.default_db_loc
 
         # Run test.
         act = mn.init_db(location)
@@ -157,30 +183,14 @@ class InitializationTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
-    def test_init_db_with_location_as_path_and_exists(self):
-        """Given the path to a database as a string, check if the
-        database exists. If it does, return 'exists'."""
-        # Expected value.
-        exp = 'exists'
-
-        # Test data and state.
-        location = self.test_db_loc
-        path = Path(location)
-
-        # Run test.
-        act = mn.init_db(path)
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-
-    def test_init_db_with_location_as_str_and_not_eists(self):
+    def test_init_db_with_str_and_not_exists(self):
         """Given the path to a database as a string, check if the
         database exists. If it doesn't, create the database and
-        return 'created'.
+        return the path to the database.
         """
         # Expected value.
         exp_file = self.default_db_loc
-        exp_return = 'created'
+        exp_return = Path(self.local_db_loc)
 
         # Test data and state.
         act_file = self.local_db_loc
@@ -192,16 +202,74 @@ class InitializationTestCase(ut.TestCase):
         self.assertFileEqual(exp_file, act_file)
         self.assertEqual(exp_return, act_return)
 
+    def test_init_db_without_path(self):
+        """If no string or Path is passed, return the path to the
+        default database for the package.
+        """
+        # Expect values.
+        exp = Path(self.default_db_loc)
+
+        # Run test.
+        act = mn.init_db()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     # Tests for get_config.
+    def test_get_config_default(self):
+        """If no path is given and there is no local config in the
+        current working directory, return the default config as a
+        dict.
+        """
+        # Expected value.
+        exp = DEFAULT_CONFIG_DATA
+
+        # Run test.
+        act = mn.get_config()
+
+        # Determine test result.
+        self.assertDictEqual(exp, act)
+        self.assertFalse(exp is act)
+
+    def test_get_config_dir(self):
+        """If the passed location is a directory, raise an
+        exception.
+        """
+        # Expected value.
+        exp_ex = IsADirectoryError
+        exp_msg = 'Given location is a directory.'
+
+        # Test data and state.
+        dir_ = 'tests/data/__test_mkname_test_dir'
+
+        # Run test and determine result.
+        with self.assertRaisesRegex(exp_ex, exp_msg):
+            _ = mn.get_config(dir_)
+
+    def test_get_config_fill_missing_keys(self):
+        """Given the path to a config file with missing keys,
+        add those keys with default values to the returned config.
+        """
+        # Expected value.
+        exp = DEFAULT_CONFIG_DATA.copy()
+        exp['db_path'] = 'spam.db'
+
+        # Test data and state.
+        location = 'tests/data/test_get_config_fill_missing_keys.cfg'
+
+        # Run test.
+        act = mn.get_config(location)
+
+        # Determine test result.
+        self.assertConfigEqual(exp, act)
+
     def test_get_config_in_cwd(self):
         """If no path is given, check if there is a config file in
         the current working directory. If there is, return the mkname
         section from that config.
         """
         # Expected value.
-        exp = {
-            'db_path': 'spam.db',
-        }
+        exp = self.test_full_config
 
         # Test data and state.
         src = self.test_config_loc
@@ -214,32 +282,12 @@ class InitializationTestCase(ut.TestCase):
         # Determine test result.
         self.assertConfigEqual(exp, act)
 
-    def test_get_config_with_file_as_str(self):
+    def test_get_config_with_path(self):
         """Given the path to a configuration file as a string,
         return the mkname configuration found in that file.
         """
         # Expected value.
-        exp = {
-            'db_path': 'spam.db',
-        }
-
-        # Test data and state.
-        path_str = self.test_config_loc
-
-        # Run test.
-        act = mn.get_config(path_str)
-
-        # Determine test result.
-        self.assertConfigEqual(exp, act)
-
-    def test_get_config_with_file_as_path(self):
-        """Given the path to a configuration file as a string,
-        return the mkname configuration found in that file.
-        """
-        # Expected value.
-        exp = {
-            'db_path': 'spam.db',
-        }
+        exp = self.test_full_config
 
         # Test data and state.
         path_str = self.test_config_loc
@@ -251,165 +299,38 @@ class InitializationTestCase(ut.TestCase):
         # Determine test result.
         self.assertConfigEqual(exp, act)
 
-
-@ut.skip
-class OldInitializationTestCase(ut.TestCase):
-    def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
-        """Assert that two ParserConfig objects are equal."""
-        a_keylist = list(a.keys())
-        b_keylist = list(b.keys())
-        self.assertListEqual(a_keylist, b_keylist)
-        for key in a:
-            if not isinstance(a[key], str):
-                self.assertConfigEqual(a[key], b[key])
-            else:
-                self.assertEqual(a[key], b[key])
-
-    def tearDown(self):
-        """Post-test clean up."""
-        path_strs = [
-            LOCAL_CONFIG,
-            LOCAL_DB,
-        ]
-        paths = [Path(s) for s in path_strs]
-        for path in paths:
-            if path.is_file():
-                path.unlink()
-
-    def test_init_config(self):
-        """If a config file doesn't exist for mkname in the current
-        working directory, create it using the package's default
-        configuration and return that the file was created.
+    def test_get_config_with_str(self):
+        """Given the path to a configuration file as a string,
+        return the mkname configuration found in that file.
         """
         # Expected value.
-        exp_status = 'created'
-        with open('mkname/data/defaults.cfg') as fh:
-            exp_file = fh.read()
+        exp = self.test_full_config
 
         # Test data and state.
-        filepath = LOCAL_CONFIG
-        path = Path(filepath)
-        if path.is_file():
-            msg = f'{filepath} exists.'
-            raise RuntimeError(msg)
+        path_str = self.test_config_loc
 
         # Run test.
-        act_status = mn.init_config()
-
-        # Gather actual data.
-        with open(filepath) as fh:
-            act_file = fh.read()
-
-        # Determine test result.
-        self.assertEqual(exp_status, act_status)
-        self.assertEqual(exp_file, act_file)
-
-    def test_init_config_already_exists(self):
-        """If the local config file already exists in the current
-        working directory, return that it exists.
-        """
-        # Expected value.
-        exp = 'exists'
-
-        # Test data and state.
-        src = 'mkname/data/defaults.cfg'
-        dst = LOCAL_CONFIG
-        shutil.copy2(src, dst)
-        act_path = Path(dst)
-
-        # Run test.
-        act = mn.init_config()
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-        self.assertTrue(act_path.is_file())
-
-    def test_init_db(self):
-        """If a name database doesn't exist for mkname in the current
-        working directory, create it using the package's default
-        name database and return that the database was created.
-        """
-        # Expected values.
-        exp_status = 'created'
-        with open('mkname/data/names.db', 'rb') as fh:
-            exp_file = fh.read()
-
-        # Test data and state.
-        filepath = LOCAL_DB
-        path = Path(filepath)
-        if path.is_file():
-            msg = f'{filepath} exists.'
-            raise RuntimeError(msg)
-
-        # Run test.
-        act_status = mn.init_db()
-
-        # Gather actual data.
-        with open(filepath, 'rb') as fh:
-            act_file = fh.read()
-
-        # Determine test result.
-        self.assertEqual(exp_status, act_status)
-        self.assertEqual(exp_file, act_file)
-
-    def test_init_db_already_exists(self):
-        """If the local database file already exists in the current
-        working directory, return that it exists.
-        """
-        # Expected value.
-        exp = 'exists'
-
-        # Test data and state.
-        src = 'mkname/data/names.db'
-        dst = LOCAL_DB
-        shutil.copy2(src, dst)
-        act_path = Path(dst)
-
-        # Run test.
-        act = mn.init_db()
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-        self.assertTrue(act_path.is_file())
-
-    # Tests for load_config.
-    def test_load_config(self):
-        """When called, load_config() should return a mapping that
-        contains the mkname configuration from the given configuration
-        file.
-        """
-        # Expected value.
-        exp = {
-            'db_path': 'spam.db',
-        }
-
-        # Test data and state.
-        config_path = 'tests/data/test_load_config.conf'
-
-        # Run test.
-        act = mn.load_config(config_path)
+        act = mn.get_config(path_str)
 
         # Determine test result.
         self.assertConfigEqual(exp, act)
 
-    def test_load_config_uninitialized(self):
-        """If the given configuration file doesn't exist, load_config()
-        should create it with the default settings.
+    def test_get_config_with_str_and_not_exists(self):
+        """Given the path to a configuration file as a string,
+        check if the file exists. If not, copy the default config
+        to that location, then return the mkname configuration found
+        in that file.
         """
-        # Expected values.
-        exp_path = Path(LOCAL_CONFIG)
-        exp_return = {
-            'db_path': 'mkname/data/names.db',
-        }
+        # Expected value.
+        exp_config = DEFAULT_CONFIG_DATA
+        exp_file = Path(self.local_config_loc)
 
         # Test data and state.
-        if exp_path.exists():
-            msg = f'{exp_path} exists.'
-            raise RuntimeError(msg)
+        path = self.local_config_loc
 
         # Run test.
-        act_return = mn.load_config(exp_path)
+        act_config = mn.get_config(path)
 
         # Determine test result.
-        self.assertTrue(exp_path.is_file())
-        self.assertConfigEqual(exp_return, act_return)
+        self.assertConfigEqual(exp_config, act_config)
+        self.assertTrue(exp_file.is_file())

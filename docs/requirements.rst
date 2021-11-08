@@ -100,6 +100,10 @@ If I only create databases when given a new path from the calling
 application or a config file, then I think I avoid just spewing the
 databases into every directory the code is called from.
 
+The question of the DB's existence is handled through database
+initialization. How will finding the database be handled? It should
+probably be handled in the process of making the database connection.
+
 
 Configuration Location
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -141,8 +145,48 @@ following are now requirements for `mkname`:
 *   (x)`mkname` can look in the current working directory for a
     config file.
 *   (x)`mkname` can create a new database in a given location.
-*   `mkname` can create a new configuration file in a given
+*   (x)`mkname` can create a new configuration file in a given
     location.
-*   `mkname` can default to using the base database from the
+*   (x)`mkname` can default to using the base database from the
     package.
-*   `mkname` can default to using default config.
+*   (x)`mkname` can default to using default config.
+
+
+Initialization Process
+~~~~~~~~~~~~~~~~~~~~~~
+Based on all of this, the initialization process probably looks like:
+
+1.  `mkname` is invoked.
+2.  Get the config.
+    1.  If a config file is given and it doesn't exist: create it.
+    2.  If a config file is given: read the config.
+    3.  If not, use default config.
+3.  Get the database location from the default config.
+4.  Initialize the database:
+    1.  If the database exists, continue.
+    2.  If not, copy base data into a db at that location.
+5.  Make the connection to the database.
+
+This means users should go through the initialization process before
+using any functions in mkname that make calls to the database. This
+isn't really a surprise.
+
+
+Command Line Usage
+~~~~~~~~~~~~~~~~~~
+The `mkname` package is intended to be called directly as well as
+imported as a package. Direct use will be from the command line.
+The goals for command line usage are:
+
+*   `mkname` can accept a config file as an argument.
+*   `mkname` can accept a database as an argument.
+*   `mkname` allows users to choose which generation function to use.
+*   `mkname` can generate one name.
+*   `mkname` can generate multiple names.
+*   `mkname` allows users to modify names.
+*   `mkname` allows users to display the names in the database.
+*   `mkname` allows users to add names to the database.
+*   `mkname` allows users to remove names from the database.
+*   `mkname` allows users to backup the database.
+*   `mkname` allows users to restore a database backup.
+*   `mkname` does not allow users to alter the default database.

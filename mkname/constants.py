@@ -19,7 +19,16 @@ LOCAL_CONFIG = 'mkname.cfg'
 LOCAL_DB = 'names.db'
 
 # Word structure.
-PUNCTUATION = "'- "
 CONSONANTS = 'bcdfghjklmnpqrstvwxz'
-VOWELS = 'aeiouy'
+PUNCTUATION = "'-.?!/:@+|•"
 SCIFI_LETTERS = 'kqxz'
+VOWELS = 'aeiouy'
+
+# Default configuration data.
+DEFAULT_CONFIG_DATA = {
+    'consonants': CONSONANTS,
+    'db_path': str(DEFAULT_DB),
+    'punctuation': PUNCTUATION,
+    'scifi_letters': SCIFI_LETTERS,
+    'vowels': VOWELS,
+}

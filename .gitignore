@@ -5,5 +5,8 @@
 # Ignore virtual environment.
 .venv
 
-# Ignore working files
+# Ignore working files.
 *.numbers
+
+# Ignore OS files.
+.DS_Store

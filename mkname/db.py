@@ -13,15 +13,16 @@ from mkname.model import Name
 
 
 # Connection functions.
-def connect_db(filepath: str) -> sqlite3.Connection:
+def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     """Connect to the database."""
     # Check to make sure the file exists, since sqlite3 fails silently.
-    path = Path(filepath)
+    path = Path(location)
     if not path.is_file():
-        msg = f'No database at "{filepath}".'
+        msg = f'No database at "{path}".'
         raise ValueError(msg)
     
-    con = sqlite3.Connection(filepath)
+    # Make and return the database connection.
+    con = sqlite3.Connection(path)
     return con
 
 
@@ -39,14 +40,14 @@ def makes_connection(fn: Callable) -> Callable:
     decorated function.
     """
     @wraps(fn)
-    def wrapper(given_con: Union[sqlite3.Connection, str] = None,
+    def wrapper(given_con: Union[sqlite3.Connection, str, Path] = None,
                 *args, **kwargs) -> Any:
-        if isinstance(given_con, str):
+        if isinstance(given_con, (str, Path)):
             con = connect_db(given_con)
         elif isinstance(given_con, sqlite3.Connection):
             con = given_con
         result = fn(con, *args, **kwargs)
-        if isinstance(given_con, str):
+        if isinstance(given_con, (str, Path)):
             disconnect_db(con)
         return result
     return wrapper

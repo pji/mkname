@@ -6,12 +6,13 @@ Tools for building names.
 """
 import configparser
 from pathlib import Path
-import random
-from typing import Mapping, Sequence, Union
+from sqlite3 import Connection
+from typing import Sequence, Union
 
 from mkname.constants import (
     CONSONANTS,
     DEFAULT_CONFIG,
+    DEFAULT_CONFIG_DATA,
     DEFAULT_DB,
     LOCAL_CONFIG,
     LOCAL_DB,
@@ -23,37 +24,69 @@ from mkname.utility import split_into_syllables
 
 
 # Initialization functions.
-def get_config(path: Union[str, Path] = '') -> Mapping:
+def get_config(location: Union[str, Path] = '') -> dict:
     """Get the configuration."""
-    if not path:
-        path = LOCAL_CONFIG
-
-    path = Path(path)
-    config = configparser.ConfigParser()
-    config.read(path)
-    return config['mkname']
-
-
-def init_db(path: Union[str, Path]) -> str:
-    """Initialize the names database."""
-    path = Path(path)
-    msg = 'failed'
+    # Start with the default configuration.
+    config_data = DEFAULT_CONFIG_DATA.copy()
     
-    # If the path is a file, return that the database exists.
+    # Convert the passed configuration file location into a Path
+    # object so we can check whether it exists. If no location was
+    # passed, create a Path for a config file with a default name
+    # in the current working directory in case one happens to exist
+    # there.
+    if location:
+        path = Path(location)
+    else:
+        path = Path(LOCAL_CONFIG)
+    
+    # If the given config file doesn't exist, create a new file and
+    # add the default config to it. The value of location is checked
+    # here to make sure we fall back to default config if we weren't
+    # passed a config file location. Otherwise, we'd spew config
+    # files into every directory the script is ever run from.
+    if location and not path.exists():
+        defaults = DEFAULT_CONFIG_DATA.copy()
+        content = [f'{key} = {defaults[key]}' for key in defaults]
+        content = ['[mkname]', *content]
+        with open(path, 'w') as fh:
+            fh.write('\n'.join(content))
+
+    # If the given config file now exists, get the config settings
+    # from the file and overwrite the default configuration values
+    # with the new values from the file.
     if path.is_file():
-        msg = 'exists'
+        config = configparser.ConfigParser()
+        config.read(path)
+        config_data.update(config['mkname'])
     
-    # Otherwise, if there is nothing at the path, copy the default
+    # If the passed configuration file location was a directory,
+    # replacing it would a valid config file could cause unexpected
+    # problems. Raise an exception for the user to deal with.
+    elif path.is_dir():
+        msg = 'Given location is a directory.'
+        raise IsADirectoryError(msg)
+    
+    return config_data
+
+
+def init_db(path: Union[str, Path] = '') -> Path:
+    """Initialize the names database."""
+    # If we aren't passed the location of a database, fall back to the
+    # default database for the package.
+    if not path:
+        path = DEFAULT_DB
+    path = Path(path)
+    
+    # If there is nothing at the path, copy the default
     # database there.
     if not path.exists():
         with open(DEFAULT_DB, 'rb') as fh:
             contents = fh.read()
         with open(path, 'wb') as fh:
             fh.write(contents)
-        msg = 'created'
     
     # Return the status message.
-    return msg
+    return path
 
 
 # Name making functions.
@@ -61,9 +94,9 @@ def build_compound_name(names: Sequence[str],
                consonants: Sequence[str] = CONSONANTS,
                vowels: Sequence[str] = VOWELS) -> str:
     """Create a name for a character."""
-    start = random.choice(names)
-    end = random.choice(names)
-    return compound_names(start, end, consonants, vowels)
+    root_name = select_name(names)
+    mod_name = select_name(names)
+    return compound_names(root_name, mod_name, consonants, vowels)
 
 
 def build_from_syllables(num_syllables: int,
