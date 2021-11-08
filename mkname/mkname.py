@@ -23,6 +23,14 @@ from mkname.utility import split_into_syllables
 
 
 # Initialization functions.
+def get_config(path: Union[str, Path]) -> Mapping:
+    """Get the configuration."""
+    path = Path(path)
+    config = configparser.ConfigParser()
+    config.read(path)
+    return config['mkname']
+
+
 def init_config(filepath: Union[str, Path] = '') -> str:
     """Initialize a config file on the first run of the module."""
     if not filepath:

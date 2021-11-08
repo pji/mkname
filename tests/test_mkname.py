@@ -104,6 +104,37 @@ class InitializationTestCase(ut.TestCase):
             else:
                 self.assertEqual(a[key], b[key])
 
+    def test_get_config_with_file_as_str(self):
+        """Given the path to a configuration file as a string,
+        return the mkname configuration found in that file.
+        """
+        # Expected value.
+        exp = {
+            'db_path': 'spam.db',
+        }
+
+        # Test data and state.
+        path_str = 'tests/data/test_load_config.conf'
+
+        # Run test.
+        act = mn.get_config(path_str)
+
+        # Determine test result.
+        self.assertConfigEqual(exp, act)
+
+
+class OldInitializationTestCase(ut.TestCase):
+    def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
+        """Assert that two ParserConfig objects are equal."""
+        a_keylist = list(a.keys())
+        b_keylist = list(b.keys())
+        self.assertListEqual(a_keylist, b_keylist)
+        for key in a:
+            if not isinstance(a[key], str):
+                self.assertConfigEqual(a[key], b[key])
+            else:
+                self.assertEqual(a[key], b[key])
+
     def tearDown(self):
         """Post-test clean up."""
         path_strs = [
