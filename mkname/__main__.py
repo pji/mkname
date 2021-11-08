@@ -6,6 +6,7 @@ The mainline for mkname.
 """
 from mkname import db
 from mkname import mkname as mn
+from mkname.cli import parse_cli
 from mkname.dice import roll
 from mkname.mod import add_scifi_letters, garble
 
@@ -25,4 +26,4 @@ def main() -> None:
     print(name)
     print()
 
-main()
+parse_cli()
