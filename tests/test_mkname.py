@@ -9,14 +9,15 @@ import unittest as ut
 from unittest.mock import patch
 from typing import Mapping
 
-from mkname import mkname as mn
 from mkname import dice as r
+from mkname import mkname as mn
 from mkname.constants import (
     DEFAULT_DB,
     DEFAULT_CONFIG,
     DEFAULT_CONFIG_DATA,
     LOCAL_CONFIG
 )
+from mkname.model import Name
 
 
 # Test cases.
@@ -30,7 +31,7 @@ class BuildingNamesTestCase(ut.TestCase):
 
         # Test data and state.
         r._seed('spam12')
-        names = [
+        test_names = [
             'Alice',
             'Robert',
             'Mallory',
@@ -39,6 +40,10 @@ class BuildingNamesTestCase(ut.TestCase):
             'Leonardo',
             'Raphael',
         ]
+        names = []
+        for id, test_name in enumerate(test_names):
+            name = Name(id, test_name, '', '', 0, '', '')
+            names.append(name)
 
         # Run test.
         act = mn.build_compound_name(names)
@@ -55,7 +60,7 @@ class BuildingNamesTestCase(ut.TestCase):
 
         # Test data and state.
         num_syllables = 3
-        names = [
+        test_names = [
             'Alice',
             'Robert',
             'Mallory',
@@ -64,6 +69,10 @@ class BuildingNamesTestCase(ut.TestCase):
             'Leonardo',
             'Raphael',
         ]
+        names = []
+        for id, test_name in enumerate(test_names):
+            name = Name(id, test_name, '', '', 0, '', '')
+            names.append(name)
         rolls = (2, 1, 5, 2, 1, 3)
         with patch('mkname.mkname.roll') as mock_roll:
             mock_roll.side_effect = rolls
@@ -81,7 +90,7 @@ class BuildingNamesTestCase(ut.TestCase):
 
         # Test data and state.
         r._seed('spam12')
-        names = [
+        test_names = [
             'Alice',
             'Robert',
             'Mallory',
@@ -90,6 +99,10 @@ class BuildingNamesTestCase(ut.TestCase):
             'Leonardo',
             'Raphael',
         ]
+        names = []
+        for id, test_name in enumerate(test_names):
+            name = Name(id, test_name, '', '', 0, '', '')
+            names.append(name)
 
         # Run test.
         act = mn.select_name(names)

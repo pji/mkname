@@ -21,6 +21,13 @@ def list_all_names(db_loc: Union[str, Path]) -> None:
         print(line)
 
 
+def pick_name(db_loc: Union[str, Path]) -> None:
+    """Select a name from the database."""
+    names = db.get_names(db_loc)
+    name = mn.select_name(names)
+    print(name)
+
+
 # Command parsing.
 def parse_cli() -> None:
     """Response to commands passed through the CLI."""
@@ -36,6 +43,11 @@ def parse_cli() -> None:
         help='List all the names in the database.',
         action='store_true'
     )
+    p.add_argument(
+        '--pick_name', '-p',
+        help='Pick a random name from the database.',
+        action='store_true'
+    )
     
     args = p.parse_args()
     
@@ -48,3 +60,5 @@ def parse_cli() -> None:
     
     if args.list_all_names:
         list_all_names(db_loc)
+    if args.pick_name:
+        pick_name(db_loc)

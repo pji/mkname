@@ -20,6 +20,7 @@ from mkname.constants import (
 )
 from mkname.dice import roll
 from mkname.mod import compound_names
+from mkname.model import Name
 from mkname.utility import split_into_syllables
 
 
@@ -90,7 +91,7 @@ def init_db(path: Union[str, Path] = '') -> Path:
 
 
 # Name making functions.
-def build_compound_name(names: Sequence[str],
+def build_compound_name(names: Sequence[Name],
                consonants: Sequence[str] = CONSONANTS,
                vowels: Sequence[str] = VOWELS) -> str:
     """Create a name for a character."""
@@ -100,7 +101,7 @@ def build_compound_name(names: Sequence[str],
 
 
 def build_from_syllables(num_syllables: int,
-                         names: Sequence[str],
+                         names: Sequence[Name],
                          consonants: Sequence[str] = CONSONANTS,
                          vowels: Sequence[str] = VOWELS) -> str:
     """Build a name from the syllables of the given names."""
@@ -115,7 +116,7 @@ def build_from_syllables(num_syllables: int,
     return result.title()
 
 
-def select_name(names: Sequence[str]) -> str:
+def select_name(names: Sequence[Name]) -> str:
     """Select a name from the given list."""
     index = roll(f'1d{len(names)}') - 1
-    return names[index]
+    return names[index].name
