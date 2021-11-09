@@ -13,30 +13,43 @@ from mkname import mkname as mn
 
 
 # Commands.
-def build_compound_name(db_loc: Union[str, Path]) -> None:
+def build_compound_name(config: dict) -> None:
     """Construct a name from two names in the database."""
+    db_loc = config['db_path']
     names = db.get_names(db_loc)
-    name = mn.build_compound_name(names)
+    name = mn.build_compound_name(
+        names,
+        config['consonants'],
+        config['vowels']
+    )
     print(name)
 
 
-def build_syllable_name(db_loc: Union[str, Path], num_syllables: int) -> None:
+def build_syllable_name(config: dict, num_syllables: int) -> None:
     """Construct a name from the syllables of names in the database."""
+    db_loc = config['db_path']
     names = db.get_names(db_loc)
-    name = mn.build_from_syllables(num_syllables, names)
+    name = mn.build_from_syllables(
+        num_syllables,
+        names,
+        config['consonants'],
+        config['vowels']
+    )
     print(name)
 
 
-def list_all_names(db_loc: Union[str, Path]) -> None:
+def list_all_names(config: dict) -> None:
     """List all the names in the database."""
+    db_loc = config['db_path']
     names = db.get_names(db_loc)
     lines = [name.name for name in names]
     for line in lines:
         print(line)
 
 
-def pick_name(db_loc: Union[str, Path]) -> None:
+def pick_name(config: dict) -> None:
     """Select a name from the database."""
+    db_loc = config['db_path']
     names = db.get_names(db_loc)
     name = mn.select_name(names)
     print(name)
@@ -92,10 +105,10 @@ def parse_cli() -> None:
     
     for _ in range(args.num_names):
         if args.compound_name:
-            build_compound_name(db_loc)
+            build_compound_name(config)
         if args.list_all_names:
-            list_all_names(db_loc)
+            list_all_names(config)
         if args.pick_name:
-            pick_name(db_loc)
+            pick_name(config)
         if args.syllable_name:
-            build_syllable_name(db_loc, args.syllable_name)
+            build_syllable_name(config, args.syllable_name)

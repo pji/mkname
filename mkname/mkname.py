@@ -92,8 +92,8 @@ def init_db(path: Union[str, Path] = '') -> Path:
 
 # Name making functions.
 def build_compound_name(names: Sequence[Name],
-               consonants: Sequence[str] = CONSONANTS,
-               vowels: Sequence[str] = VOWELS) -> str:
+                        consonants: Sequence[str] = CONSONANTS,
+                        vowels: Sequence[str] = VOWELS) -> str:
     """Create a name for a character."""
     root_name = select_name(names)
     mod_name = select_name(names)
@@ -109,7 +109,7 @@ def build_from_syllables(num_syllables: int,
     
     result = ''
     for name in base_names:
-        syllables = split_into_syllables(name)
+        syllables = split_into_syllables(name, consonants, vowels)
         index = roll(f'1d{len(syllables)}') - 1
         syllable = syllables[index]
         result = f'{result}{syllable}'

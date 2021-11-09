@@ -17,12 +17,12 @@ from mkname import constants as c
 class CommandLineOptionTestCase(ut.TestCase):
     def setUp(self):
         self.original_args = sys.argv
-        self.original_db_loc = c.DEFAULT_CONFIG_DATA['db_path']
+        self.original_defaults = c.DEFAULT_CONFIG_DATA
         c.DEFAULT_CONFIG_DATA['db_path'] = 'tests/data/names.db'
 
     def tearDown(self):
         sys.argv = self.original_args
-        c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
+        c.DEFAULT_CONFIG_DATA = self.original_defaults
 
     @patch('mkname.mkname.roll')
     def test_build_compound_name(self, mock_roll):
@@ -79,6 +79,30 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Test data and state.
         sys.argv = ['python -m mkname', '-s', '4']
         mock_roll.side_effect = [3, 2, 4, 1, 2, 1, 1, 1]
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    @patch('mkname.mkname.roll')
+    def test_build_syllable_name_diff_consonants(self, mock_roll):
+        """The consonants and vowels from the config should affect
+        how the name is generated.
+        """
+        # Expected value.
+        exp = 'Waf\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-s 1']
+        c.DEFAULT_CONFIG_DATA['consonants'] = 'bcdfghjkmnpqrstvwxz'
+        c.DEFAULT_CONFIG_DATA['vowels'] = 'aeiouyl'
+        mock_roll.side_effect = [4, 1]
         with patch('sys.stdout', new=StringIO()) as mock_out:
 
             # Run test
@@ -183,7 +207,7 @@ class CommandLineOptionTestCase(ut.TestCase):
             '-C', 'tests/data/test_use_config.cfg',
             '-L'
         ]
-        c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
+        c.DEFAULT_CONFIG_DATA['db_path'] = self.original_defaults['db_path']
         with patch('sys.stdout', new=StringIO()) as mock_out:
 
             # Run test
