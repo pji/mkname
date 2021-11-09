@@ -13,6 +13,13 @@ from mkname import mkname as mn
 
 
 # Commands.
+def compound_name(db_loc: Union[str, Path]) -> None:
+    """Construct a name from two names in the database."""
+    names = db.get_names(db_loc)
+    name = mn.build_compound_name(names)
+    print(name)
+
+
 def list_all_names(db_loc: Union[str, Path]) -> None:
     """List all the names in the database."""
     names = db.get_names(db_loc)
@@ -33,7 +40,12 @@ def parse_cli() -> None:
     """Response to commands passed through the CLI."""
     p = ArgumentParser(description='Randomized name construction.')
     p.add_argument(
-        '--config', '-c',
+        '--compound_name', '-c',
+        help='Construct a name from two names in the database.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--config', '-C',
         help='Use the given custom config file.',
         action='store',
         type=str
@@ -58,6 +70,8 @@ def parse_cli() -> None:
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
     
+    if args.compound_name:
+        compound_name(db_loc)
     if args.list_all_names:
         list_all_names(db_loc)
     if args.pick_name:

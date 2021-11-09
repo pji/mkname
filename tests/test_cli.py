@@ -24,6 +24,28 @@ class CommandLineOptionTestCase(ut.TestCase):
         sys.argv = self.original_args
         c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
 
+    @patch('mkname.mkname.roll')
+    def test_compound_name(self, mock_roll):
+        """When called with the -c option, construct a name from
+        compounding two names from the database.
+        """
+        # Expected value.
+        exp = 'Tam\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-c']
+        mock_roll.side_effect = [3, 2]
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     @patch('mkname.mkname.roll', return_value=3)
     def test_pick_name(self, _):
         """When called with the -p option, select a random name
@@ -73,7 +95,7 @@ class CommandLineOptionTestCase(ut.TestCase):
         self.assertEqual(exp, act)
 
     def test_use_config(self):
-        """When called with the -c option followed by a path to a
+        """When called with the -C option followed by a path to a
         configuration file, use the configuration in that file when
         running the script.
         """
@@ -90,7 +112,7 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Test data and state.
         sys.argv = [
             'python -m mkname',
-            '-c', 'tests/data/test_use_config.cfg',
+            '-C', 'tests/data/test_use_config.cfg',
             '-L'
         ]
         c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc

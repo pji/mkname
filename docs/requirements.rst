@@ -140,16 +140,16 @@ Initialization Requirements
 Based on the discussion of database and config file locations, the
 following are now requirements for `mkname`:
 
-*   (x)`mkname` can be passed the location of a name database.
-*   (x)`mkname` can be passed the location of a config file.
-*   (x)`mkname` can look in the current working directory for a
+*   x `mkname` can be passed the location of a name database.
+*   x `mkname` can be passed the location of a config file.
+*   x `mkname` can look in the current working directory for a
     config file.
-*   (x)`mkname` can create a new database in a given location.
-*   (x)`mkname` can create a new configuration file in a given
+*   x `mkname` can create a new database in a given location.
+*   x `mkname` can create a new configuration file in a given
     location.
-*   (x)`mkname` can default to using the base database from the
+*   x `mkname` can default to using the base database from the
     package.
-*   (x)`mkname` can default to using default config.
+*   x `mkname` can default to using default config.
 
 
 Initialization Process
@@ -178,7 +178,7 @@ The `mkname` package is intended to be called directly as well as
 imported as a package. Direct use will be from the command line.
 The goals for command line usage are:
 
-*   `mkname` can accept a config file as an argument.
+*   x `mkname` can accept a config file as an argument.
 *   `mkname` can accept a database as an argument.
 *   `mkname` allows users to choose which generation function to use.
 *   `mkname` can generate one name.
