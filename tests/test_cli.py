@@ -90,6 +90,30 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    @patch('mkname.mkname.roll')
+    def test_make_multiple_names(self, mock_roll):
+        """When called with the -n 3 option, create three names."""
+        # Expected value.
+        exp = (
+            'tomato\n'
+            'spam\n'
+            'waffles\n'
+        )
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-p', '-n', '3']
+        mock_roll.side_effect = [3, 1, 4]
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     @patch('mkname.mkname.roll', return_value=3)
     def test_pick_name(self, _):
         """When called with the -p option, select a random name

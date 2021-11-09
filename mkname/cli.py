@@ -63,6 +63,13 @@ def parse_cli() -> None:
         action='store_true'
     )
     p.add_argument(
+        '--num_names', '-n',
+        help='The number of names to create.',
+        action='store',
+        type=int,
+        default=1
+    )
+    p.add_argument(
         '--pick_name', '-p',
         help='Pick a random name from the database.',
         action='store_true'
@@ -83,11 +90,12 @@ def parse_cli() -> None:
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
     
-    if args.compound_name:
-        build_compound_name(db_loc)
-    if args.list_all_names:
-        list_all_names(db_loc)
-    if args.pick_name:
-        pick_name(db_loc)
-    if args.syllable_name:
-        build_syllable_name(db_loc, args.syllable_name)
+    for _ in range(args.num_names):
+        if args.compound_name:
+            build_compound_name(db_loc)
+        if args.list_all_names:
+            list_all_names(db_loc)
+        if args.pick_name:
+            pick_name(db_loc)
+        if args.syllable_name:
+            build_syllable_name(db_loc, args.syllable_name)

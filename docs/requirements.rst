@@ -180,8 +180,8 @@ The goals for command line usage are:
 
 *   x `mkname` can accept a config file as an argument.
 *   x `mkname` allows users to choose which generation function to use.
-*   `mkname` can generate one name.
-*   `mkname` can generate multiple names.
+*   x `mkname` can generate one name.
+*   x `mkname` can generate multiple names.
 *   `mkname` allows users to modify names.
 *   x `mkname` allows users to display the names in the database.
 *   `mkname` allows users to add names to the database.
