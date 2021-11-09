@@ -13,10 +13,17 @@ from mkname import mkname as mn
 
 
 # Commands.
-def compound_name(db_loc: Union[str, Path]) -> None:
+def build_compound_name(db_loc: Union[str, Path]) -> None:
     """Construct a name from two names in the database."""
     names = db.get_names(db_loc)
     name = mn.build_compound_name(names)
+    print(name)
+
+
+def build_syllable_name(db_loc: Union[str, Path], num_syllables: int) -> None:
+    """Construct a name from the syllables of names in the database."""
+    names = db.get_names(db_loc)
+    name = mn.build_from_syllables(num_syllables, names)
     print(name)
 
 
@@ -60,6 +67,12 @@ def parse_cli() -> None:
         help='Pick a random name from the database.',
         action='store_true'
     )
+    p.add_argument(
+        '--syllable_name', '-s',
+        help='Construct a name from the syllables of names in the database.',
+        action='store',
+        type=int
+    )
     
     args = p.parse_args()
     
@@ -71,8 +84,10 @@ def parse_cli() -> None:
     db_loc = mn.init_db(config['db_path'])
     
     if args.compound_name:
-        compound_name(db_loc)
+        build_compound_name(db_loc)
     if args.list_all_names:
         list_all_names(db_loc)
     if args.pick_name:
         pick_name(db_loc)
+    if args.syllable_name:
+        build_syllable_name(db_loc, args.syllable_name)

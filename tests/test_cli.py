@@ -25,7 +25,7 @@ class CommandLineOptionTestCase(ut.TestCase):
         c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
 
     @patch('mkname.mkname.roll')
-    def test_compound_name(self, mock_roll):
+    def test_build_compound_name(self, mock_roll):
         """When called with the -c option, construct a name from
         compounding two names from the database.
         """
@@ -35,6 +35,50 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Test data and state.
         sys.argv = ['python -m mkname', '-c']
         mock_roll.side_effect = [3, 2]
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    @patch('mkname.mkname.roll')
+    def test_build_syllable_name(self, mock_roll):
+        """When called with the -s 3 option, construct a name from
+        a syllable from three names in the database.
+        """
+        # Expected value.
+        exp = 'Athamwaff\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-s 3']
+        mock_roll.side_effect = [3, 2, 4, 2, 1, 1]
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    @patch('mkname.mkname.roll')
+    def test_build_syllable_name_4_syllables(self, mock_roll):
+        """When called with the -s 4 option, construct a name from
+        a syllable from four names in the database.
+        """
+        # Expected value.
+        exp = 'Athamwaffspam\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-s', '4']
+        mock_roll.side_effect = [3, 2, 4, 1, 2, 1, 1, 1]
         with patch('sys.stdout', new=StringIO()) as mock_out:
 
             # Run test

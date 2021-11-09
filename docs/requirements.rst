@@ -179,8 +179,7 @@ imported as a package. Direct use will be from the command line.
 The goals for command line usage are:
 
 *   x `mkname` can accept a config file as an argument.
-*   `mkname` can accept a database as an argument.
-*   `mkname` allows users to choose which generation function to use.
+*   x `mkname` allows users to choose which generation function to use.
 *   `mkname` can generate one name.
 *   `mkname` can generate multiple names.
 *   `mkname` allows users to modify names.
