@@ -26,14 +26,24 @@ def parse_cli() -> None:
     """Response to commands passed through the CLI."""
     p = ArgumentParser(description='Randomized name construction.')
     p.add_argument(
+        '--config', '-c',
+        help='Use the given custom config file.',
+        action='store',
+        type=str
+    )
+    p.add_argument(
         '--list_all_names', '-L',
-        action='store_true',
-        help='List all the names in the database.'
+        help='List all the names in the database.',
+        action='store_true'
     )
     
     args = p.parse_args()
     
-    config = mn.get_config()
+    config_file = ''
+    if args.config:
+        config_file = args.config
+    
+    config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
     
     if args.list_all_names:

@@ -24,6 +24,41 @@ class CommandLineOptionTestCase(ut.TestCase):
         sys.argv = self.original_args
         c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
 
+    # Test: mkname -L
+    def test_use_config(self):
+        """When called with the -c option followed by a path to a
+        configuration file, use the configuration in that file when
+        running the script.
+        """
+        # Expected value.
+        names = (
+            'spam',
+            'ham',
+            'tomato',
+            'waffles',
+            '',
+        )
+        exp = '\n'.join(names)
+
+        # Test data and state.
+        sys.argv = [
+            'python -m mkname',
+            '-c', 'tests/data/test_use_config.cfg',
+            '-L'
+        ]
+        c.DEFAULT_CONFIG_DATA['db_path'] = self.original_db_loc
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    # Test: mkname -L
     def test_list_all_names(self):
         """When called with the -L option, write all the names from
         the database to standard out.
