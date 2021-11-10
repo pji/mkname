@@ -181,6 +181,24 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    def test_last_name(self):
+        """When called with -l, only use surnames for the generation."""
+        # Expected value.
+        exp = 'tomato\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-L', '-l']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     def test_list_all_names(self):
         """When called with the -L option, write all the names from
         the database to standard out.

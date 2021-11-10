@@ -11,13 +11,12 @@ from typing import Sequence, Union
 from mkname import db
 from mkname import mkname as mn
 from mkname.mod import mods
+from mkname.model import Name
 
 
 # Commands.
-def build_compound_name(config: dict) -> str:
+def build_compound_name(names: Sequence[Name], config: dict) -> str:
     """Construct a name from two names in the database."""
-    db_loc = config['db_path']
-    names = db.get_names(db_loc)
     name = mn.build_compound_name(
         names,
         config['consonants'],
@@ -26,10 +25,10 @@ def build_compound_name(config: dict) -> str:
     return name
 
 
-def build_syllable_name(config: dict, num_syllables: int) -> str:
+def build_syllable_name(names: Sequence[Name],
+                        config: dict,
+                        num_syllables: int) -> str:
     """Construct a name from the syllables of names in the database."""
-    db_loc = config['db_path']
-    names = db.get_names(db_loc)
     name = mn.build_from_syllables(
         num_syllables,
         names,
@@ -39,10 +38,8 @@ def build_syllable_name(config: dict, num_syllables: int) -> str:
     return name
 
 
-def list_all_names(config: dict) -> tuple[str, ...]:
+def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
     """List all the names in the database."""
-    db_loc = config['db_path']
-    names = db.get_names(db_loc)
     return tuple(name.name for name in names)
 
 
@@ -52,10 +49,8 @@ def modify_name(name: str, mod_name: str) -> str:
     return mod(name)
 
 
-def pick_name(config: dict) -> str:
+def pick_name(names: Sequence[Name]) -> str:
     """Select a name from the database."""
-    db_loc = config['db_path']
-    names = db.get_names(db_loc)
     name = mn.select_name(names)
     return name
 
@@ -85,6 +80,11 @@ def parse_cli() -> None:
         help='Use the given custom config file.',
         action='store',
         type=str
+    )
+    p.add_argument(
+        '--last_name', '-l',
+        help='Generate a surname.',
+        action='store_true'
     )
     p.add_argument(
         '--list_all_names', '-L',
@@ -123,21 +123,26 @@ def parse_cli() -> None:
         config_file = args.config
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
+    names = db.get_names(db_loc)
+    
+    # Filter names.
+    if args.last_name:
+        names = names = [name for name in names if name.kind == 'surname']
     
     # Generate the names, storing the output.
     lines = []
     for _ in range(args.num_names):
         if args.compound_name:
-            name = build_compound_name(config)
+            name = build_compound_name(names, config)
             lines.append(name)
         if args.list_all_names:
-            names = list_all_names(config)
+            names = list_all_names(names)
             lines.extend(names)
         if args.pick_name:
-            name = pick_name(config)
+            name = pick_name(names)
             lines.append(name)
         if args.syllable_name:
-            name = build_syllable_name(config, args.syllable_name)
+            name = build_syllable_name(names, config, args.syllable_name)
             lines.append(name)
     
     if args.modify_name:
