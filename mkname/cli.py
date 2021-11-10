@@ -6,14 +6,15 @@ Command line interface for the mkname package.
 """
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Union
+from typing import Sequence, Union
 
 from mkname import db
 from mkname import mkname as mn
+from mkname.mod import mods
 
 
 # Commands.
-def build_compound_name(config: dict) -> None:
+def build_compound_name(config: dict) -> str:
     """Construct a name from two names in the database."""
     db_loc = config['db_path']
     names = db.get_names(db_loc)
@@ -22,10 +23,10 @@ def build_compound_name(config: dict) -> None:
         config['consonants'],
         config['vowels']
     )
-    print(name)
+    return name
 
 
-def build_syllable_name(config: dict, num_syllables: int) -> None:
+def build_syllable_name(config: dict, num_syllables: int) -> str:
     """Construct a name from the syllables of names in the database."""
     db_loc = config['db_path']
     names = db.get_names(db_loc)
@@ -35,29 +36,44 @@ def build_syllable_name(config: dict, num_syllables: int) -> None:
         config['consonants'],
         config['vowels']
     )
-    print(name)
+    return name
 
 
-def list_all_names(config: dict) -> None:
+def list_all_names(config: dict) -> tuple[str, ...]:
     """List all the names in the database."""
     db_loc = config['db_path']
     names = db.get_names(db_loc)
-    lines = [name.name for name in names]
-    for line in lines:
-        print(line)
+    return tuple(name.name for name in names)
 
 
-def pick_name(config: dict) -> None:
+def modify_name(name: str, mod_name: str) -> str:
+    """Use the given simple mod on the name."""
+    mod = mods[mod_name]
+    return mod(name)
+
+
+def pick_name(config: dict) -> str:
     """Select a name from the database."""
     db_loc = config['db_path']
     names = db.get_names(db_loc)
     name = mn.select_name(names)
-    print(name)
+    return name
+
+
+# Output.
+def write_output(lines: Union[Sequence[str], str]) -> None:
+    """Write the output to the terminal."""
+    if isinstance(lines, str):
+        lines = [lines, ]
+    
+    for line in lines:
+        print(line)
 
 
 # Command parsing.
 def parse_cli() -> None:
     """Response to commands passed through the CLI."""
+    # Set up the command line interface.
     p = ArgumentParser(description='Randomized name construction.')
     p.add_argument(
         '--compound_name', '-c',
@@ -74,6 +90,12 @@ def parse_cli() -> None:
         '--list_all_names', '-L',
         help='List all the names in the database.',
         action='store_true'
+    )
+    p.add_argument(
+        '--modify_name', '-m',
+        help='Modify the name.',
+        action='store',
+        choices=mods
     )
     p.add_argument(
         '--num_names', '-n',
@@ -93,22 +115,33 @@ def parse_cli() -> None:
         action='store',
         type=int
     )
-    
     args = p.parse_args()
     
+    # Set up the configuration.
     config_file = ''
     if args.config:
         config_file = args.config
-    
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
     
+    # Generate the names, storing the output.
+    lines = []
     for _ in range(args.num_names):
         if args.compound_name:
-            build_compound_name(config)
+            name = build_compound_name(config)
+            lines.append(name)
         if args.list_all_names:
-            list_all_names(config)
+            names = list_all_names(config)
+            lines.extend(names)
         if args.pick_name:
-            pick_name(config)
+            name = pick_name(config)
+            lines.append(name)
         if args.syllable_name:
-            build_syllable_name(config, args.syllable_name)
+            name = build_syllable_name(config, args.syllable_name)
+            lines.append(name)
+    
+    if args.modify_name:
+        lines = [modify_name(line, args.modify_name) for line in lines]
+
+    # Write out the output.
+    write_output(lines)

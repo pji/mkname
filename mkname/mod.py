@@ -5,8 +5,9 @@ mod
 Functions for modifying names.
 """
 import base64 as b64
+from functools import partial
 import random
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 from mkname.constants import CONSONANTS, SCIFI_LETTERS, VOWELS
 from mkname.dice import roll
@@ -16,6 +17,24 @@ from mkname.dice import roll
 # Simple mods only require one parameter: the name to modify. Other
 # parameters that modify the behavior of the mod can be allowed, but
 # must be optional.
+def garble(name: str):
+    """Garble some characters in the name by base 64 encoding them."""
+    index = roll(f'1d{len(name)}') - 1
+    char = bytes(name[index], encoding='utf_8')
+    garbled_bytes = b64.encodebytes(char)
+    garbled = str(garbled_bytes, encoding='utf_8')
+    garbled = garbled.replace('=', ' ')
+    garbled = garbled.rstrip()
+    name = f'{name[:index]}{garbled}{name[index + 1:]}'
+    return name.capitalize()
+
+
+def make_scifi(name: str) -> str:
+    """A simple version of add_scifi_letters."""
+    return add_scifi_letters(name)
+
+
+# Complex mods.
 def add_scifi_letters(name: str,
                       letters: str = SCIFI_LETTERS,
                       vowels: str = VOWELS) -> str:
@@ -60,19 +79,6 @@ def add_scifi_letters(name: str,
     return name
 
 
-def garble(name: str):
-    """Garble some characters in the name by base 64 encoding them."""
-    index = roll(f'1d{len(name)}') - 1
-    char = bytes(name[index], encoding='utf_8')
-    garbled_bytes = b64.encodebytes(char)
-    garbled = str(garbled_bytes, encoding='utf_8')
-    garbled = garbled.replace('=', ' ')
-    garbled = garbled.rstrip()
-    name = f'{name[:index]}{garbled}{name[index + 1:]}'
-    return name.capitalize()
-
-
-# Complex mods.
 def compound_names(mod_name: str,
                    root_name: str,
                    consonants: Sequence[str] = CONSONANTS,
@@ -137,3 +143,10 @@ def translate_characters(name: str,
     char_dict = dict(char_map)
     trans_map = str.maketrans(char_dict)
     return name.translate(trans_map)
+
+
+# Mod registration.
+mods = {
+    'make_scifi': make_scifi,
+    'garble': garble,
+}

@@ -139,6 +139,28 @@ class CommandLineOptionTestCase(ut.TestCase):
         self.assertEqual(exp, act)
 
     @patch('mkname.mkname.roll', return_value=3)
+    @patch('mkname.mod.roll', return_value=5)
+    def test_modify_name(self, _, __):
+        """When called with the -m garble option, perform the garble
+        mod on the name.
+        """
+        # Expected value.
+        exp = 'Tomadao\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-p', '-m', 'garble']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    @patch('mkname.mkname.roll', return_value=3)
     def test_pick_name(self, _):
         """When called with the -p option, select a random name
         from the list of names.
