@@ -56,10 +56,18 @@ def makes_connection(fn: Callable) -> Callable:
 # Serialization/deserialization functions.
 @makes_connection
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
-    """Deserialize the names from the database."""
+    """Deserialize the names from the database.
+    
+    :param con: (Optional.) The connection to the database. It defaults
+        to creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+    """
     query = 'select * from names'
     result = con.execute(query)
     return tuple(Name(*args) for args in result)
+
 
 @makes_connection
 def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
