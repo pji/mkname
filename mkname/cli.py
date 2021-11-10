@@ -82,6 +82,11 @@ def parse_cli() -> None:
         type=str
     )
     p.add_argument(
+        '--first_name', '-f',
+        help='Generate a given name.',
+        action='store_true'
+    )
+    p.add_argument(
         '--last_name', '-l',
         help='Generate a surname.',
         action='store_true'
@@ -123,11 +128,14 @@ def parse_cli() -> None:
         config_file = args.config
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
-    names = db.get_names(db_loc)
     
-    # Filter names.
-    if args.last_name:
-        names = names = [name for name in names if name.kind == 'surname']
+    # Get names for generation.
+    if args.first_name:
+        names = db.get_names_by_kind(db_loc, 'given')
+    elif args.last_name:
+        names = db.get_names_by_kind(db_loc, 'surname')
+    else:
+        names = db.get_names(db_loc)
     
     # Generate the names, storing the output.
     lines = []

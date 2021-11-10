@@ -60,3 +60,11 @@ def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
     query = 'select * from names'
     result = con.execute(query)
     return tuple(Name(*args) for args in result)
+
+@makes_connection
+def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
+    """Deserialize the names from the database."""
+    query = 'select * from names where kind == ?'
+    params = (kind, )
+    result = con.execute(query, params)
+    return tuple(Name(*args) for args in result)

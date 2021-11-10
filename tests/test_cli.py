@@ -114,6 +114,77 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    def test_first_names(self):
+        """When called with the -F option, use only given names for
+        the generation.
+        """
+        # Expected value.
+        names = (
+            'spam',
+            'ham',
+            'waffles',
+            '',
+        )
+        exp = '\n'.join(names)
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-L', '-f']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_last_name(self):
+        """When called with -l, only use surnames for the generation."""
+        # Expected value.
+        exp = 'tomato\n'
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-L', '-l']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_list_all_names(self):
+        """When called with the -L option, write all the names from
+        the database to standard out.
+        """
+        # Expected value.
+        names = (
+            'spam',
+            'ham',
+            'tomato',
+            'waffles',
+            '',
+        )
+        exp = '\n'.join(names)
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-L']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     @patch('mkname.mkname.roll')
     def test_make_multiple_names(self, mock_roll):
         """When called with the -n 3 option, create three names."""
@@ -170,51 +241,6 @@ class CommandLineOptionTestCase(ut.TestCase):
 
         # Test data and state.
         sys.argv = ['python -m mkname', '-p']
-        with patch('sys.stdout', new=StringIO()) as mock_out:
-
-            # Run test
-            cli.parse_cli()
-
-            # Gather actual value.
-            act = mock_out.getvalue()
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-
-    def test_last_name(self):
-        """When called with -l, only use surnames for the generation."""
-        # Expected value.
-        exp = 'tomato\n'
-
-        # Test data and state.
-        sys.argv = ['python -m mkname', '-L', '-l']
-        with patch('sys.stdout', new=StringIO()) as mock_out:
-
-            # Run test
-            cli.parse_cli()
-
-            # Gather actual value.
-            act = mock_out.getvalue()
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-
-    def test_list_all_names(self):
-        """When called with the -L option, write all the names from
-        the database to standard out.
-        """
-        # Expected value.
-        names = (
-            'spam',
-            'ham',
-            'tomato',
-            'waffles',
-            '',
-        )
-        exp = '\n'.join(names)
-
-        # Test data and state.
-        sys.argv = ['python -m mkname', '-L']
         with patch('sys.stdout', new=StringIO()) as mock_out:
 
             # Run test

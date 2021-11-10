@@ -212,3 +212,31 @@ class SerializationTestCase(ut.TestCase):
 
         # Determine test result.
         self.assertTupleEqual(exp, act)
+
+    def test_get_names_by_kind(self):
+        """When given a database connection and a kind,
+        db.get_names_by_kind should return the names of
+        that kind in the database as a tuple.
+        """
+        # Expected value.
+        names = (
+            (
+                3,
+                'tomato',
+                'mushrooms',
+                'pancakes',
+                2000,
+                'sausage',
+                'surname'
+            ),
+        )
+        exp = tuple(m.Name(*args) for args in names)
+
+        # Test data and state.
+        kind = 'surname'
+
+        # Run test.
+        act = db.get_names_by_kind(self.con, kind)
+
+        # Determine test result.
+        self.assertTupleEqual(exp, act)
