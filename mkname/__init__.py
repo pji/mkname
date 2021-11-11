@@ -18,7 +18,7 @@ from mkname.mkname import (
     select_name
 )
 from mkname.mod import (
-    add_scifi_letters,
+    add_letters,
     compound_names,
     garble,
     translate_characters,

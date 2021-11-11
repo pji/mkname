@@ -69,15 +69,14 @@ def make_scifi(name: str) -> str:
         >>> make_scifi(name)
         'Keggs'
     """
-    return add_scifi_letters(name)
+    return add_letters(name)
 
 
 # Complex mods.
-def add_scifi_letters(name: str,
-                      letters: str = SCIFI_LETTERS,
-                      vowels: str = VOWELS) -> str:
-    """Add a science fiction flare to names by adding letters that
-    are more common in science fiction names.
+def add_letters(name: str,
+                letters: str = SCIFI_LETTERS,
+                vowels: str = VOWELS) -> str:
+    """Add one of the given letters to a name.
     
     :param name: The name to modify.
     :param letters: The letters to add for the modification.
@@ -90,7 +89,7 @@ def add_scifi_letters(name: str,
         >>> seed('spam')
         >>>
         >>> name = 'Eggs'
-        >>> add_scifi_letters(name)
+        >>> add_letters(name)
         'Keggs'
     
     In most cases, the function behaves like the given letters are
@@ -108,7 +107,7 @@ def add_scifi_letters(name: str,
         >>> vowels = 'aiou'
         >>>
         >>> name = 'Eggs'
-        >>> add_scifi_letters(name, letter, vowels)
+        >>> add_letters(name, letter, vowels)
         'Qggs'
     """
     # Determine the letter and where the letter should go in the name.
@@ -241,7 +240,25 @@ def compound_names(mod_name: str,
 def translate_characters(name: str,
                          char_map: Mapping[str, str],
                          casefold: bool = True) -> str:
-    """Translate characters in the name to different characters."""
+    """Translate characters in the name to different characters.
+    
+    :param name: The name to modify.
+    :param char_map: A translation map for the characters in the
+        name. The keys are the original letters and the values are
+        the characters to change them to.
+    :param casefold: Whether case should be ignored for the transform.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # The translation map is a dict.
+        >>> char_map = {'s': 'e', 'p': 'g', 'm': 's'}
+        >>>
+        >>> name = 'spam'
+        >>> translate_characters(name, char_map)
+        'egas'
+    """
     if casefold:
         name = name.casefold()
     char_dict = dict(char_map)

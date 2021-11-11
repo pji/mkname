@@ -11,7 +11,7 @@ from mkname import mod
 
 
 # Test cases.
-class AddScifiLetters(ut.TestCase):
+class AddLetters(ut.TestCase):
     def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
         """Core of the name modifier (mod) tests."""
         # Test state.
@@ -24,15 +24,15 @@ class AddScifiLetters(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
-    def addscifiletters_test(self,
-                             exp,
-                             base_name,
-                             letter_roll,
-                             position_roll,
-                             index_roll=0,
-                             wild_roll=0,
-                             count_roll=0,
-                             index_rolls=(0, 0)):
+    def add_letters_test(self,
+                         exp,
+                         base_name,
+                         letter_roll,
+                         position_roll,
+                         index_roll=0,
+                         wild_roll=0,
+                         count_roll=0,
+                         index_rolls=(0, 0)):
         """The common code for the standard test of mkname.
         add_scifi_letters().
         """
@@ -44,11 +44,11 @@ class AddScifiLetters(ut.TestCase):
             count_roll,
             *index_rolls,
         ]
-        mod_fn = mod.add_scifi_letters
+        mod_fn = mod.add_letters
         self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
     # add_scifi_letters tests.
-    def test_addscifiletters_append_letter_when_ends_with_vowel(self):
+    def test_addletters_append_letter_when_ends_with_vowel(self):
         """When the given base ends with a vowel, the scifi
         letter should be appended to the name if it's added to the
         end of the name.
@@ -62,9 +62,9 @@ class AddScifiLetters(ut.TestCase):
         position_roll = 6
 
         # Run test and determine result.
-        self.addscifiletters_test(exp, base, letter_roll, position_roll)
+        self.add_letters_test(exp, base, letter_roll, position_roll)
 
-    def test_addscifiletters_prepend_letter_when_starts_with_vowel(self):
+    def test_addletters_prepend_letter_when_starts_with_vowel(self):
         """When the given base name starts with a vowel, the scifi
         letter should be prepended to the name if it's added to the
         front of the name.
@@ -78,9 +78,9 @@ class AddScifiLetters(ut.TestCase):
         position_roll = 1
 
         # Run test and determine result.
-        self.addscifiletters_test(exp, base, letter_roll, position_roll)
+        self.add_letters_test(exp, base, letter_roll, position_roll)
 
-    def test_addscifiletters_replace_end_when_ends_with_consonant(self):
+    def test_addletters_replace_end_when_ends_with_consonant(self):
         """When the given base name starts with a consonant, the scifi
         letter should replace the first letter if it's added to the
         front of the name.
@@ -94,9 +94,9 @@ class AddScifiLetters(ut.TestCase):
         position_roll = 6
 
         # Run test and determine result.
-        self.addscifiletters_test(exp, base, letter_roll, position_roll)
+        self.add_letters_test(exp, base, letter_roll, position_roll)
 
-    def test_addscifiletters_replace_random_letter(self):
+    def test_addletters_replace_random_letter(self):
         """When the given base name starts with a consonant, the scifi
         letter should replace the first letter if it's added to the
         front of the name.
@@ -114,7 +114,7 @@ class AddScifiLetters(ut.TestCase):
         index_rolls = [1, 3, 3]
 
         # Run test and determine result.
-        self.addscifiletters_test(
+        self.add_letters_test(
             exp,
             base,
             letter_roll,
@@ -125,7 +125,7 @@ class AddScifiLetters(ut.TestCase):
             index_rolls
         )
 
-    def test_addscifiletters_replace_start_when_starts_with_consonant(self):
+    def test_addletters_replace_start_when_starts_with_consonant(self):
         """When the given base name starts with a consonant, the scifi
         letter should replace the first letter if it's added to the
         front of the name.
@@ -139,7 +139,7 @@ class AddScifiLetters(ut.TestCase):
         position_roll = 1
 
         # Run test and determine result.
-        self.addscifiletters_test(exp, base, letter_roll, position_roll)
+        self.add_letters_test(exp, base, letter_roll, position_roll)
 
 
 class CompoundNamesTestCase(ut.TestCase):
