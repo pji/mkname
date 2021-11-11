@@ -6,11 +6,10 @@ Functions for modifying names.
 """
 import base64 as b64
 from functools import partial
-import random
 from typing import Callable, Mapping, Sequence
 
 from mkname.constants import CONSONANTS, SCIFI_LETTERS, VOWELS
-from mkname.dice import roll
+from mkname.dice import roll, seed
 
 
 # Simple mods.
@@ -18,19 +17,58 @@ from mkname.dice import roll
 # parameters that modify the behavior of the mod can be allowed, but
 # must be optional.
 def garble(name: str):
-    """Garble some characters in the name by base 64 encoding them."""
+    """Garble some characters in the name by base 64 encoding them.
+    
+    :param name: The name to modify.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> name = 'Eggs'
+        >>> garble(name)
+        'Rqggs'
+    """
+    # Determine which character should be garbled.
     index = roll(f'1d{len(name)}') - 1
+    
+    # Use base64 encoding to turn the character in a sequence of
+    # different characters. Base64 only works with bytes.
     char = bytes(name[index], encoding='utf_8')
     garbled_bytes = b64.encodebytes(char)
     garbled = str(garbled_bytes, encoding='utf_8')
+    
+    # Transform characters that are valid in base64 but might
+    # not make sense for this kind of name.
     garbled = garbled.replace('=', ' ')
     garbled = garbled.rstrip()
+    
+    # Add the garbled characters back into the name and return.
     name = f'{name[:index]}{garbled}{name[index + 1:]}'
     return name.capitalize()
 
 
 def make_scifi(name: str) -> str:
-    """A simple version of add_scifi_letters."""
+    """A simple version of add_scifi_letters.
+    
+    :param name: The name to modify.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> name = 'Eggs'
+        >>> make_scifi(name)
+        'Keggs'
+    """
     return add_scifi_letters(name)
 
 
@@ -40,6 +78,38 @@ def add_scifi_letters(name: str,
                       vowels: str = VOWELS) -> str:
     """Add a science fiction flare to names by adding letters that
     are more common in science fiction names.
+    
+    :param name: The name to modify.
+    :param letters: The letters to add for the modification.
+    :param vowels: The letters to define as vowels.
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> name = 'Eggs'
+        >>> add_scifi_letters(name)
+        'Keggs'
+    
+    In most cases, the function behaves like the given letters are
+    consonants. While it will replace consonants with the letter,
+    it will often try to put a letter before or after a vowel.
+    This means you can alter the behavior by passing different
+    values to the letters and vowels.:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> # Treat 'e' as a consonant and don't use 'k'.
+        >>> letter = 'qxz'
+        >>> vowels = 'aiou'
+        >>>
+        >>> name = 'Eggs'
+        >>> add_scifi_letters(name, letter, vowels)
+        'Qggs'
     """
     # Determine the letter and where the letter should go in the name.
     letter_index = roll(f'1d{len(letters)}') - 1
@@ -83,7 +153,39 @@ def compound_names(mod_name: str,
                    root_name: str,
                    consonants: Sequence[str] = CONSONANTS,
                    vowels: Sequence[str] = VOWELS) -> str:
-    """Construct a new name using the parts of two names."""
+    """Construct a new name using the parts of two names.
+    
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :param consonants: (Optional.) The characters to consider as
+        consonants.
+    :param vowels: (Optional.) The characters to consider as vowels.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Generate the name.
+        >>> mod_name = 'Spam'
+        >>> base_name = 'Eggs'
+        >>> compound_names(mod_name, base_name)
+        'Speggs'
+    
+    The function takes into account whether the starting letter of
+    each name is a vowel or a consonant when determining how to
+    create the name. You can affect this by changing which letters
+    it treats as consonants or vowels:
+    
+        >>> # Treat 'e' as a consonant and 'g' as a vowel.
+        >>> consonants = 'bcdfhjklmnpqrstvwxze'
+        >>> vowels = 'aioug'
+        >>>
+        >>> # Generate the name.
+        >>> mod_name = 'Spam'
+        >>> base_name = 'Eggs'
+        >>> compound_names(mod_name, base_name, consonants, vowels)
+        'Spggs'
+    """
     def get_change_index(s: str, letters):
         """Detect how many of the starting characters are in the
         given list.
@@ -94,6 +196,8 @@ def compound_names(mod_name: str,
         return index
 
     name = ''
+    mod_name = mod_name.casefold()
+    root_name = root_name.casefold()
     
     # When both names start with consonants, replace the starting
     # consonants in the root name with the starting consonants of
@@ -131,7 +235,7 @@ def compound_names(mod_name: str,
                f'Names started with {mod_name[0]} and {root_name[0]}')
         raise ValueError(msg)
 
-    return name[0].upper() + name[1:]
+    return name.title()
 
 
 def translate_characters(name: str,
