@@ -114,6 +114,31 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    def test_culture(self):
+        """When called with the -k option and a culture, use only
+        names from that culture for the generation.
+        """
+        # Expected value.
+        names = (
+            'spam',
+            'ham',
+            '',
+        )
+        exp = '\n'.join(names)
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-L', '-k', 'bacon']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     def test_first_names(self):
         """When called with the -F option, use only given names for
         the generation.

@@ -47,6 +47,7 @@ def list_cultures(db_loc: Path) -> tuple[str, ...]:
     """List the unique cultures in the database."""
     return db.get_cultures(db_loc)
 
+
 def modify_name(name: str, mod_name: str) -> str:
     """Use the given simple mod on the name."""
     mod = mods[mod_name]
@@ -94,6 +95,12 @@ def parse_cli() -> None:
         '--last_name', '-l',
         help='Generate a surname.',
         action='store_true'
+    )
+    p.add_argument(
+        '--culture', '-k',
+        help='Generate a name from the given culture.',
+        action='store',
+        type=str
     )
     p.add_argument(
         '--list_cultures', '-K',
@@ -145,6 +152,8 @@ def parse_cli() -> None:
         names = db.get_names_by_kind(db_loc, 'surname')
     else:
         names = db.get_names(db_loc)
+    if args.culture:
+        names = [name for name in names if name.culture == args.culture]
     
     # Generate the names, storing the output.
     lines = []
