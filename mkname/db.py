@@ -14,7 +14,22 @@ from mkname.model import Name
 
 # Connection functions.
 def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
-    """Connect to the database."""
+    """Connect to the database.
+    
+    :param location: The path to the database file.
+    :return: A :class:sqlite3.Connection object.
+    :rtype: sqlite3.Connection
+    
+    Usage:
+    
+        >>> loc = 'mkname/data/names.db'
+        >>> query = 'select name from names where id = 1;'
+        >>> con = connect_db(loc)
+        >>> result = con.execute(query)
+        >>> tuple(result)
+        (('Noah',),)
+        >>> con.close()
+    """
     # Check to make sure the file exists, since sqlite3 fails silently.
     path = Path(location)
     if not path.is_file():

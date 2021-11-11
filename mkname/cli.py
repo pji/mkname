@@ -74,7 +74,10 @@ def write_output(lines: Union[Sequence[str], str]) -> None:
 def parse_cli() -> None:
     """Response to commands passed through the CLI."""
     # Set up the command line interface.
-    p = ArgumentParser(description='Randomized name construction.')
+    p = ArgumentParser(
+        description='Randomized name construction.',
+        prog='mkname',
+    )
     p.add_argument(
         '--compound_name', '-c',
         help='Construct a name from two names in the database.',
