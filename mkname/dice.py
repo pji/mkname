@@ -7,7 +7,7 @@ Functions that simulate rolling dice using common dice naming syntax.
 import random
 
 
-def _seed(seed: int) -> None:
+def seed(seed: int) -> None:
     """Seed the random number generator for testing purposes."""
     if isinstance(seed, str):
         seed = bytes(seed, encoding='utf_8')

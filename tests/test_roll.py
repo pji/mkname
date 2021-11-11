@@ -19,7 +19,7 @@ class RollTestCase(ut.TestCase):
         exp = 2
 
         # Test data and state.
-        r._seed('spam')
+        r.seed('spam')
         code = '1d10'
 
         # Run test.
@@ -36,7 +36,7 @@ class RollTestCase(ut.TestCase):
         exp = 3
 
         # Test data and state.
-        r._seed('spam')
+        r.seed('spam')
         code = '1d10+1'
 
         # Run test.

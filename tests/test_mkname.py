@@ -30,7 +30,7 @@ class BuildingNamesTestCase(ut.TestCase):
         exp = 'Dallory'
 
         # Test data and state.
-        r._seed('spam12')
+        r.seed('spam12')
         test_names = [
             'Alice',
             'Robert',
@@ -89,7 +89,7 @@ class BuildingNamesTestCase(ut.TestCase):
         exp = 'Donatello'
 
         # Test data and state.
-        r._seed('spam12')
+        r.seed('spam12')
         test_names = [
             'Alice',
             'Robert',

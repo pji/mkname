@@ -18,7 +18,7 @@ from mkname.constants import (
     LOCAL_DB,
     VOWELS
 )
-from mkname.dice import roll
+from mkname.dice import roll, seed
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import split_into_syllables
@@ -26,7 +26,43 @@ from mkname.utility import split_into_syllables
 
 # Initialization functions.
 def get_config(location: Union[str, Path] = '') -> dict:
-    """Get the configuration."""
+    """Get the configuration.
+    
+    :param location: (Optional.) The path to the configuration file.
+        If no path is passed, it will default to using the default
+        configuration data from mkname.constants.
+    :return: A :class:dict object.
+    :rtype: dict
+    
+    Usage:
+    
+        >>> loc = 'tests/data/test_load_config.conf'
+        >>> get_config(loc)                 # doctest: +ELLIPSIS
+        {'consonants': 'bcd', 'db_path':...'aei'}
+    
+    Configuration File Format
+    -------------------------
+    The file structure of the configuration file is the Windows
+    INI-like structure used by Python's configparser module.
+    The configuration should be in a 'mkname' section. The following
+    keys are possible:
+    
+    :param consonants: Characters you define as consonants.
+    :param db_path: The path to the names database.
+    :param punctuation: Characters you define as punctuation.
+    :param scifi_letters: A string of characters you define as being
+        characteristic of science fiction names.
+    :param vowels: Characters you define as vowels.
+    
+    Example::
+    
+        [mkname]
+        consonants = bcdfghjklmnpqrstvwxz
+        db_path = mkname/data/names.db
+        punctuation = '-
+        scifi_letters: kqxz
+        vowels = aeiou
+    """
     # Start with the default configuration.
     config_data = DEFAULT_CONFIG_DATA.copy()
     
@@ -71,7 +107,35 @@ def get_config(location: Union[str, Path] = '') -> dict:
 
 
 def init_db(path: Union[str, Path] = '') -> Path:
-    """Initialize the names database."""
+    """Check if the database exists and initialize it if it doesn't.
+    
+    :param path: (Optional.) The path to the names database. It
+        defaults to the default name database for the package. If
+        nothing exists at that path, it will create a copy of the
+        default name database at that location, so you can customize
+        the database.
+    :return: A :class:pathlib.Path object.
+    :rtype: pathlib.Path
+    
+    Usage::
+    
+        >>> loc = 'mkname/data/names.db'
+        >>> init_db(loc)
+        PosixPath('mkname/data/names.db')
+    
+    Database Structure
+    ------------------
+    The names database is a sqlite3 database with a table named
+    'names'. The names table has the following columns:
+    
+    :param id: A unique identifier for the name.
+    :param name: The name.
+    :param source: The URL where the name was found.
+    :param culture: The culture or nation the name is tied to.
+    :param date: The approximate year the name is tied to.
+    :param kind: A tag for how the name is used, such as a given
+        name or a surname.
+    """
     # If we aren't passed the location of a database, fall back to the
     # default database for the package.
     if not path:
@@ -94,7 +158,30 @@ def init_db(path: Union[str, Path] = '') -> Path:
 def build_compound_name(names: Sequence[Name],
                         consonants: Sequence[str] = CONSONANTS,
                         vowels: Sequence[str] = VOWELS) -> str:
-    """Create a name for a character."""
+    """Construct a new game from two randomly selected names.
+    
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :param consonants: (Optional.) The characters to consider as
+        consonants.
+    :param vowels: (Optional.) The characters to consider as vowels.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make this test predictable.
+        >>> seed('spam1')
+        >>>
+        >>> # The list of names needs to be Name objects.
+        >>> names = []
+        >>> names.append(Name(1, 'spam', 'url', '', '', '', 'given'))
+        >>> names.append(Name(2, 'eggs', 'url', '', '', '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>>
+        >>> build_compound_name(names)
+        'Spomato'
+    """
     root_name = select_name(names)
     mod_name = select_name(names)
     return compound_names(root_name, mod_name, consonants, vowels)
