@@ -185,6 +185,32 @@ class CommandLineOptionTestCase(ut.TestCase):
         # Determine test result.
         self.assertEqual(exp, act)
 
+    def test_list_cultures(self):
+        """When called with -K, write the unique cultures from the
+        database to standard out.
+        """
+        # Expected value.
+        cultures = (
+            'bacon',
+            'pancakes',
+            'porridge',
+            '',
+        )
+        exp = '\n'.join(cultures)
+
+        # Test data and state.
+        sys.argv = ['python -m mkname', '-K']
+        with patch('sys.stdout', new=StringIO()) as mock_out:
+
+            # Run test
+            cli.parse_cli()
+
+            # Gather actual value.
+            act = mock_out.getvalue()
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
     @patch('mkname.mkname.roll')
     def test_make_multiple_names(self, mock_roll):
         """When called with the -n 3 option, create three names."""

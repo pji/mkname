@@ -43,6 +43,10 @@ def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
     return tuple(name.name for name in names)
 
 
+def list_cultures(db_loc: Path) -> tuple[str, ...]:
+    """List the unique cultures in the database."""
+    return db.get_cultures(db_loc)
+
 def modify_name(name: str, mod_name: str) -> str:
     """Use the given simple mod on the name."""
     mod = mods[mod_name]
@@ -89,6 +93,11 @@ def parse_cli() -> None:
     p.add_argument(
         '--last_name', '-l',
         help='Generate a surname.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--list_cultures', '-K',
+        help='List all the cultures in the database.',
         action='store_true'
     )
     p.add_argument(
@@ -146,6 +155,9 @@ def parse_cli() -> None:
         if args.list_all_names:
             names = list_all_names(names)
             lines.extend(names)
+        if args.list_cultures:
+            cultures = list_cultures(db_loc)
+            lines.extend(cultures)
         if args.pick_name:
             name = pick_name(names)
             lines.append(name)
