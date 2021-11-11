@@ -213,6 +213,39 @@ class SerializationTestCase(ut.TestCase):
         # Determine test result.
         self.assertTupleEqual(exp, act)
 
+    def test_get_cultures(self):
+        """Given a connection, return the list of unique cultures
+        for the names in the database.
+        """
+        # Expected value.
+        exp = (
+            'bacon',
+            'pancakes',
+            'porridge',
+        )
+
+        # Run test.
+        act = db.get_cultures(self.con)
+
+        # Determine test result.
+        self.assertTupleEqual(exp, act)
+
+    def test_get_kinds(self):
+        """Given a connection, return the list of unique kinds
+        of names in the database.
+        """
+        # Expected value.
+        exp = (
+            'given',
+            'surname',
+        )
+
+        # Run test.
+        act = db.get_kinds(self.con)
+
+        # Determine test results.
+        self.assertTupleEqual(exp, act)
+
     def test_get_names_by_kind(self):
         """When given a database connection and a kind,
         db.get_names_by_kind should return the names of

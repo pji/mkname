@@ -53,6 +53,14 @@ def makes_connection(fn: Callable) -> Callable:
     return wrapper
 
 
+# Private query functions.
+def _run_query_for_single_column(con: sqlite3.Connection,
+                                 query: str) -> tuple[str, ...]:
+    """Run the query and return the results."""
+    result = con.execute(query)
+    return tuple(text[0] for text in result)
+
+
 # Serialization/deserialization functions.
 @makes_connection
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
@@ -76,3 +84,17 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     params = (kind, )
     result = con.execute(query, params)
     return tuple(Name(*args) for args in result)
+
+
+@makes_connection
+def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
+    """Get a list of unique cultures in the database."""
+    query = 'select distinct culture from names'
+    return _run_query_for_single_column(con, query)
+
+
+@makes_connection
+def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
+    """Get a list of unique kinds in the database."""
+    query = 'select distinct kind from names'
+    return _run_query_for_single_column(con, query)

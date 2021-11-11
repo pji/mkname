@@ -6,7 +6,9 @@ A Python module for creating names using other names as building blocks.
 """
 from mkname.db import (
     get_names,
-    get_names_by_kind
+    get_names_by_kind,
+    get_cultures,
+    get_kinds
 )
 from mkname.mkname import (
     get_config,
