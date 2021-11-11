@@ -28,7 +28,7 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
         >>> result = con.execute(query)
         >>> tuple(result)
         (('Noah',),)
-        >>> con.close()
+        >>> disconnect_db(con)
     """
     # Check to make sure the file exists, since sqlite3 fails silently.
     path = Path(location)
@@ -42,7 +42,14 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
 
 
 def disconnect_db(con: sqlite3.Connection) -> None:
-    """Disconnect from the database."""
+    """Disconnect from the database.
+    
+    :param con: A database connection.
+    :return: None.
+    :rtype: :class:NoneType
+    
+    See connect_db() for usage.
+    """
     if con.in_transaction:
         msg = 'Connection has uncommitted changes.'
         raise RuntimeError(msg)
@@ -81,11 +88,19 @@ def _run_query_for_single_column(con: sqlite3.Connection,
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
     """Deserialize the names from the database.
     
-    :param con: (Optional.) The connection to the database. It defaults
-        to creating a new connection to the default database if no
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
         connection is passed.
     :return: A :class:tuple of :class:Name objects.
     :rtype: tuple
+    
+    Usage:
+    
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_names(loc)                  # doctest: +ELLIPSIS
+        (Name(id=1, name='spam', source='eggs', ... kind='given'))
     """
     query = 'select * from names'
     result = con.execute(query)
@@ -94,7 +109,26 @@ def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
 
 @makes_connection
 def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
-    """Deserialize the names from the database."""
+    """Deserialize the names from the database.
+    
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :param kind: The kind of names to return. By default, this is
+        either 'given' or 'surname', but if you have a custom
+        database you can add other types.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+    
+    Usage:
+    
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> kind = 'given'
+        >>> get_names_by_kind(loc, kind)    # doctest: +ELLIPSIS
+        (Name(id=1, name='spam', source='eggs', ... kind='given'))
+    """
     query = 'select * from names where kind == ?'
     params = (kind, )
     result = con.execute(query, params)
@@ -103,13 +137,43 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
 
 @makes_connection
 def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
-    """Get a list of unique cultures in the database."""
+    """Get a list of unique cultures in the database.
+    
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+    
+    Usage:
+    
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_cultures(loc)               # doctest: +ELLIPSIS
+        ('bacon', 'pancakes', 'porridge')
+    """
     query = 'select distinct culture from names'
     return _run_query_for_single_column(con, query)
 
 
 @makes_connection
 def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
-    """Get a list of unique kinds in the database."""
+    """Get a list of unique kinds in the database.
+    
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+    
+    Usage:
+    
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_kinds(loc)                  # doctest: +ELLIPSIS
+        ('given', 'surname')
+    """
     query = 'select distinct kind from names'
     return _run_query_for_single_column(con, query)
