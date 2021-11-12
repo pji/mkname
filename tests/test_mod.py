@@ -161,6 +161,61 @@ class CompoundNamesTestCase(ut.TestCase):
         self.assertEqual(exp, act)
 
 
+class DoubleLetterTestCase(ut.TestCase):
+    def test_double_letter(self):
+        """Given a name, select a letter in the name and double it."""
+        # Expected value.
+        exp = 'Spaam'
+
+        # Test data and state.
+        name = 'Spam'
+        with patch('mkname.mod.roll') as mock_roll:
+            mock_roll.return_value = 3
+
+            # Run test.
+            act = mod.double_letter(name)
+
+        # Determine test success.
+        self.assertEqual(exp, act)
+
+    def test_double_letter_only_given_letters(self):
+        """If given a string of letters, only double a letter that
+        is in that list."""
+        # Expected value.
+        exp = 'Baacon'
+
+        # Test data and state.
+        name = 'Bacon'
+        letters = 'aeiou'
+        with patch('mkname.mod.roll') as mock_roll:
+            mock_roll.return_value = 1
+
+            # Run test.
+            act = mod.double_letter(name, letters)
+
+        # Determine test success.
+        self.assertEqual(exp, act)
+
+    def test_double_letter_given_letters_not_in_name(self):
+        """If given a string of letters and the name doesn't have
+        any of those letters, return the name.
+        '"""
+        # Expected value.
+        exp = 'Bacon'
+
+        # Test data and state.
+        name = 'Bacon'
+        letters = 'kqxz'
+        with patch('mkname.mod.roll') as mock_roll:
+            mock_roll.return_value = 1
+
+            # Run test.
+            act = mod.double_letter(name, letters)
+
+        # Determine test success.
+        self.assertEqual(exp, act)
+
+
 class TranslateLettersTestCase(ut.TestCase):
     def test_translate_characters(self):
         """Given a mapping that maps characters in the name to different
@@ -183,7 +238,6 @@ class TranslateLettersTestCase(ut.TestCase):
         self.assertEqual(exp, act)
 
 
-@ut.skip
 class SimpleModifiersTestCase(ut.TestCase):
     def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
         """Core of the name modifier (mod) tests."""
@@ -196,6 +250,24 @@ class SimpleModifiersTestCase(ut.TestCase):
 
         # Determine test result.
         self.assertEqual(exp, act)
+
+    def double_vowel_test(self, exp, base_name, index_roll):
+        """The common core for tests of garble()."""
+        # Test data and state.
+        roll_values = [
+            index_roll,
+        ]
+        mod_fn = mod.double_vowel
+        self._core_modify_test(exp, base_name, mod_fn, roll_values)
+
+    def garble_test(self, exp, base_name, index_roll):
+        """The common core for tests of garble()."""
+        # Test data and state.
+        roll_values = [
+            index_roll,
+        ]
+        mod_fn = mod.garble
+        self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
     def make_scifi_test(self,
                         exp,
@@ -217,17 +289,38 @@ class SimpleModifiersTestCase(ut.TestCase):
             count_roll,
             *index_rolls,
         ]
-        mod_fn = mod.add_scifi_letters
+        mod_fn = mod.make_scifi
         self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
-    def garble_test(self, exp, base_name, index_roll):
-        """The common core for tests of garble()."""
+    # garble tests.
+    def test_double_vowel(self):
+        """Given a base name, double_vowel() should double a vowel
+        within the name.
+        """
+        # Expected value.
+        exp = 'Baacon'
+
         # Test data and state.
-        roll_values = [
-            index_roll,
-        ]
-        mod_fn = mod.garble
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
+        base = 'Bacon'
+        index_roll = 1
+
+        # Run test and determine result.
+        self.double_vowel_test(exp, base, index_roll)
+
+    # garble tests.
+    def test_garble(self):
+        """Given a base name, garble() should garble it by converting
+        a section in the middle to base64.
+        """
+        # Expected value.
+        exp = 'Scaam'
+
+        # Test data and state.
+        base = 'Spam'
+        index_roll = 2
+
+        # Run test and determine result.
+        self.garble_test(exp, base, index_roll)
 
     # add_scifi_letters tests.
     def test_make_scifi_append_letter_when_ends_with_vowel(self):
@@ -322,18 +415,3 @@ class SimpleModifiersTestCase(ut.TestCase):
 
         # Run test and determine result.
         self.make_scifi_test(exp, base, letter_roll, position_roll)
-
-    # garble tests.
-    def test_garble(self):
-        """Given a base name, garble() should garble it by converting
-        a section in the middle to base64.
-        """
-        # Expected value.
-        exp = 'Scaam'
-
-        # Test data and state.
-        base = 'Spam'
-        index_roll = 2
-
-        # Run test and determine result.
-        self.garble_test(exp, base, index_roll)

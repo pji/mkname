@@ -16,6 +16,28 @@ from mkname.dice import roll, seed
 # Simple mods only require one parameter: the name to modify. Other
 # parameters that modify the behavior of the mod can be allowed, but
 # must be optional.
+def double_vowel(name: str):
+    """Double a vowel within the name, like what with that popular
+    Star Wars franchise the kids are talking about.
+    
+    :param name: The name to modify.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> name = 'Bacon'
+        >>> double_vowel(name)
+        'Baacon'
+    """
+    letters = VOWELS
+    return double_letter(name, letters)
+
+
 def garble(name: str):
     """Garble some characters in the name by base 64 encoding them.
     
@@ -237,6 +259,52 @@ def compound_names(mod_name: str,
     return name.title()
 
 
+def double_letter(name: str, letters: Sequence[str] = '') -> str:
+    """Double a letter in the name.
+    
+    :param name: The name to modify.
+    :param letters: (Optional.) The letters allowed to double. This
+        defaults to all letters in the name.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam12')
+        >>>
+        >>> name = 'Bacon'
+        >>> double_letter(name)
+        'Bacoon'
+    
+    You can limit the numbers that it will double by passing a string
+    of valid letters:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam12')
+        >>>
+        >>> # The valid letters to double.
+        >>> letters = 'bcn'
+        >>>
+        >>> name = 'Bacon'
+        >>> double_letter(name, letters)
+        'Baconn'
+    """
+    if letters and not set(name).intersection(set(letters)):
+        return name
+    if not letters:
+        name_len = len(name)
+        index = roll(f'1d{name_len}') - 1
+    else:
+        possibilities = [i for i, c in enumerate(name) if c in letters]
+        poss_len = len(possibilities)
+        poss_index = roll(f'1d{poss_len}') - 1
+        index = possibilities[poss_index]
+    return name[0:index] + name[index] + name[index:]
+
+
 def translate_characters(name: str,
                          char_map: Mapping[str, str],
                          casefold: bool = True) -> str:
@@ -268,6 +336,7 @@ def translate_characters(name: str,
 
 # Mod registration.
 mods = {
-    'make_scifi': make_scifi,
+    'double_vowel': double_vowel,
     'garble': garble,
+    'make_scifi': make_scifi,
 }
