@@ -9,6 +9,8 @@ name = "pypi"
 pycodestyle = "*"
 mypy = "*"
 rstcheck = "*"
+build = "*"
+wheel = "*"
 
 [requires]
 python_version = "3.9"

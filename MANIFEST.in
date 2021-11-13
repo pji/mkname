@@ -8,3 +8,6 @@ include LICENSE.txt
 
 # Include setup.cfg
 include setup.cfg
+
+# Include the default database.
+include mkdata/data/names.db

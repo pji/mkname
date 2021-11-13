@@ -9,4 +9,9 @@
 *.numbers
 
 # Ignore OS files.
-.DS_Store
+*.DS_Store
+
+# Ignore build files.
+build
+dist
+mkname.egg-info
