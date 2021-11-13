@@ -6,9 +6,9 @@ Functions for modifying names.
 """
 import base64 as b64
 from functools import partial
-from typing import Callable, Mapping, Sequence
+from typing import Callable, Mapping, Optional, Sequence
 
-from mkname.constants import CONSONANTS, SCIFI_LETTERS, VOWELS
+from mkname.constants import CONSONANTS, PUNCTUATION, SCIFI_LETTERS, VOWELS
 from mkname.dice import roll, seed
 
 
@@ -70,7 +70,7 @@ def garble(name: str):
     garbled = garbled.rstrip()
     
     # Add the garbled characters back into the name and return.
-    name = f'{name[:index]}{garbled}{name[index + 1:]}'
+    name = _insert_substr(name, garbled, index, replace=True)
     return name.capitalize()
 
 
@@ -138,36 +138,116 @@ def add_letters(name: str,
     choice = roll('1d12')
     wild = roll('1d20')
     name = name.casefold()
+    replace = False
 
     # On a 1-5, put the letter at the beginning.
     if choice < 6:
-        if name[0] in vowels:
-            name = f'{letter}{name}'
-        else:
-            name = f'{letter}{name[1:]}'
+        index = 0
+        if name[0] not in vowels:
+            replace = True
+        name = _insert_substr(name, letter, index, replace=replace)
 
     # On a 6-10, put the letter at the end.
     elif choice < 11:
-        if name[-1] in vowels:
-            name = f'{name}{letter}'
-        else:
-            name = f'{name[:-1]}{letter}'
+        index = len(name)
+        if name[-1] not in vowels:
+            replace = True
+            index -= 1
+        name = _insert_substr(name, letter, index, replace=replace)
 
     # On an 11 or 12, replace a random letter in the name.
     elif wild < 20:
         index = roll(f'1d{len(name)}') - 1
-        name = f'{name[:index]}{letter}{name[index + 1:]}'
+        replace = True
+        name = _insert_substr(name, letter, index, replace=replace)
 
     # On an 11 or 12, if wild is 20, replace multiple letters.
     else:
         len_roll = f'1d{len(name)}'
         count = roll(len_roll)
         indices = [roll(len_roll) - 1 for _ in range(count)]
+        replace = True
         for index in indices:
-            name = f'{name[:index]}{letter}{name[index + 1:]}'
+            name = _insert_substr(name, letter, index, replace=replace)
 
     name = name.capitalize()
     return name
+
+
+def add_punctuation(name: str,
+                    punctuation: Sequence[str] = PUNCTUATION,
+                    cap_before: bool = True,
+                    cap_after: bool = True,
+                    index: Optional[int] = None) -> str:
+    """Add a punctuation mark to the name.
+    
+    :param name: The name to modify.
+    :param punctuation: (Optional.) The punctuation marks to choose
+        from. Defaults to the default set of punctuation marks in
+        mkname.constants.
+    :param cap_before: (Optional.) Whether the first letter of the
+        substring before the punctuation mark should be capitalized.
+        Defaults to capitalizing.
+    :param cap_after: (Optional.) Whether the first letter after the
+        punctuation mark should be capitalized. Defaults to capitalizing.
+    :param index: (Optional.) Where to insert the punctuation. Defaults
+        to picking an index at random.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam1')
+        >>>
+        >>> name = 'eggs'
+        >>> add_punctuation(name)
+        "E'Ggs"
+    
+    The cap_before and cap_after parameters set whether the substrings
+    before or after the added punctuation should be capitalized. It
+    defaults to capitalizing them both:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam1')
+        >>>
+        >>> name = 'eggs'
+        >>> add_punctuation(name, cap_before=False)
+        "e'Ggs"
+        >>>
+        >>> seed('spam1')
+        >>> name = 'eggs'
+        >>> add_punctuation(name, cap_after=False)
+        "E'ggs"
+    
+    If you want to specify were the punctuation goes, you can use
+    the index parameter. The punctuation parameter also allows you
+    to specify what punctuation is allowed:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam1')
+        >>>
+        >>> name = 'eggs'
+        >>> punctuation = ':'
+        >>> index = 2
+        >>> add_punctuation(name, punctuation, index=index)
+        'Eg:Gs'
+    """
+    # Select the punctuation mark.
+    len_mark = len(punctuation)
+    mark_index = roll(f'1d{len_mark}') - 1
+    mark = punctuation[mark_index]
+    
+    # Determine where the mark will go
+    if index is None:
+        positions = len(name) + 1
+        index = roll(f'1d{positions}') - 1
+    
+    # Add the mark and return.
+    return _insert_substr(name, mark, index, cap_before, cap_after)
 
 
 def compound_names(mod_name: str,
@@ -332,6 +412,25 @@ def translate_characters(name: str,
     char_dict = dict(char_map)
     trans_map = str.maketrans(char_dict)
     return name.translate(trans_map)
+
+
+# Private utility functions.
+def _insert_substr(text: str,
+                   substr: str,
+                   index: int,
+                   cap_before: bool = False,
+                   cap_after: bool = False,
+                   replace: bool = False) -> str:
+    """Insert a substring into the text."""
+    before = text[0:index]
+    if replace:
+        index += 1
+    after = text[index:]
+    if cap_before:
+        before = before.title()
+    if cap_after:
+        after = after.title()
+    return f'{before}{substr}{after}'
 
 
 # Mod registration.

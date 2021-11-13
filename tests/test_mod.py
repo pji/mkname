@@ -142,6 +142,71 @@ class AddLetters(ut.TestCase):
         self.add_letters_test(exp, base, letter_roll, position_roll)
 
 
+class AddPunctuation(ut.TestCase):
+    def add_punctuation_test(self,
+                             exp,
+                             name,
+                             rolls,
+                             **kwargs):
+        """Run a standard add_punctuation test."""
+        # Test data and state.
+        kwargs['name'] = name
+        with patch('mkname.mod.roll') as mock_roll:
+            mock_roll.side_effect = rolls
+
+            # Run test.
+            act = mod.add_punctuation(**kwargs)
+
+        # Determine test result.
+        self.assertEqual(exp, act)
+
+    def test_add_puctuation(self):
+        """Given a name, add a punctuation mark into the name. It
+        capitalizes the first letter and the letter after the
+        punctuation mark in the name.
+        """
+        exp = "S'Pam"
+        name = 'spam'
+        rolls = [1, 2]
+        self.add_punctuation_test(exp, name, rolls)
+
+    def test_add_puctuation_at_index(self):
+        """Given an index, add the punctuation at that index.
+        """
+        exp = "Spa.M"
+        name = 'spam'
+        rolls = [3]
+        index = 3
+        self.add_punctuation_test(exp, name, rolls, index=index)
+
+    def test_add_punctuation_do_not_cap_after_mark(self):
+        """If False is passed for cap_after, then the letter after
+        the mark isn't capitalized."""
+        exp = "Spa'm"
+        name = 'spam'
+        rolls = [1,4]
+        cap_after = False
+        self.add_punctuation_test(exp, name, rolls, cap_after=cap_after)
+
+    def test_add_punctuation_do_not_cap_before_mark(self):
+        """If False is passed for cap_before, then the letter before
+        the mark isn't capitalized."""
+        exp = "s'Pam"
+        name = 'spam'
+        rolls = [1,2]
+        cap_before = False
+        self.add_punctuation_test(exp, name, rolls, cap_before=cap_before)
+
+    def test_add_punctuation_start_of_name(self):
+        """If the selected position is in front of the name,
+        add the mark to the beginning of the name.
+        """
+        exp = '-Spam'
+        name = 'spam'
+        rolls = [2, 1]
+        self.add_punctuation_test(exp, name, rolls)
+
+
 class CompoundNamesTestCase(ut.TestCase):
     def test_compound_names(self):
         """Given two names, return a string that combines the two
