@@ -18,7 +18,7 @@ from mkname.dice import roll, seed
 # must be optional.
 def double_vowel(name: str):
     """Double a vowel within the name, like what with that popular
-    Star Wars franchise the kids are talking about.
+    Star Wars™ franchise the kids are talking about.
     
     :param name: The name to modify.
     :return: A :class:str object.
@@ -92,6 +92,34 @@ def make_scifi(name: str) -> str:
         'Keggs'
     """
     return add_letters(name)
+
+
+def vulcanize(name: str) -> str:
+    """Add prefixes to names that are similar to the prefixes seen
+    in Vulcan characters in the Star Trek™ franchise.
+    
+    :param name: The name to modify.
+    :return: A :class:str object.
+    :rtype: str
+    
+    Usage:
+    
+        >>> # Seed the RNG to make the example predictable. Don't do
+        >>> # this if you want the modification to be random.
+        >>> seed('spam')
+        >>>
+        >>> name = 'Bacon'
+        >>> vulcanize(name)
+        "T'Bacon"
+    """
+    letter = 't'
+    if roll('1d6') > 5:
+        letters = 'd k l m n p s su v'.split()
+        index = roll(f'1d{len(letters)}') - 1
+        letter = letters[index]
+    letter = letter.title()
+    name = name.title()
+    return f"{letter}'{name}"
 
 
 # Complex mods.
@@ -438,4 +466,5 @@ mods = {
     'double_vowel': double_vowel,
     'garble': garble,
     'make_scifi': make_scifi,
+    'vulcanize': vulcanize,
 }

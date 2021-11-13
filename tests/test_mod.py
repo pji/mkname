@@ -357,7 +357,13 @@ class SimpleModifiersTestCase(ut.TestCase):
         mod_fn = mod.make_scifi
         self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
-    # garble tests.
+    def vulcanize_test(self, exp, base_name, roll_values):
+        """The common core for tests of garble()."""
+        # Test data and state.
+        mod_fn = mod.vulcanize
+        self._core_modify_test(exp, base_name, mod_fn, roll_values)
+
+    # double_vowel tests.
     def test_double_vowel(self):
         """Given a base name, double_vowel() should double a vowel
         within the name.
@@ -480,3 +486,32 @@ class SimpleModifiersTestCase(ut.TestCase):
 
         # Run test and determine result.
         self.make_scifi_test(exp, base, letter_roll, position_roll)
+
+    # vulcanize tests.
+    def test_vulcanize(self):
+        """Given a base name, vulcanize() should prefix the name
+        with "T''".
+        """
+        # Expected value.
+        exp = "T'Spam"
+
+        # Test data and state.
+        base = 'Spam'
+        roll_values = [5, 0]
+
+        # Run test and determine result.
+        self.vulcanize_test(exp, base, roll_values)
+
+    def test_vulcanize_not_t(self):
+        """One in six times, the prefix should use a letter other than
+        "T".
+        """
+        # Expected value.
+        exp = "Su'Spam"
+
+        # Test data and state.
+        base = 'Spam'
+        roll_values = [6, 8, 0]
+
+        # Run test and determine result.
+        self.vulcanize_test(exp, base, roll_values)
