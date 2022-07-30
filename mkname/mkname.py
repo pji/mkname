@@ -9,6 +9,8 @@ from pathlib import Path
 from sqlite3 import Connection
 from typing import Sequence, Union
 
+from yadr import roll                               # type: ignore
+
 from mkname.constants import (
     CONSONANTS,
     DEFAULT_CONFIG,
@@ -18,7 +20,6 @@ from mkname.constants import (
     LOCAL_DB,
     VOWELS
 )
-from mkname.dice import roll
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import split_into_syllables

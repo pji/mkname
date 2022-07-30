@@ -9,7 +9,6 @@ import unittest as ut
 from unittest.mock import patch
 from typing import Mapping
 
-from mkname import dice as r
 from mkname import mkname as mn
 from mkname.constants import (
     DEFAULT_DB,
@@ -22,7 +21,7 @@ from mkname.model import Name
 
 # Test cases.
 class BuildingNamesTestCase(ut.TestCase):
-    @patch('mkname.dice.yadr.roll', side_effect=(4, 3))
+    @patch('mkname.mkname.roll', side_effect=(4, 3))
     def test_build_compound_name(self, _):
         """Given a sequence of names, build_compound_name() returns a
         name constructed from the list.
@@ -83,7 +82,7 @@ class BuildingNamesTestCase(ut.TestCase):
         # Determine test results.
         self.assertEqual(exp, act)
 
-    @patch('mkname.dice.yadr.roll', return_value=4)
+    @patch('mkname.mkname.roll', return_value=4)
     def test_select_random_name(self, _):
         """Given a list of names, return a random name."""
         # Expected value.
