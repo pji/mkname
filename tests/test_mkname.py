@@ -22,7 +22,8 @@ from mkname.model import Name
 
 # Test cases.
 class BuildingNamesTestCase(ut.TestCase):
-    def test_build_compound_name(self):
+    @patch('mkname.dice.yadr.roll', side_effect=(4, 3))
+    def test_build_compound_name(self, _):
         """Given a sequence of names, build_compound_name() returns a
         name constructed from the list.
         """
@@ -30,7 +31,6 @@ class BuildingNamesTestCase(ut.TestCase):
         exp = 'Dallory'
 
         # Test data and state.
-        r.seed('spam12')
         test_names = [
             'Alice',
             'Robert',
@@ -83,13 +83,13 @@ class BuildingNamesTestCase(ut.TestCase):
         # Determine test results.
         self.assertEqual(exp, act)
 
-    def test_select_random_name(self):
+    @patch('mkname.dice.yadr.roll', return_value=4)
+    def test_select_random_name(self, _):
         """Given a list of names, return a random name."""
         # Expected value.
         exp = 'Donatello'
 
         # Test data and state.
-        r.seed('spam12')
         test_names = [
             'Alice',
             'Robert',

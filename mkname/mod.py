@@ -9,7 +9,7 @@ from functools import partial
 from typing import Callable, Mapping, Optional, Sequence
 
 from mkname.constants import CONSONANTS, PUNCTUATION, SCIFI_LETTERS, VOWELS
-from mkname.dice import roll, seed
+from mkname.dice import roll
 
 
 # Simple mods.
@@ -19,16 +19,17 @@ from mkname.dice import roll, seed
 def double_vowel(name: str):
     """Double a vowel within the name, like what with that popular
     Star Wars™ franchise the kids are talking about.
-    
+
     :param name: The name to modify.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> name = 'Bacon'
         >>> double_vowel(name)
@@ -40,16 +41,17 @@ def double_vowel(name: str):
 
 def garble(name: str):
     """Garble some characters in the name by base 64 encoding them.
-    
+
     :param name: The name to modify.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> name = 'Eggs'
         >>> garble(name)
@@ -57,18 +59,18 @@ def garble(name: str):
     """
     # Determine which character should be garbled.
     index = roll(f'1d{len(name)}') - 1
-    
+
     # Use base64 encoding to turn the character in a sequence of
     # different characters. Base64 only works with bytes.
     char = bytes(name[index], encoding='utf_8')
     garbled_bytes = b64.encodebytes(char)
     garbled = str(garbled_bytes, encoding='utf_8')
-    
+
     # Transform characters that are valid in base64 but might
     # not make sense for this kind of name.
     garbled = garbled.replace('=', ' ')
     garbled = garbled.rstrip()
-    
+
     # Add the garbled characters back into the name and return.
     name = _insert_substr(name, garbled, index, replace=True)
     return name.capitalize()
@@ -76,16 +78,17 @@ def garble(name: str):
 
 def make_scifi(name: str) -> str:
     """A simple version of add_scifi_letters.
-    
+
     :param name: The name to modify.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> name = 'Eggs'
         >>> make_scifi(name)
@@ -97,16 +100,17 @@ def make_scifi(name: str) -> str:
 def vulcanize(name: str) -> str:
     """Add prefixes to names that are similar to the prefixes seen
     in Vulcan characters in the Star Trek™ franchise.
-    
+
     :param name: The name to modify.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> name = 'Bacon'
         >>> vulcanize(name)
@@ -127,30 +131,32 @@ def add_letters(name: str,
                 letters: str = SCIFI_LETTERS,
                 vowels: str = VOWELS) -> str:
     """Add one of the given letters to a name.
-    
+
     :param name: The name to modify.
     :param letters: The letters to add for the modification.
     :param vowels: The letters to define as vowels.
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> name = 'Eggs'
         >>> add_letters(name)
         'Keggs'
-    
+
     In most cases, the function behaves like the given letters are
     consonants. While it will replace consonants with the letter,
     it will often try to put a letter before or after a vowel.
     This means you can alter the behavior by passing different
     values to the letters and vowels.:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam')
         >>>
         >>> # Treat 'e' as a consonant and don't use 'k'.
         >>> letter = 'qxz'
@@ -208,7 +214,7 @@ def add_punctuation(name: str,
                     cap_after: bool = True,
                     index: Optional[int] = None) -> str:
     """Add a punctuation mark to the name.
-    
+
     :param name: The name to modify.
     :param punctuation: (Optional.) The punctuation marks to choose
         from. Defaults to the default set of punctuation marks in
@@ -222,41 +228,44 @@ def add_punctuation(name: str,
         to picking an index at random.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam1')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam123')
         >>>
         >>> name = 'eggs'
         >>> add_punctuation(name)
-        "E'Ggs"
-    
+        'E|Ggs'
+
     The cap_before and cap_after parameters set whether the substrings
     before or after the added punctuation should be capitalized. It
     defaults to capitalizing them both:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam1')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam123')
         >>>
         >>> name = 'eggs'
         >>> add_punctuation(name, cap_before=False)
-        "e'Ggs"
+        'e|Ggs'
         >>>
-        >>> seed('spam1')
+        >>> yop.random.seed('spam123')
         >>> name = 'eggs'
         >>> add_punctuation(name, cap_after=False)
-        "E'ggs"
-    
+        'E|ggs'
+
     If you want to specify were the punctuation goes, you can use
     the index parameter. The punctuation parameter also allows you
     to specify what punctuation is allowed:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam1')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam1')
         >>>
         >>> name = 'eggs'
         >>> punctuation = ':'
@@ -268,12 +277,12 @@ def add_punctuation(name: str,
     len_mark = len(punctuation)
     mark_index = roll(f'1d{len_mark}') - 1
     mark = punctuation[mark_index]
-    
+
     # Determine where the mark will go
     if index is None:
         positions = len(name) + 1
         index = roll(f'1d{positions}') - 1
-    
+
     # Add the mark and return.
     return _insert_substr(name, mark, index, cap_before, cap_after)
 
@@ -283,7 +292,7 @@ def compound_names(mod_name: str,
                    consonants: Sequence[str] = CONSONANTS,
                    vowels: Sequence[str] = VOWELS) -> str:
     """Construct a new name using the parts of two names.
-    
+
     :param names: A list of Name objects to use for constructing
         the new name.
     :param consonants: (Optional.) The characters to consider as
@@ -291,20 +300,20 @@ def compound_names(mod_name: str,
     :param vowels: (Optional.) The characters to consider as vowels.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Generate the name.
         >>> mod_name = 'Spam'
         >>> base_name = 'Eggs'
         >>> compound_names(mod_name, base_name)
         'Speggs'
-    
+
     The function takes into account whether the starting letter of
     each name is a vowel or a consonant when determining how to
     create the name. You can affect this by changing which letters
     it treats as consonants or vowels:
-    
+
         >>> # Treat 'e' as a consonant and 'g' as a vowel.
         >>> consonants = 'bcdfhjklmnpqrstvwxze'
         >>> vowels = 'aioug'
@@ -327,7 +336,7 @@ def compound_names(mod_name: str,
     name = ''
     mod_name = mod_name.casefold()
     root_name = root_name.casefold()
-    
+
     # When both names start with consonants, replace the starting
     # consonants in the root name with the starting consonants of
     # the mod name.
@@ -335,28 +344,28 @@ def compound_names(mod_name: str,
         index_start = get_change_index(mod_name, consonants)
         index_end = get_change_index(root_name, consonants)
         name = mod_name[0:index_start] + root_name[index_end:]
-    
+
     # When the root name starts with a vowel but the mod name starts
     # with a consonant, just add the starting consonants of the mod
     # name to the start of the root name
     elif root_name[0] in vowels and mod_name[0] not in vowels:
         index_start = get_change_index(mod_name, consonants)
         name = mod_name[0:index_start] + root_name
-        
+
     # If both names start with vowels, replace the starting vowels
     # of the root name with the starting vowels of the mod name.
     elif root_name[0] in vowels and mod_name[0] in vowels:
         index_start = get_change_index(mod_name, vowels)
         index_end = get_change_index(root_name, vowels)
         name = mod_name[0:index_start] + root_name[index_end:]
-    
+
     # If the root name starts with a consonant and the mod name
     # starts with a vowel, add the starting vowels of the mod name
     # to the beginning of the root name.
     elif root_name[0] not in vowels and mod_name[0] in vowels:
         index_start = get_change_index(mod_name, vowels)
         name = mod_name[0:index_start] + root_name
-    
+
     # This condition shouldn't be possible, so throw an exception
     # for debugging.
     else:
@@ -369,29 +378,31 @@ def compound_names(mod_name: str,
 
 def double_letter(name: str, letters: Sequence[str] = '') -> str:
     """Double a letter in the name.
-    
+
     :param name: The name to modify.
     :param letters: (Optional.) The letters allowed to double. This
         defaults to all letters in the name.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam12')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam2345')
         >>>
         >>> name = 'Bacon'
         >>> double_letter(name)
         'Bacoon'
-    
+
     You can limit the numbers that it will double by passing a string
     of valid letters:
-    
+
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
-        >>> seed('spam12')
+        >>> import yadr.operator as yop
+        >>> yop.random.seed('spam1')
         >>>
         >>> # The valid letters to double.
         >>> letters = 'bcn'
@@ -417,7 +428,7 @@ def translate_characters(name: str,
                          char_map: Mapping[str, str],
                          casefold: bool = True) -> str:
     """Translate characters in the name to different characters.
-    
+
     :param name: The name to modify.
     :param char_map: A translation map for the characters in the
         name. The keys are the original letters and the values are
@@ -425,9 +436,9 @@ def translate_characters(name: str,
     :param casefold: Whether case should be ignored for the transform.
     :return: A :class:str object.
     :rtype: str
-    
+
     Usage:
-    
+
         >>> # The translation map is a dict.
         >>> char_map = {'s': 'e', 'p': 'g', 'm': 's'}
         >>>
