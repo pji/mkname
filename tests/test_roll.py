@@ -10,6 +10,7 @@ from mkname import dice as r
 
 
 # Test cases.
+@ut.skip
 class RollTestCase(ut.TestCase):
     def test_roll(self):
         """Given a dice code as a string, return a randomly generated
