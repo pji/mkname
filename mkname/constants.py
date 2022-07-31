@@ -4,12 +4,16 @@ constants
 
 Default configuration values for mknames.
 """
+from importlib.resources import files
 from pathlib import Path
+
+import mkname.data
 
 
 # Path roots.
-PKG_ROOT = Path(__file__).parent
-DATA_ROOT = PKG_ROOT / 'data'
+data_pkg = files(mkname.data)
+data_pkg_str = str(data_pkg)
+DATA_ROOT = Path(data_pkg_str)
 
 # File locations.
 CONFIG_FILE = DATA_ROOT / 'defaults.cfg'
