@@ -8,9 +8,8 @@ import base64 as b64
 from functools import partial
 from typing import Callable, Mapping, Optional, Sequence
 
-from yadr import roll                               # type: ignore
-
 from mkname.constants import CONSONANTS, PUNCTUATION, SCIFI_LETTERS, VOWELS
+from mkname.utility import roll
 
 
 # Simple mods.

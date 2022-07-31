@@ -6,4 +6,4 @@
 #
 
 -i https://pypi.org/simple
-yadr==0.1.0
+yadr==0.1.1
