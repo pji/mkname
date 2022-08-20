@@ -30,12 +30,11 @@ before returning them. Major features include:
 
 How do I run it?
 ================
-To run the code:
+The easies way to install and run `mkname` is:
 
-1.  Clone the repository to your local system.
-2.  Install the dependencies listed in `requirements.txt`
-3.  Navigate to the root of the repository in your shell.
-4.  Run the following command: `python -m mkname`
+1.  Ensure you are using Python 3.10 or higher.
+2.  Install from PyPI using pip: `pip install mkname`
+3.  Run the following command to see the options: `mkname -h`
 
 It should also be able to be imported into your Python code as a package.
 
