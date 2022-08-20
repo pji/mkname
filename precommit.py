@@ -53,21 +53,13 @@ def check_doctests(names):
 
 def check_requirements():
     """Check requirements."""
-    def clean_requirements(lines):
-        lines = [line for line in lines if not line.startswith('#')]
-        lines = [line for line in lines if not line.startswith('-')]
-        lines = [line for line in lines if line]
-        return lines
-
     print('Checking requirements...')
     os.putenv('PIPENV_VERBOSITY', '-1')
-    cmd = '.venv/bin/python -m pipenv lock -r'
+    cmd = '.venv/bin/python -m pipenv requirements'
     current = os.popen(cmd).readlines()
-    current = clean_requirements(current)
     current = wrap_lines(current, 35, '', '  ')
     with open('requirements.txt') as fh:
         old = fh.readlines()
-    old = clean_requirements(old)
     old = wrap_lines(old, 35, '', '  ')
 
     # If the packages installed don't match the requirements, it's
@@ -78,7 +70,8 @@ def check_requirements():
         print('requirements.txt out of date.')
         print()
         tmp = '{:<35} {:<35}'
-        print(tmp.format('old', 'current'))
+        print(tmp.format('current', 'old'))
+        print('\u2500' * 70)
         for c, o in zip_longest(current, old, fillvalue=''):
             print(tmp.format(c, o))
         print()
@@ -98,13 +91,13 @@ def check_rst(file_paths, ignore):
                 lines = fh.read()
             result = list(rstchecker.check_source(lines))
             if result:
-                results.append((file, *result))
+                results.append(file, *result)
         return results
 
     def result_handler(result):
         if result:
             for line in result:
-                print(' ' * 4, *line)
+                print(' ' * 4 + line)
 
     title = 'Checking RSTs'
     file_ext = '.rst'
@@ -280,7 +273,8 @@ def main():
     # Only continue with precommit checks if the unit tests passed.
     if not result.errors and not result.failures:
         check_requirements()
-        check_doctests(doctest_modules)
+        if 'doctest_modules' in config:
+            check_doctests(doctest_modules)
         check_style(python_files, ignore)
         check_rst(rst_files, ignore)
         check_type_hints(get_module_dir())
