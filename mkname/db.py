@@ -15,13 +15,13 @@ from mkname.model import Name
 # Connection functions.
 def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     """Connect to the database.
-    
+
     :param location: The path to the database file.
     :return: A :class:sqlite3.Connection object.
     :rtype: sqlite3.Connection
-    
+
     Usage:
-    
+
         >>> loc = 'mkname/data/names.db'
         >>> query = 'select name from names where id = 1;'
         >>> con = connect_db(loc)
@@ -35,7 +35,7 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     if not path.is_file():
         msg = f'No database at "{path}".'
         raise ValueError(msg)
-    
+
     # Make and return the database connection.
     con = sqlite3.Connection(path)
     return con
@@ -43,11 +43,11 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
 
 def disconnect_db(con: sqlite3.Connection) -> None:
     """Disconnect from the database.
-    
+
     :param con: A database connection.
     :return: None.
     :rtype: :class:NoneType
-    
+
     See connect_db() for usage.
     """
     if con.in_transaction:
@@ -62,8 +62,10 @@ def makes_connection(fn: Callable) -> Callable:
     decorated function.
     """
     @wraps(fn)
-    def wrapper(given_con: Union[sqlite3.Connection, str, Path] = None,
-                *args, **kwargs) -> Any:
+    def wrapper(
+        given_con: Union[sqlite3.Connection, str, Path, None] = None,
+        *args, **kwargs
+    ) -> Any:
         if isinstance(given_con, (str, Path)):
             con = connect_db(given_con)
         elif isinstance(given_con, sqlite3.Connection):
@@ -87,15 +89,15 @@ def _run_query_for_single_column(con: sqlite3.Connection,
 @makes_connection
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
     """Deserialize the names from the database.
-    
+
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
     :return: A :class:tuple of :class:Name objects.
     :rtype: tuple
-    
+
     Usage:
-    
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
@@ -110,7 +112,7 @@ def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
 @makes_connection
 def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     """Deserialize the names from the database.
-    
+
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
@@ -119,9 +121,9 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
         database you can add other types.
     :return: A :class:tuple of :class:Name objects.
     :rtype: tuple
-    
+
     Usage:
-    
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
@@ -138,15 +140,15 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
 @makes_connection
 def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
     """Get a list of unique cultures in the database.
-    
+
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
     :return: A :class:tuple of :class:Name objects.
     :rtype: tuple
-    
+
     Usage:
-    
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
@@ -160,15 +162,15 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
 @makes_connection
 def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
     """Get a list of unique kinds in the database.
-    
+
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
     :return: A :class:tuple of :class:Name objects.
     :rtype: tuple
-    
+
     Usage:
-    
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'

@@ -13,8 +13,9 @@ import importlib
 from itertools import zip_longest
 import os
 import sys
-import unittest as ut
 from textwrap import wrap
+
+import pytest
 
 import mypy.api
 import pycodestyle as pcs
@@ -150,10 +151,7 @@ def check_type_hints(path):
 def check_unit_tests(path):
     """Run the unit tests."""
     print('Running unit tests...')
-    loader = ut.TestLoader()
-    tests = loader.discover(path)
-    runner = ut.TextTestRunner()
-    result = runner.run(tests)
+    result = pytest.main()
     print('Unit tests complete.')
     return result
 
@@ -271,7 +269,7 @@ def main():
     result = check_unit_tests(unit_tests)
 
     # Only continue with precommit checks if the unit tests passed.
-    if not result.errors and not result.failures:
+    if result == pytest.ExitCode.OK:
         check_requirements()
         if 'doctest_modules' in config:
             check_doctests(doctest_modules)
