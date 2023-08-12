@@ -14,7 +14,17 @@ from mkname import db
 from mkname import model as m
 
 
-# Test cases.
+# Fixtures
+@pytest.fixture
+def con():
+    """Manage a test database connection."""
+    db_path = 'tests/data/names.db'
+    con = sqlite3.Connection(db_path)
+    yield con
+    con.close()
+
+
+# Connection test cases.
 def test_connect():
     """When given the path to an sqlite3 database, db.connect_db
     should return a connection to the database.
@@ -94,174 +104,134 @@ def test_disconnect_with_pending_changes():
         db.disconnect_db(con)
 
 
-class SerializationTestCase(ut.TestCase):
-    db_path = 'tests/data/names.db'
-
-    def setUp(self):
-        self.con = sqlite3.Connection(self.db_path)
-
-    def tearDown(self):
-        self.con.close()
-
-    def test_get_names(self):
-        """When given a database connection, db.get_names should
-        return the names in the database as a tuple.
-        """
-        # Expected value.
-        names = (
-            (
-                1,
-                'spam',
-                'eggs',
-                'bacon',
-                1970,
-                'sausage',
-                'given'
-            ),
-            (
-                2,
-                'ham',
-                'eggs',
-                'bacon',
-                1970,
-                'baked beans',
-                'given'
-            ),
-            (
-                3,
-                'tomato',
-                'mushrooms',
-                'pancakes',
-                2000,
-                'sausage',
-                'surname'
-            ),
-            (
-                4,
-                'waffles',
-                'mushrooms',
-                'porridge',
-                2000,
-                'baked beans',
-                'given'
-            ),
-        )
-        exp = tuple(m.Name(*args) for args in names)
-
-        # Run test.
-        act = db.get_names(self.con)
-
-        # Determine test result.
-        self.assertTupleEqual(exp, act)
-
-    def test_get_names_called_wo_connection(self):
-        """When called without a connection, get_names will create
-        its own connection.
-        """
-        # Expected value.
-        names = (
-            (
-                1,
-                'spam',
-                'eggs',
-                'bacon',
-                1970,
-                'sausage',
-                'given'
-            ),
-            (
-                2,
-                'ham',
-                'eggs',
-                'bacon',
-                1970,
-                'baked beans',
-                'given'
-            ),
-            (
-                3,
-                'tomato',
-                'mushrooms',
-                'pancakes',
-                2000,
-                'sausage',
-                'surname'
-            ),
-            (
-                4,
-                'waffles',
-                'mushrooms',
-                'porridge',
-                2000,
-                'baked beans',
-                'given'
-            ),
-        )
-        exp = tuple(m.Name(*args) for args in names)
-
-        # Run test.
-        act = db.get_names(self.db_path)
-
-        # Determine test result.
-        self.assertTupleEqual(exp, act)
-
-    def test_get_cultures(self):
-        """Given a connection, return the list of unique cultures
-        for the names in the database.
-        """
-        # Expected value.
-        exp = (
+# Serialization test cases.
+def test_get_names(con):
+    """When given a database connection, db.get_names should
+    return the names in the database as a tuple.
+    """
+    # Expected value.
+    assert db.get_names(con) == (
+        m.Name(
+            1,
+            'spam',
+            'eggs',
             'bacon',
+            1970,
+            'sausage',
+            'given'
+        ),
+        m.Name(
+            2,
+            'ham',
+            'eggs',
+            'bacon',
+            1970,
+            'baked beans',
+            'given'
+        ),
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
             'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+        m.Name(
+            4,
+            'waffles',
+            'mushrooms',
             'porridge',
-        )
+            2000,
+            'baked beans',
+            'given'
+        ),
+    )
 
-        # Run test.
-        act = db.get_cultures(self.con)
 
-        # Determine test result.
-        self.assertTupleEqual(exp, act)
+def test_get_names_called_wo_connection():
+    """When called without a connection, get_names will create
+    its own connection.
+    """
+    db_path = 'tests/data/names.db'
+    assert db.get_names(db_path) == (
+        m.Name(
+            1,
+            'spam',
+            'eggs',
+            'bacon',
+            1970,
+            'sausage',
+            'given'
+        ),
+        m.Name(
+            2,
+            'ham',
+            'eggs',
+            'bacon',
+            1970,
+            'baked beans',
+            'given'
+        ),
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
+            'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+        m.Name(
+            4,
+            'waffles',
+            'mushrooms',
+            'porridge',
+            2000,
+            'baked beans',
+            'given'
+        ),
+    )
 
-    def test_get_kinds(self):
-        """Given a connection, return the list of unique kinds
-        of names in the database.
-        """
-        # Expected value.
-        exp = (
-            'given',
-            'surname',
-        )
 
-        # Run test.
-        act = db.get_kinds(self.con)
+def test_get_cultures(con):
+    """Given a connection, return the list of unique cultures
+    for the names in the database.
+    """
+    # Expected value.
+    assert db.get_cultures(con) == (
+        'bacon',
+        'pancakes',
+        'porridge',
+    )
 
-        # Determine test results.
-        self.assertTupleEqual(exp, act)
 
-    def test_get_names_by_kind(self):
-        """When given a database connection and a kind,
-        db.get_names_by_kind should return the names of
-        that kind in the database as a tuple.
-        """
-        # Expected value.
-        names = (
-            (
-                3,
-                'tomato',
-                'mushrooms',
-                'pancakes',
-                2000,
-                'sausage',
-                'surname'
-            ),
-        )
-        exp = tuple(m.Name(*args) for args in names)
+def test_get_cultures(con):
+    """Given a connection, return the list of unique kinds of names
+    in the database.
+    """
+    assert db.get_kinds(con) == (
+        'given',
+        'surname',
+    )
 
-        # Test data and state.
-        kind = 'surname'
 
-        # Run test.
-        act = db.get_names_by_kind(self.con, kind)
-
-        # Determine test result.
-        self.assertTupleEqual(exp, act)
+def test_get_names_by_kind(con):
+    """When given a database connection and a kind,
+    db.get_names_by_kind should return the names of
+    that kind in the database as a tuple.
+    """
+    # Expected value.
+    kind = 'surname'
+    assert db.get_names_by_kind(con, kind) == (
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
+            'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+    )
