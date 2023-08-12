@@ -8,98 +8,90 @@ import pathlib
 import sqlite3
 import unittest as ut
 
+import pytest
+
 from mkname import db
 from mkname import model as m
 
 
 # Test cases.
-class ConnectionTestCase(ut.TestCase):
+def test_connect():
+    """When given the path to an sqlite3 database, db.connect_db
+    should return a connection to the database.
+    """
+    # Test data and state.
     db_path = 'tests/data/names.db'
+    query = 'select name from names where id = 1;'
 
-    def test_connect(self):
-        """When given the path to an sqlite3 database, db.connect_db
-        should return a connection to the database.
-        """
-        # Expected value.
-        exp = 'spam'
+    # Run test.
+    con = db.connect_db(db_path)
+    try:
+        selected = con.execute(query)
+        result = selected.fetchone()
+    finally:
+        con.close()
 
-        # Test data and state.
-        query = 'select name from names where id = 1;'
+    # Determine test result.
+    assert result == ('spam',)
 
-        # Run test and get actual value.
-        con = db.connect_db(self.db_path)
-        try:
-            result = con.execute(query)
-            act = result.fetchone()[0]
 
-            # Determine test result.
-            self.assertEqual(exp, act)
+def test_connect_no_file():
+    """If the given file does not exist, db.connect_db should raise
+    a ValueError.
+    """
+    # Test data and state.
+    db_path = 'tests/data/no_file.db'
+    path = pathlib.Path(db_path)
+    if path.is_file():
+        msg = f'Remove file at "{path}".'
+        raise RuntimeError(msg)
 
-        # Test cleanup.
-        finally:
-            con.close()
+    # Run test and determine results.
+    with pytest.raises(ValueError, match=f'No database at "{path}".'):
+        _ = db.connect_db(path)
 
-    def test_connect_no_file(self):
-        """If the given file does not exist, db.connect_db should raise
-        a ValueError.
-        """
-        # Set up for expected values.
-        filepath = 'tests/data/no_file.db'
 
-        # Expected values.
-        exp_ex = ValueError
-        exp_msg = f'No database at "{filepath}".'
+def test_disconnect():
+    """When given a database connection, close it."""
+    # Test data and state.
+    db_path = 'tests/data/names.db'
+    con = sqlite3.Connection(db_path)
+    query = 'select name from names where id = 1;'
+    result = None
 
-        # Test data and state.
-        path = pathlib.Path(filepath)
-        if path.is_file():
-            msg = f'Remove file at "{filepath}".'
-            raise RuntimeError(msg)
+    # Run test.
+    db.disconnect_db(con)
 
-        # Run test and determine results.
-        with self.assertRaisesRegex(exp_ex, exp_msg):
-            _ = db.connect_db(filepath)
+    # Determine test result
+    with pytest.raises(
+        sqlite3.ProgrammingError,
+        match='Cannot operate on a closed database.'
+    ):
+        result = con.execute(query)
 
-    def test_disconnect(self):
-        """When given a database connection, close it."""
-        # Expected values.
-        exp_ex = sqlite3.ProgrammingError
-        exp_msg = 'Cannot operate on a closed database.'
+    # Clean up test.
+    if result:
+        con.close()
 
-        # Test data and state.
-        con = sqlite3.Connection(self.db_path)
-        query = 'select name from names where id = 1;'
-        result = None
 
-        # Run test.
+def test_disconnect_with_pending_changes():
+    """When given a database connection, raise an exception if
+    the connection contains uncommitted changes instead of closing
+    the connection.
+    """
+    # Test data and state.
+    db_path = 'tests/data/names.db'
+    con = sqlite3.Connection(db_path)
+    query = "insert into names values (null, 'test', '', '', 0, '', '')"
+    _ = con.execute(query)
+    result = None
+
+    # Run test and determine result.
+    with pytest.raises(
+        RuntimeError,
+        match='Connection has uncommitted changes.'
+    ):
         db.disconnect_db(con)
-
-        # Determine test result
-        with self.assertRaisesRegex(exp_ex, exp_msg):
-            result = con.execute(query)
-
-        # Clean up test.
-        if result:
-            con.close()
-
-    def test_disconnect_with_pending_changes(self):
-        """When given a database connection, raise an exception if
-        the connection contains uncommitted changes instead of closing
-        the connection.
-        """
-        # Expected values.
-        exp_ex = RuntimeError
-        exp_msg = 'Connection has uncommitted changes.'
-
-        # Test data and state.
-        con = sqlite3.Connection(self.db_path)
-        query = "insert into names values (null, 'test', '', '', 0, '', '')"
-        _ = con.execute(query)
-        result = None
-
-        # Run test and determine result.
-        with self.assertRaisesRegex(exp_ex, exp_msg):
-            db.disconnect_db(con)
 
 
 class SerializationTestCase(ut.TestCase):
