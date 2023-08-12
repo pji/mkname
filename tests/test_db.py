@@ -6,7 +6,6 @@ Unit tests for the mkname.db module.
 """
 import pathlib
 import sqlite3
-import unittest as ut
 
 import pytest
 
