@@ -166,113 +166,28 @@ def test_get_config_in_cwd(local_config_loc, test_config):
     assert mn.get_config() == test_config
 
 
-class InitializationTestCase(ut.TestCase):
-    default_config_loc = DEFAULT_CONFIG
-    default_db_loc = DEFAULT_DB
-    local_config_loc = LOCAL_CONFIG
-    local_db_loc = 'test_names.db'
-    test_config_loc = 'tests/data/test_load_config.conf'
-    test_db_loc = 'tests/data/names.db'
-    test_dir_loc = 'tests/data/__test_mkname_test_dir'
-    test_full_config = {
-        'consonants': 'bcd',
-        'db_path': 'spam.db',
-        'punctuation': "'-",
-        'scifi_letters': 'eggs',
-        'vowels': 'aei'
-    }
+def test_get_config_with_path(test_config):
+    """Given the path to a configuration file as a string,
+    return the mkname configuration found in that file.
+    """
+    path = Path('tests/data/test_load_config.conf')
+    assert mn.get_config(path) == test_config
 
-    def assertConfigEqual(self, a: Mapping, b: Mapping) -> None:
-        """Assert that two ParserConfig objects are equal."""
-        a_keylist = list(a.keys())
-        b_keylist = list(b.keys())
-        self.assertListEqual(a_keylist, b_keylist)
-        for key in a:
-            if isinstance(a[key], Mapping):
-                self.assertConfigEqual(a[key], b[key])
-            else:
-                self.assertEqual(a[key], b[key])
 
-    def assertFileEqual(self, a, b):
-        """Compare the files as two paths."""
-        a_path = Path(a)
-        b_path = Path(b)
-        for path in a_path, b_path:
-            if not path.is_file():
-                msg = f'{path} is not a file.'
-                raise RuntimeError(msg)
+def test_get_config_with_str(test_config):
+    """Given the path to a configuration file as a string,
+    return the mkname configuration found in that file.
+    """
+    path_str = 'tests/data/test_load_config.conf'
+    assert mn.get_config(path_str) == test_config
 
-        self.assertTrue(filecmp.cmp(a, b, shallow=False))
 
-    def get_common_paths(self):
-        return (
-            Path(self.local_config_loc),
-            Path(self.local_db_loc),
-        )
-
-    def setUp(self):
-        paths = self.get_common_paths()
-        msg = '{} exists. Aborting test.'
-        for path in paths:
-            if path.exists():
-                raise FileExistsError(msg.format(path))
-
-    def tearDown(self):
-        paths = self.get_common_paths()
-        for path in paths:
-            if path.exists():
-                path.unlink()
-
-    # Tests for get_config.
-    def test_get_config_with_path(self):
-        """Given the path to a configuration file as a string,
-        return the mkname configuration found in that file.
-        """
-        # Expected value.
-        exp = self.test_full_config
-
-        # Test data and state.
-        path_str = self.test_config_loc
-        path = Path(path_str)
-
-        # Run test.
-        act = mn.get_config(path)
-
-        # Determine test result.
-        self.assertConfigEqual(exp, act)
-
-    def test_get_config_with_str(self):
-        """Given the path to a configuration file as a string,
-        return the mkname configuration found in that file.
-        """
-        # Expected value.
-        exp = self.test_full_config
-
-        # Test data and state.
-        path_str = self.test_config_loc
-
-        # Run test.
-        act = mn.get_config(path_str)
-
-        # Determine test result.
-        self.assertConfigEqual(exp, act)
-
-    def test_get_config_with_str_and_not_exists(self):
-        """Given the path to a configuration file as a string,
-        check if the file exists. If not, copy the default config
-        to that location, then return the mkname configuration found
-        in that file.
-        """
-        # Expected value.
-        exp_config = DEFAULT_CONFIG_DATA
-        exp_file = Path(self.local_config_loc)
-
-        # Test data and state.
-        path = self.local_config_loc
-
-        # Run test.
-        act_config = mn.get_config(path)
-
-        # Determine test result.
-        self.assertConfigEqual(exp_config, act_config)
-        self.assertTrue(exp_file.is_file())
+def test_get_config_and_not_exists(local_config_loc):
+    """Given the path to a configuration file as a string,
+    check if the file exists. If not, copy the default config
+    to that location, then return the mkname configuration found
+    in that file.
+    """
+    path = local_config_loc
+    assert mn.get_config(path) == DEFAULT_CONFIG_DATA
+    assert path.is_file()
