@@ -2,7 +2,7 @@
 test_mod
 ~~~~~~~~
 
-unit tests for the mkname.mod function.
+Unit tests for the mkname.mod function.
 """
 import unittest as ut
 from unittest.mock import patch
@@ -10,201 +10,155 @@ from unittest.mock import patch
 from mkname import mod
 
 
-# Test cases.
-class AddLetters(ut.TestCase):
-    def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
-        """Core of the name modifier (mod) tests."""
-        # Test state.
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.side_effect = roll_values
-
-            # Run test.
-            act = mod_fn(base_name)
-
-        # Determine test result.
-        self.assertEqual(exp, act)
-
-    def add_letters_test(self,
-                         exp,
-                         base_name,
-                         letter_roll,
-                         position_roll,
-                         index_roll=0,
-                         wild_roll=0,
-                         count_roll=0,
-                         index_rolls=(0, 0)):
-        """The common code for the standard test of mkname.
-        add_scifi_letters().
-        """
-        roll_values = [
-            letter_roll,
-            position_roll,
-            index_roll,
-            wild_roll,
-            count_roll,
-            *index_rolls,
-        ]
-        mod_fn = mod.add_letters
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
-
-    # add_scifi_letters tests.
-    def test_addletters_append_letter_when_ends_with_vowel(self):
-        """When the given base ends with a vowel, the scifi
-        letter should be appended to the name if it's added to the
-        end of the name.
-        """
-        # Expected value.
-        exp = 'Stevez'
-
-        # Test data and state.
-        base = 'Steve'
-        letter_roll = 4
-        position_roll = 6
-
-        # Run test and determine result.
-        self.add_letters_test(exp, base, letter_roll, position_roll)
-
-    def test_addletters_prepend_letter_when_starts_with_vowel(self):
-        """When the given base name starts with a vowel, the scifi
-        letter should be prepended to the name if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Xadam'
-
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 3
-        position_roll = 1
-
-        # Run test and determine result.
-        self.add_letters_test(exp, base, letter_roll, position_roll)
-
-    def test_addletters_replace_end_when_ends_with_consonant(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Adaz'
-
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 4
-        position_roll = 6
-
-        # Run test and determine result.
-        self.add_letters_test(exp, base, letter_roll, position_roll)
-
-    def test_addletters_replace_random_letter(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Kdkm'
-
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 1
-        position_roll = 11
-        index_roll = 3
-        wild_roll = 20
-        count_roll = 3
-        index_rolls = [1, 3, 3]
-
-        # Run test and determine result.
-        self.add_letters_test(
-            exp,
-            base,
-            letter_roll,
-            position_roll,
-            wild_roll,
-            index_roll,
-            count_roll,
-            index_rolls
-        )
-
-    def test_addletters_replace_start_when_starts_with_consonant(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Xteve'
-
-        # Test data and state.
-        base = 'Steve'
-        letter_roll = 3
-        position_roll = 1
-
-        # Run test and determine result.
-        self.add_letters_test(exp, base, letter_roll, position_roll)
+# Core test functions.
+def add_letters_test(
+    mocker,
+    base,
+    letter_roll,
+    position_roll,
+    index_roll=0,
+    wild_roll=0,
+    count_roll=0,
+    index_rolls=(0, 0)
+):
+    """The common code for the standard test of
+    :meth:`mkname.add_scifi_letters`.
+    """
+    rolls = [
+        letter_roll,
+        position_roll,
+        index_roll,
+        wild_roll,
+        count_roll,
+        *index_rolls,
+    ]
+    mocker.patch('yadr.roll', side_effect=rolls)
+    return mod.add_letters(base)
 
 
-class AddPunctuation(ut.TestCase):
-    def add_punctuation_test(self,
-                             exp,
-                             name,
-                             rolls,
-                             **kwargs):
-        """Run a standard add_punctuation test."""
-        # Test data and state.
-        kwargs['name'] = name
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.side_effect = rolls
+def add_punctuation_test(mocker, name, rolls, **kwargs):
+    """Run a standard add_punctuation test."""
+    mocker.patch('yadr.roll', side_effect=rolls)
+    return mod.add_punctuation(name, **kwargs)
 
-            # Run test.
-            act = mod.add_punctuation(**kwargs)
 
-        # Determine test result.
-        self.assertEqual(exp, act)
+# Tests for add_scifi_lettes.
+def test_addletters_append_letter_when_ends_with_vowel(mocker):
+    """When the given base ends with a vowel, the scifi letter should
+    be appended to the name if it's added to the end of the name.
+    """
+    base = 'Steve'
+    letter_roll = 4
+    position_roll = 6
+    result = add_letters_test(mocker, base, letter_roll, position_roll)
+    assert result == 'Stevez'
 
-    def test_add_puctuation(self):
-        """Given a name, add a punctuation mark into the name. It
-        capitalizes the first letter and the letter after the
-        punctuation mark in the name.
-        """
-        exp = "S'Pam"
-        name = 'spam'
-        rolls = [1, 2]
-        self.add_punctuation_test(exp, name, rolls)
 
-    def test_add_puctuation_at_index(self):
-        """Given an index, add the punctuation at that index.
-        """
-        exp = "Spa.M"
-        name = 'spam'
-        rolls = [3]
-        index = 3
-        self.add_punctuation_test(exp, name, rolls, index=index)
+def test_addletters_prepend_letter_when_starts_with_vowel(mocker):
+    """When the given base name starts with a vowel, the scifi letter
+    should be prepended to the name if it's added to the front of the
+    name.
+    """
+    base = 'Adam'
+    letter_roll = 3
+    position_roll = 1
+    result = add_letters_test(mocker, base, letter_roll, position_roll)
+    assert result == 'Xadam'
 
-    def test_add_punctuation_do_not_cap_after_mark(self):
-        """If False is passed for cap_after, then the letter after
-        the mark isn't capitalized."""
-        exp = "Spa'm"
-        name = 'spam'
-        rolls = [1,4]
-        cap_after = False
-        self.add_punctuation_test(exp, name, rolls, cap_after=cap_after)
 
-    def test_add_punctuation_do_not_cap_before_mark(self):
-        """If False is passed for cap_before, then the letter before
-        the mark isn't capitalized."""
-        exp = "s'Pam"
-        name = 'spam'
-        rolls = [1,2]
-        cap_before = False
-        self.add_punctuation_test(exp, name, rolls, cap_before=cap_before)
+def test_addletters_replace_end_when_ends_with_consonant(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the
+    front of the name.
+    """
+    base = 'Adam'
+    letter_roll = 4
+    position_roll = 6
+    result = add_letters_test(mocker, base, letter_roll, position_roll)
+    assert result == 'Adaz'
 
-    def test_add_punctuation_start_of_name(self):
-        """If the selected position is in front of the name,
-        add the mark to the beginning of the name.
-        """
-        exp = '-Spam'
-        name = 'spam'
-        rolls = [2, 1]
-        self.add_punctuation_test(exp, name, rolls)
+
+def test_addletters_replace_random_letter(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the
+    front of the name.
+    """
+    base = 'Adam'
+    result = add_letters_test(
+        mocker,
+        base,
+        letter_roll=1,
+        position_roll=11,
+        wild_roll=3,
+        index_roll=20,
+        count_roll=3,
+        index_rolls=[1, 3, 3]
+    )
+    assert result == 'Kdkm'
+
+
+def test_addletters_replace_start_when_starts_with_consonant(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the
+    front of the name.
+    """
+    base = 'Steve'
+    letter_roll = 3
+    position_roll = 1
+    result = add_letters_test(mocker, base, letter_roll, position_roll)
+    assert result == 'Xteve'
+
+
+# Tests for add_punctuation.
+def test_add_puctuation(mocker):
+    """Given a name, add a punctuation mark into the name. It
+    capitalizes the first letter and the letter after the
+    punctuation mark in the name.
+    """
+    name = 'spam'
+    rolls = [1, 2]
+    result = add_punctuation_test(mocker, name, rolls)
+    assert result == "S'Pam"
+
+
+def test_add_puctuation_at_index(mocker):
+    """Given an index, add the punctuation at that index."""
+    name = 'spam'
+    rolls = [3,]
+    index = 3
+    result = add_punctuation_test(mocker, name, rolls, index=index)
+    assert result == 'Spa.M'
+
+
+def test_add_punctuation_do_not_cap_after_mark(mocker):
+    """If False is passed for cap_after, then the letter after the mark
+    isn't capitalized.
+    """
+    name = 'spam'
+    rolls = [1,4]
+    cap_after = False
+    result = add_punctuation_test(mocker, name, rolls, cap_after=cap_after)
+    assert result == "Spa'm"
+
+
+def test_add_punctuation_do_not_cap_before_mark(mocker):
+    """If False is passed for cap_before, then the letter before the
+    mark isn't capitalized."""
+    name = 'spam'
+    rolls = [1,2]
+    cap_before = False
+    result = add_punctuation_test(mocker, name, rolls, cap_before=cap_before)
+    assert result == "s'Pam"
+
+
+def test_add_punctuation_start_of_name(mocker):
+    """If the selected position is in front of the name, add the mark to
+    the beginning of the name.
+    """
+    name = 'spam'
+    rolls = [2, 1]
+    result = add_punctuation_test(mocker, name, rolls)
+    assert result == '-Spam'
 
 
 class CompoundNamesTestCase(ut.TestCase):

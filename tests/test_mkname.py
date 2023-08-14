@@ -5,9 +5,6 @@ test_mkname
 import filecmp
 from pathlib import Path
 import shutil
-import unittest as ut
-from unittest.mock import patch
-from typing import Mapping
 
 import pytest
 
