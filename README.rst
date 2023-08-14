@@ -41,14 +41,16 @@ It should also be able to be imported into your Python code as a package.
 
 How do I run the tests?
 =======================
-If you just want to run the unit tests:
+I'm using the `pytest` library for the unit tests. To just run those tests,
+go to the root of your clone of the `mkname` repository and use the following
+command::
 
-    python -m unittest discover tests
+    python3 -m pytest
 
-If you're wanting a range of additional checks, including type and style
-checks, run:
+The full suite of style checks, mypy, and such I use can be run using a
+shortcut I have set up in the Makefile::
 
-    ./precommit.py
+    make pre
 
 Note: `precommit.py` requires itself to be run from a virtual environment
 located in the `.venv` directory at the root of the repository. This is so
