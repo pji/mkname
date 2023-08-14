@@ -25,9 +25,11 @@ def build_compound_name(names: Sequence[Name], config: dict) -> str:
     return name
 
 
-def build_syllable_name(names: Sequence[Name],
-                        config: dict,
-                        num_syllables: int) -> str:
+def build_syllable_name(
+    names: Sequence[Name],
+    config: dict,
+    num_syllables: int
+) -> str:
     """Construct a name from the syllables of names in the database."""
     name = mn.build_from_syllables(
         num_syllables,
@@ -65,7 +67,7 @@ def write_output(lines: Union[Sequence[str], str]) -> None:
     """Write the output to the terminal."""
     if isinstance(lines, str):
         lines = [lines, ]
-    
+
     for line in lines:
         print(line)
 
@@ -140,14 +142,14 @@ def parse_cli() -> None:
         type=int
     )
     args = p.parse_args()
-    
+
     # Set up the configuration.
     config_file = ''
     if args.config:
         config_file = args.config
     config = mn.get_config(config_file)
     db_loc = mn.init_db(config['db_path'])
-    
+
     # Get names for generation.
     if args.first_name:
         names = db.get_names_by_kind(db_loc, 'given')
@@ -157,7 +159,7 @@ def parse_cli() -> None:
         names = db.get_names(db_loc)
     if args.culture:
         names = [name for name in names if name.culture == args.culture]
-    
+
     # Generate the names, storing the output.
     lines = []
     for _ in range(args.num_names):
@@ -176,7 +178,7 @@ def parse_cli() -> None:
         if args.syllable_name:
             name = build_syllable_name(names, config, args.syllable_name)
             lines.append(name)
-    
+
     if args.modify_name:
         lines = [modify_name(line, args.modify_name) for line in lines]
 

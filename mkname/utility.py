@@ -23,9 +23,11 @@ def roll(yadn: str) -> int:
 
 
 # Word analysis functions.
-def calc_cv_pattern(name: str,
-                    consonants: Sequence[str] = CONSONANTS,
-                    vowels: Sequence[str] = VOWELS) -> str:
+def calc_cv_pattern(
+    name: str,
+    consonants: Sequence[str] = CONSONANTS,
+    vowels: Sequence[str] = VOWELS
+) -> str:
     """Determine the pattern of consonants and vowels in the name."""
     name = name.casefold()
     pattern = ''
@@ -40,9 +42,11 @@ def calc_cv_pattern(name: str,
 
 
 # Word manipulation functions.
-def split_into_syllables(name: str,
-                         consonants: Sequence[str] = CONSONANTS,
-                         vowels: Sequence[str] = VOWELS) -> tuple[str, ...]:
+def split_into_syllables(
+    name: str,
+    consonants: Sequence[str] = CONSONANTS,
+    vowels: Sequence[str] = VOWELS
+) -> tuple[str, ...]:
     """Split a name into syllables. Sort of. It's a simple and very
     inaccurate algorithm.
     """

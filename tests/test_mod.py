@@ -4,9 +4,6 @@ test_mod
 
 Unit tests for the mkname.mod function.
 """
-import unittest as ut
-from unittest.mock import patch
-
 from mkname import mod
 
 
@@ -42,8 +39,14 @@ def add_punctuation_test(mocker, name, rolls, **kwargs):
     return mod.add_punctuation(name, **kwargs)
 
 
-# Tests for add_scifi_lettes.
-def test_addletters_append_letter_when_ends_with_vowel(mocker):
+def simple_mod_test(mocker, mod_fn, base, rolls):
+    """Core of the simple modifier (mod) tests."""
+    mocker.patch('yadr.roll', side_effect=rolls)
+    return mod_fn(base)
+
+
+# Tests for add_letters.
+def test_add_letters_append_letter_when_ends_with_vowel(mocker):
     """When the given base ends with a vowel, the scifi letter should
     be appended to the name if it's added to the end of the name.
     """
@@ -54,7 +57,7 @@ def test_addletters_append_letter_when_ends_with_vowel(mocker):
     assert result == 'Stevez'
 
 
-def test_addletters_prepend_letter_when_starts_with_vowel(mocker):
+def test_add_letters_prepend_letter_when_starts_with_vowel(mocker):
     """When the given base name starts with a vowel, the scifi letter
     should be prepended to the name if it's added to the front of the
     name.
@@ -66,7 +69,7 @@ def test_addletters_prepend_letter_when_starts_with_vowel(mocker):
     assert result == 'Xadam'
 
 
-def test_addletters_replace_end_when_ends_with_consonant(mocker):
+def test_add_letters_replace_end_when_ends_with_consonant(mocker):
     """When the given base name starts with a consonant, the scifi
     letter should replace the first letter if it's added to the
     front of the name.
@@ -78,7 +81,7 @@ def test_addletters_replace_end_when_ends_with_consonant(mocker):
     assert result == 'Adaz'
 
 
-def test_addletters_replace_random_letter(mocker):
+def test_add_letters_replace_random_letter(mocker):
     """When the given base name starts with a consonant, the scifi
     letter should replace the first letter if it's added to the
     front of the name.
@@ -97,7 +100,7 @@ def test_addletters_replace_random_letter(mocker):
     assert result == 'Kdkm'
 
 
-def test_addletters_replace_start_when_starts_with_consonant(mocker):
+def test_add_letters_replace_start_when_starts_with_consonant(mocker):
     """When the given base name starts with a consonant, the scifi
     letter should replace the first letter if it's added to the
     front of the name.
@@ -161,311 +164,147 @@ def test_add_punctuation_start_of_name(mocker):
     assert result == '-Spam'
 
 
-class CompoundNamesTestCase(ut.TestCase):
-    def test_compound_names(self):
-        """Given two names, return a string that combines the two
-        names.
-        """
-        # Expected value.
-        exp = 'Dallory'
-
-        # Test data and state.
-        a = 'Donatello'
-        b = 'Mallory'
-
-        # Run test.
-        act = mod.compound_names(a, b)
-
-        # Determine test result.
-        self.assertEqual(exp, act)
+# Tests for compound_name.
+def test_compound_names():
+    """Given two names, return a string that combines the two names."""
+    a = 'Donatello'
+    b = 'Mallory'
+    assert mod.compound_names(a, b) == 'Dallory'
 
 
-class DoubleLetterTestCase(ut.TestCase):
-    def test_double_letter(self):
-        """Given a name, select a letter in the name and double it."""
-        # Expected value.
-        exp = 'Spaam'
-
-        # Test data and state.
-        name = 'Spam'
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.return_value = 3
-
-            # Run test.
-            act = mod.double_letter(name)
-
-        # Determine test success.
-        self.assertEqual(exp, act)
-
-    def test_double_letter_only_given_letters(self):
-        """If given a string of letters, only double a letter that
-        is in that list."""
-        # Expected value.
-        exp = 'Baacon'
-
-        # Test data and state.
-        name = 'Bacon'
-        letters = 'aeiou'
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.return_value = 1
-
-            # Run test.
-            act = mod.double_letter(name, letters)
-
-        # Determine test success.
-        self.assertEqual(exp, act)
-
-    def test_double_letter_given_letters_not_in_name(self):
-        """If given a string of letters and the name doesn't have
-        any of those letters, return the name.
-        '"""
-        # Expected value.
-        exp = 'Bacon'
-
-        # Test data and state.
-        name = 'Bacon'
-        letters = 'kqxz'
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.return_value = 1
-
-            # Run test.
-            act = mod.double_letter(name, letters)
-
-        # Determine test success.
-        self.assertEqual(exp, act)
+# Tests for double_letter.
+def test_double_letter_only_given_letters(mocker):
+    """If given a string of letters, only double a letter that is in
+    that list.
+    """
+    name = 'Bacon'
+    letters = 'aeiou'
+    roll = [1,]
+    mocker.patch('yadr.roll', side_effect=roll)
+    assert mod.double_letter(name, letters) == 'Baacon'
 
 
-class TranslateLettersTestCase(ut.TestCase):
-    def test_translate_characters(self):
-        """Given a mapping that maps characters in the name to different
-        characters, return the translated name.
-        """
-        # Expected value.
-        exp = 'sanatella'
-
-        # Test data and state.
-        name = 'donatello'
-        char_map = {
-            'd': 's',
-            'o': 'a',
-        }
-
-        # Run test.
-        act = mod.translate_characters(name, char_map)
-
-        # Determine test result.
-        self.assertEqual(exp, act)
+def test_double_letter_given_letters_not_in_name(mocker):
+    """If given a string of letters and the name doesn't have any of
+    those letters, return the name.
+    """
+    name = 'Bacon'
+    letters = 'kqxz'
+    roll = [1,]
+    mocker.patch('yadr.roll', side_effect=roll)
+    assert mod.double_letter(name, letters) == name
 
 
-class SimpleModifiersTestCase(ut.TestCase):
-    def _core_modify_test(self, exp, base_name, mod_fn, roll_values):
-        """Core of the name modifier (mod) tests."""
-        # Test state.
-        with patch('mkname.mod.roll') as mock_roll:
-            mock_roll.side_effect = roll_values
+# Test translate_characters.
+def test_translate_characters(mocker):
+    """Given a mapping that maps characters in the name to different
+    characters, return the translated name.
+    """
+    name = 'donatello'
+    char_map = {
+        'd': 's',
+        'o': 'a',
+    }
+    roll = [1,]
+    mocker.patch('yadr.roll', side_effect=roll)
+    assert mod.translate_characters(name, char_map) == 'sanatella'
 
-            # Run test.
-            act = mod_fn(base_name)
 
-        # Determine test result.
-        self.assertEqual(exp, act)
+# Test simple modifiers.
+def test_double_vowel(mocker):
+    """Given a base name, double_vowel() should double a vowel within
+    the name.
+    """
+    mod_fn = mod.double_vowel
+    base = 'Bacon'
+    rolls = [1,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Baacon'
 
-    def double_vowel_test(self, exp, base_name, index_roll):
-        """The common core for tests of garble()."""
-        # Test data and state.
-        roll_values = [
-            index_roll,
-        ]
-        mod_fn = mod.double_vowel
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
-    def garble_test(self, exp, base_name, index_roll):
-        """The common core for tests of garble()."""
-        # Test data and state.
-        roll_values = [
-            index_roll,
-        ]
-        mod_fn = mod.garble
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
+def test_garble(mocker):
+    """Given a base name, garble() should garble it by converting a
+    section in the middle to base64.
+    """
+    mod_fn = mod.garble
+    base = 'Spam'
+    rolls = [2,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Scaam'
 
-    def make_scifi_test(self,
-                        exp,
-                        base_name,
-                        letter_roll,
-                        position_roll,
-                        index_roll=0,
-                        wild_roll=0,
-                        count_roll=0,
-                        index_rolls=(0, 0)):
-        """The common code for the standard test of mkname.
-        add_scifi_letters().
-        """
-        roll_values = [
-            letter_roll,
-            position_roll,
-            index_roll,
-            wild_roll,
-            count_roll,
-            *index_rolls,
-        ]
-        mod_fn = mod.make_scifi
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
 
-    def vulcanize_test(self, exp, base_name, roll_values):
-        """The common core for tests of garble()."""
-        # Test data and state.
-        mod_fn = mod.vulcanize
-        self._core_modify_test(exp, base_name, mod_fn, roll_values)
+def test_make_scifi_append_letter_when_ends_with_vowel(mocker):
+    """When the given base ends with a vowel, the scifi letter should
+    be appended to the name if it's added to the end of the name.
+    """
+    mod_fn = mod.make_scifi
+    base = 'Steve'
+    rolls = [4, 6, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Stevez'
 
-    # double_vowel tests.
-    def test_double_vowel(self):
-        """Given a base name, double_vowel() should double a vowel
-        within the name.
-        """
-        # Expected value.
-        exp = 'Baacon'
 
-        # Test data and state.
-        base = 'Bacon'
-        index_roll = 1
+def test_make_scifi_prepend_letter_when_starts_with_vowel(mocker):
+    """When the given base name starts with a vowel, the scifi letter
+    should be prepended to the name if it's added to the front of the
+    name.
+    """
+    mod_fn = mod.make_scifi
+    base = 'Adam'
+    rolls = [3, 1, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Xadam'
 
-        # Run test and determine result.
-        self.double_vowel_test(exp, base, index_roll)
 
-    # garble tests.
-    def test_garble(self):
-        """Given a base name, garble() should garble it by converting
-        a section in the middle to base64.
-        """
-        # Expected value.
-        exp = 'Scaam'
+def test_make_scifi_replace_end_when_ends_with_consonant(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the
+    front of the name.
+    """
+    mod_fn = mod.make_scifi
+    base = 'Adam'
+    rolls = [4, 6, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Adaz'
 
-        # Test data and state.
-        base = 'Spam'
-        index_roll = 2
 
-        # Run test and determine result.
-        self.garble_test(exp, base, index_roll)
+def test_make_scifi_replace_random_letter(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the
+    front of the name.
+    """
+    mod_fn = mod.make_scifi
+    base = 'Adam'
+    rolls = [1, 11, 20, 3, 3, 1, 3, 3]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Kdkm'
 
-    # add_scifi_letters tests.
-    def test_make_scifi_append_letter_when_ends_with_vowel(self):
-        """When the given base ends with a vowel, the scifi
-        letter should be appended to the name if it's added to the
-        end of the name.
-        """
-        # Expected value.
-        exp = 'Stevez'
 
-        # Test data and state.
-        base = 'Steve'
-        letter_roll = 4
-        position_roll = 6
+def test_make_scifi_replace_start_when_starts_with_consonant(mocker):
+    """When the given base name starts with a consonant, the scifi
+    letter should replace the first letter if it's added to the front
+    of the name.
+    """
+    mod_fn = mod.make_scifi
+    base = 'Steve'
+    rolls = [3, 1, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == 'Xteve'
 
-        # Run test and determine result.
-        self.make_scifi_test(exp, base, letter_roll, position_roll)
 
-    def test_make_scifi_prepend_letter_when_starts_with_vowel(self):
-        """When the given base name starts with a vowel, the scifi
-        letter should be prepended to the name if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Xadam'
+def test_vulcanize(mocker):
+    """Given a base name, vulcanize() should prefix the name with "T''"."""
+    mod_fn = mod.vulcanize
+    base = 'Spam'
+    rolls = [5, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == "T'Spam"
 
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 3
-        position_roll = 1
 
-        # Run test and determine result.
-        self.make_scifi_test(exp, base, letter_roll, position_roll)
-
-    def test_make_scifi_replace_end_when_ends_with_consonant(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Adaz'
-
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 4
-        position_roll = 6
-
-        # Run test and determine result.
-        self.make_scifi_test(exp, base, letter_roll, position_roll)
-
-    def test_make_scifi_replace_random_letter(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Kdkm'
-
-        # Test data and state.
-        base = 'Adam'
-        letter_roll = 1
-        position_roll = 11
-        index_roll = 3
-        wild_roll = 20
-        count_roll = 3
-        index_rolls = [1, 3, 3]
-
-        # Run test and determine result.
-        self.make_scifi_test(
-            exp,
-            base,
-            letter_roll,
-            position_roll,
-            wild_roll,
-            index_roll,
-            count_roll,
-            index_rolls
-        )
-
-    def test_make_scifi_replace_start_when_starts_with_consonant(self):
-        """When the given base name starts with a consonant, the scifi
-        letter should replace the first letter if it's added to the
-        front of the name.
-        """
-        # Expected value.
-        exp = 'Xteve'
-
-        # Test data and state.
-        base = 'Steve'
-        letter_roll = 3
-        position_roll = 1
-
-        # Run test and determine result.
-        self.make_scifi_test(exp, base, letter_roll, position_roll)
-
-    # vulcanize tests.
-    def test_vulcanize(self):
-        """Given a base name, vulcanize() should prefix the name
-        with "T''".
-        """
-        # Expected value.
-        exp = "T'Spam"
-
-        # Test data and state.
-        base = 'Spam'
-        roll_values = [5, 0]
-
-        # Run test and determine result.
-        self.vulcanize_test(exp, base, roll_values)
-
-    def test_vulcanize_not_t(self):
-        """One in six times, the prefix should use a letter other than
-        "T".
-        """
-        # Expected value.
-        exp = "Su'Spam"
-
-        # Test data and state.
-        base = 'Spam'
-        roll_values = [6, 8, 0]
-
-        # Run test and determine result.
-        self.vulcanize_test(exp, base, roll_values)
+def test_vulcanize_not_t(mocker):
+    """One in six times, the prefix should use a letter other than "T"."""
+    mod_fn = mod.vulcanize
+    base = 'Spam'
+    rolls = [6, 8, 0,]
+    result = simple_mod_test(mocker, mod_fn, base, rolls)
+    assert result == "Su'Spam"

@@ -127,9 +127,11 @@ def vulcanize(name: str) -> str:
 
 
 # Complex mods.
-def add_letters(name: str,
-                letters: str = SCIFI_LETTERS,
-                vowels: str = VOWELS) -> str:
+def add_letters(
+    name: str,
+    letters: str = SCIFI_LETTERS,
+    vowels: str = VOWELS
+) -> str:
     """Add one of the given letters to a name.
 
     :param name: The name to modify.
@@ -208,11 +210,13 @@ def add_letters(name: str,
     return name
 
 
-def add_punctuation(name: str,
-                    punctuation: Sequence[str] = PUNCTUATION,
-                    cap_before: bool = True,
-                    cap_after: bool = True,
-                    index: Optional[int] = None) -> str:
+def add_punctuation(
+    name: str,
+    punctuation: Sequence[str] = PUNCTUATION,
+    cap_before: bool = True,
+    cap_after: bool = True,
+    index: Optional[int] = None
+) -> str:
     """Add a punctuation mark to the name.
 
     :param name: The name to modify.
@@ -287,10 +291,12 @@ def add_punctuation(name: str,
     return _insert_substr(name, mark, index, cap_before, cap_after)
 
 
-def compound_names(mod_name: str,
-                   root_name: str,
-                   consonants: Sequence[str] = CONSONANTS,
-                   vowels: Sequence[str] = VOWELS) -> str:
+def compound_names(
+    mod_name: str,
+    root_name: str,
+    consonants: Sequence[str] = CONSONANTS,
+    vowels: Sequence[str] = VOWELS
+) -> str:
     """Construct a new name using the parts of two names.
 
     :param names: A list of Name objects to use for constructing
@@ -424,9 +430,11 @@ def double_letter(name: str, letters: Sequence[str] = '') -> str:
     return name[0:index] + name[index] + name[index:]
 
 
-def translate_characters(name: str,
-                         char_map: Mapping[str, str],
-                         casefold: bool = True) -> str:
+def translate_characters(
+    name: str,
+    char_map: Mapping[str, str],
+    casefold: bool = True
+) -> str:
     """Translate characters in the name to different characters.
 
     :param name: The name to modify.
@@ -454,12 +462,14 @@ def translate_characters(name: str,
 
 
 # Private utility functions.
-def _insert_substr(text: str,
-                   substr: str,
-                   index: int,
-                   cap_before: bool = False,
-                   cap_after: bool = False,
-                   replace: bool = False) -> str:
+def _insert_substr(
+    text: str,
+    substr: str,
+    index: int,
+    cap_before: bool = False,
+    cap_after: bool = False,
+    replace: bool = False
+) -> str:
     """Insert a substring into the text."""
     before = text[0:index]
     if replace:

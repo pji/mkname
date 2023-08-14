@@ -154,9 +154,11 @@ def init_db(path: Union[str, Path] = '') -> Path:
 
 
 # Name making functions.
-def build_compound_name(names: Sequence[Name],
-                        consonants: Sequence[str] = CONSONANTS,
-                        vowels: Sequence[str] = VOWELS) -> str:
+def build_compound_name(
+    names: Sequence[Name],
+    consonants: Sequence[str] = CONSONANTS,
+    vowels: Sequence[str] = VOWELS
+) -> str:
     """Construct a new game from two randomly selected names.
 
     :param names: A list of Name objects to use for constructing
@@ -213,10 +215,12 @@ def build_compound_name(names: Sequence[Name],
     return compound_names(root_name, mod_name, consonants, vowels)
 
 
-def build_from_syllables(num_syllables: int,
-                         names: Sequence[Name],
-                         consonants: Sequence[str] = CONSONANTS,
-                         vowels: Sequence[str] = VOWELS) -> str:
+def build_from_syllables(
+    num_syllables: int,
+    names: Sequence[Name],
+    consonants: Sequence[str] = CONSONANTS,
+    vowels: Sequence[str] = VOWELS
+) -> str:
     """Build a name from the syllables of the given names.
 
     :param names: A list of Name objects to use for constructing
