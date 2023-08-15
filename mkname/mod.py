@@ -12,10 +12,29 @@ from mkname.constants import CONSONANTS, PUNCTUATION, SCIFI_LETTERS, VOWELS
 from mkname.utility import roll
 
 
+# Types
+SimpleMod = Callable[[str], str]
+
+
+# Mod registration.
+mods: dict[str, SimpleMod] = {}
+
+
+class simple_mod:
+    """Register a simple modifier."""
+    def __init__(self, key: str) -> None:
+        self.key = key
+
+    def __call__(self, fn: SimpleMod) -> SimpleMod:
+        mods[self.key] = fn
+        return fn
+
+
 # Simple mods.
 # Simple mods only require one parameter: the name to modify. Other
 # parameters that modify the behavior of the mod can be allowed, but
 # must be optional.
+@simple_mod('double_vowel')
 def double_vowel(name: str):
     """Double a vowel within the name, like what with that popular
     Star Wars™ franchise the kids are talking about.
@@ -39,6 +58,7 @@ def double_vowel(name: str):
     return double_letter(name, letters)
 
 
+@simple_mod('garble')
 def garble(name: str):
     """Garble some characters in the name by base 64 encoding them.
 
@@ -76,6 +96,7 @@ def garble(name: str):
     return name.capitalize()
 
 
+@simple_mod('make_scifi')
 def make_scifi(name: str) -> str:
     """A simple version of add_scifi_letters.
 
@@ -97,6 +118,7 @@ def make_scifi(name: str) -> str:
     return add_letters(name)
 
 
+@simple_mod('vulcanize')
 def vulcanize(name: str) -> str:
     """Add prefixes to names that are similar to the prefixes seen
     in Vulcan characters in the Star Trek™ franchise.
@@ -483,9 +505,9 @@ def _insert_substr(
 
 
 # Mod registration.
-mods = {
-    'double_vowel': double_vowel,
-    'garble': garble,
-    'make_scifi': make_scifi,
-    'vulcanize': vulcanize,
-}
+# mods = {
+#     'double_vowel': double_vowel,
+#     'garble': garble,
+#     'make_scifi': make_scifi,
+#     'vulcanize': vulcanize,
+# }

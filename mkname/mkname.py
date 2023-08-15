@@ -5,22 +5,27 @@ mkname
 Tools for building names.
 """
 import configparser
+from importlib.resources import files
 from pathlib import Path
 from sqlite3 import Connection
 from typing import Sequence, Union
 
 from mkname.constants import (
     CONSONANTS,
-    DEFAULT_CONFIG,
-    DEFAULT_CONFIG_DATA,
     DEFAULT_DB,
     LOCAL_CONFIG,
     LOCAL_DB,
     VOWELS
 )
+import mkname.data
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import roll, split_into_syllables
+
+
+# Default configuration location.
+DATA_ROOT = Path(str(files(mkname.data)))
+DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
 
 
 # Initialization functions.
@@ -62,18 +67,22 @@ def get_config(location: Union[str, Path] = '') -> dict:
         scifi_letters: kqxz
         vowels = aeiou
     """
+    def read_config(path: Path) -> dict:
+        config = configparser.ConfigParser()
+        config.read(path)
+        return dict(config['mkname'])
+
     # Start with the default configuration.
-    config_data = DEFAULT_CONFIG_DATA.copy()
+    config_data = read_config(DEFAULT_CONFIG)
 
     # Convert the passed configuration file location into a Path
     # object so we can check whether it exists. If no location was
     # passed, create a Path for a config file with a default name
     # in the current working directory in case one happens to exist
     # there.
+    path = Path(LOCAL_CONFIG)
     if location:
         path = Path(location)
-    else:
-        path = Path(LOCAL_CONFIG)
 
     # If the given config file doesn't exist, create a new file and
     # add the default config to it. The value of location is checked
@@ -81,8 +90,7 @@ def get_config(location: Union[str, Path] = '') -> dict:
     # passed a config file location. Otherwise, we'd spew config
     # files into every directory the script is ever run from.
     if location and not path.exists():
-        defaults = DEFAULT_CONFIG_DATA.copy()
-        content = [f'{key} = {defaults[key]}' for key in defaults]
+        content = [f'{k} = {config_data[k]}' for k in config_data]
         content = ['[mkname]', *content]
         with open(path, 'w') as fh:
             fh.write('\n'.join(content))
@@ -90,10 +98,8 @@ def get_config(location: Union[str, Path] = '') -> dict:
     # If the given config file now exists, get the config settings
     # from the file and overwrite the default configuration values
     # with the new values from the file.
-    if path.is_file():
-        config = configparser.ConfigParser()
-        config.read(path)
-        config_data.update(config['mkname'])
+    if path.is_file() and path != DEFAULT_CONFIG:
+        config_data.update(read_config(path))
 
     # If the passed configuration file location was a directory,
     # replacing it would a valid config file could cause unexpected

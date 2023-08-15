@@ -4,6 +4,7 @@ constants
 
 Default configuration values for mknames.
 """
+import configparser
 from importlib.resources import files
 from pathlib import Path
 
@@ -14,25 +15,25 @@ import mkname.data
 data_pkg = files(mkname.data)
 data_pkg_str = str(data_pkg)
 DATA_ROOT = Path(data_pkg_str)
+DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
+
+# Read deafult config.
+config = configparser.ConfigParser()
+config.read(DEFAULT_CONFIG)
 
 # File locations.
-CONFIG_FILE = DATA_ROOT / 'defaults.cfg'
-DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
-DEFAULT_DB = DATA_ROOT / 'names.db'
-LOCAL_CONFIG = 'mkname.cfg'
-LOCAL_DB = 'names.db'
+locs = config['mkname_files']
+CONFIG_FILE = DATA_ROOT / locs['config_file']
+DEFAULT_DB = DATA_ROOT / locs['default_db']
+LOCAL_CONFIG = DATA_ROOT / locs['local_config']
+LOCAL_DB = DATA_ROOT / locs['local_db']
 
 # Word structure.
-CONSONANTS = 'bcdfghjklmnpqrstvwxz'
-PUNCTUATION = "'-.?!/:@+|•"
-SCIFI_LETTERS = 'kqxz'
-VOWELS = 'aeiouy'
+default = config['mkname']
+CONSONANTS = default['consonants']
+PUNCTUATION = default['punctuation']
+SCIFI_LETTERS = default['scifi_letters']
+VOWELS = default['vowels']
 
 # Default configuration data.
-DEFAULT_CONFIG_DATA = {
-    'consonants': CONSONANTS,
-    'db_path': str(DEFAULT_DB),
-    'punctuation': PUNCTUATION,
-    'scifi_letters': SCIFI_LETTERS,
-    'vowels': VOWELS,
-}
+DEFAULT_CONFIG_DATA = dict(default)

@@ -8,28 +8,25 @@ import pytest
 
 from mkname import cli
 from mkname import constants as c
+from mkname import mkname as mn
 
 
 # Fixtures.
 @pytest.fixture
-def testdb():
+def testdb(mocker):
     """Point the unit test to the test instance of the database."""
-    original = c.DEFAULT_CONFIG_DATA['db_path']
-    c.DEFAULT_CONFIG_DATA['db_path'] = 'tests/data/names.db'
-    yield None
-    c.DEFAULT_CONFIG_DATA['db_path'] = original
+    config = mn.get_config()
+    config['db_path'] = 'tests/data/names.db'
+    mocker.patch('mkname.mkname.get_config', return_value=config)
 
 
 @pytest.fixture
-def testletters():
+def testletters(mocker):
     """Change the consonants and vowels for a test."""
-    orig_consonants = c.DEFAULT_CONFIG_DATA['consonants']
-    orig_vowels = c.DEFAULT_CONFIG_DATA['vowels']
-    c.DEFAULT_CONFIG_DATA['consonants'] = 'bcdfghjkmnpqrstvwxz'
-    c.DEFAULT_CONFIG_DATA['vowels'] = 'aeiouyl'
-    yield None
-    c.DEFAULT_CONFIG_DATA['consonants'] = orig_consonants
-    c.DEFAULT_CONFIG_DATA['vowels'] = orig_vowels
+    config = mn.get_config()
+    config['consonants'] = 'bcdfghjkmnpqrstvwxz'
+    config['vowels'] = 'aeiouyl'
+    mocker.patch('mkname.mkname.get_config', return_value=config)
 
 
 # Core test functions.

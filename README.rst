@@ -39,6 +39,16 @@ The easies way to install and run `mkname` is:
 It should also be able to be imported into your Python code as a package.
 
 
+What Changed in Version 0.2.1
+=============================
+The following changes were made in v0.2.1:
+
+*   New simple modifications can be registered.
+*   Constants are stored as configuration.
+*   (To-do) Pull constants from local config when available.
+*   (To-do) CLI moved into __main__.
+
+
 How do I run the tests?
 =======================
 I'm using the `pytest` library for the unit tests. To just run those tests,
