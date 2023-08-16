@@ -10,22 +10,11 @@ from pathlib import Path
 from sqlite3 import Connection
 from typing import Sequence, Union
 
-from mkname.constants import (
-    CONSONANTS,
-    DEFAULT_DB,
-    LOCAL_CONFIG,
-    LOCAL_DB,
-    VOWELS
-)
+from mkname.constants import *
 import mkname.data
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import roll, split_into_syllables
-
-
-# Default configuration location.
-DATA_ROOT = Path(str(files(mkname.data)))
-DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
 
 
 # Initialization functions.

@@ -2,6 +2,7 @@
 test_mkname
 ~~~~~~~~~~~
 """
+import configparser
 import filecmp
 from pathlib import Path
 import shutil
@@ -9,16 +10,18 @@ import shutil
 import pytest
 
 from mkname import mkname as mn
-from mkname.constants import (
-    DEFAULT_DB,
-    DEFAULT_CONFIG,
-    DEFAULT_CONFIG_DATA,
-    LOCAL_CONFIG
-)
+from mkname.constants import *
 from mkname.model import Name
 
 
 # Fixtures.
+@pytest.fixture
+def default_config():
+    config = configparser.ConfigParser()
+    config.read(DEFAULT_CONFIG)
+    return dict(config['mkname'])
+
+
 @pytest.fixture
 def local_config_loc():
     loc = Path(LOCAL_CONFIG)
@@ -117,14 +120,13 @@ def test_init_db_without_path():
 
 
 # Tests for get_config.
-def test_get_config_default():
+def test_get_config_default(default_config):
     """If no path is given and there is no local config in the
     current working directory, return the default config as a
     dict.
     """
     result = mn.get_config()
-    assert result == DEFAULT_CONFIG_DATA
-    assert result is not DEFAULT_CONFIG_DATA
+    assert result == default_config
 
 
 def test_get_config_dir():
@@ -138,12 +140,12 @@ def test_get_config_dir():
         mn.get_config(loc)
 
 
-def test_get_config_fill_missing_keys():
+def test_get_config_fill_missing_keys(default_config):
     """Given the path to a config file with missing keys,
     add those keys with default values to the returned config.
     """
     # Expected value.
-    expected = DEFAULT_CONFIG_DATA.copy()
+    expected = default_config
     expected['db_path'] = 'spam.db'
 
     # Test data and state.
@@ -179,12 +181,12 @@ def test_get_config_with_str(test_config):
     assert mn.get_config(path_str) == test_config
 
 
-def test_get_config_and_not_exists(local_config_loc):
+def test_get_config_and_not_exists(local_config_loc, default_config):
     """Given the path to a configuration file as a string,
     check if the file exists. If not, copy the default config
     to that location, then return the mkname configuration found
     in that file.
     """
     path = local_config_loc
-    assert mn.get_config(path) == DEFAULT_CONFIG_DATA
+    assert mn.get_config(path) == default_config
     assert path.is_file()

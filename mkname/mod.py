@@ -8,7 +8,7 @@ import base64 as b64
 from functools import partial
 from typing import Callable, Mapping, Optional, Sequence
 
-from mkname.constants import CONSONANTS, PUNCTUATION, SCIFI_LETTERS, VOWELS
+from mkname.constants import *
 from mkname.utility import roll
 
 
@@ -502,12 +502,3 @@ def _insert_substr(
     if cap_after:
         after = after.title()
     return f'{before}{substr}{after}'
-
-
-# Mod registration.
-# mods = {
-#     'double_vowel': double_vowel,
-#     'garble': garble,
-#     'make_scifi': make_scifi,
-#     'vulcanize': vulcanize,
-# }

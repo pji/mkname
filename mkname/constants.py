@@ -35,5 +35,19 @@ PUNCTUATION = default['punctuation']
 SCIFI_LETTERS = default['scifi_letters']
 VOWELS = default['vowels']
 
-# Default configuration data.
-DEFAULT_CONFIG_DATA = dict(default)
+# Define the values that will be imported with an asterisk.
+__all__ = [
+    # Common paths.
+    'CONFIG_FILE',
+    'DATA_ROOT',
+    'DEFAULT_CONFIG',
+    'DEFAULT_DB',
+    'LOCAL_CONFIG',
+    'LOCAL_DB',
+
+    # Common data.
+    'CONSONANTS',
+    'PUNCTUATION',
+    'SCIFI_LETTERS',
+    'VOWELS',
+]

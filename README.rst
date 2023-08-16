@@ -30,7 +30,7 @@ before returning them. Major features include:
 
 How do I run it?
 ================
-The easies way to install and run `mkname` is:
+The easiest way to install and run `mkname` is:
 
 1.  Ensure you are using Python 3.10 or higher.
 2.  Install from PyPI using pip: `pip install mkname`
