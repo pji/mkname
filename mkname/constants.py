@@ -4,22 +4,15 @@ constants
 
 Default configuration values for mknames.
 """
-import configparser
-from importlib.resources import files
-from pathlib import Path
-
-import mkname.data
+from mkname.init import get_config, get_default_path
 
 
 # Path roots.
-data_pkg = files(mkname.data)
-data_pkg_str = str(data_pkg)
-DATA_ROOT = Path(data_pkg_str)
+DATA_ROOT = get_default_path()
 DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
 
-# Read deafult config.
-config = configparser.ConfigParser()
-config.read(DEFAULT_CONFIG)
+# Read default config.
+config = get_config()
 
 # File locations.
 locs = config['mkname_files']

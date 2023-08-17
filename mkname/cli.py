@@ -147,7 +147,7 @@ def parse_cli() -> None:
     config_file = ''
     if args.config:
         config_file = args.config
-    config = mn.get_config(config_file)
+    config = mn.get_config(config_file)['mkname']
     db_loc = mn.init_db(config['db_path'])
 
     # Get names for generation.

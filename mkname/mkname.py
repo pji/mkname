@@ -12,92 +12,93 @@ from typing import Sequence, Union
 
 from mkname.constants import *
 import mkname.data
+from mkname.init import get_config
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import roll, split_into_syllables
 
 
 # Initialization functions.
-def get_config(location: Union[str, Path] = '') -> dict:
-    """Get the configuration.
-
-    :param location: (Optional.) The path to the configuration file.
-        If no path is passed, it will default to using the default
-        configuration data from mkname.constants.
-    :return: A :class:dict object.
-    :rtype: dict
-
-    Usage:
-
-        >>> loc = 'tests/data/test_load_config.conf'
-        >>> get_config(loc)                 # doctest: +ELLIPSIS
-        {'consonants': 'bcd', 'db_path':...'aei'}
-
-    Configuration File Format
-    -------------------------
-    The file structure of the configuration file is the Windows
-    INI-like structure used by Python's configparser module.
-    The configuration should be in a 'mkname' section. The following
-    keys are possible:
-
-    :param consonants: Characters you define as consonants.
-    :param db_path: The path to the names database.
-    :param punctuation: Characters you define as punctuation.
-    :param scifi_letters: A string of characters you define as being
-        characteristic of science fiction names.
-    :param vowels: Characters you define as vowels.
-
-    Example::
-
-        [mkname]
-        consonants = bcdfghjklmnpqrstvwxz
-        db_path = mkname/data/names.db
-        punctuation = '-
-        scifi_letters: kqxz
-        vowels = aeiou
-    """
-    def read_config(path: Path) -> dict:
-        config = configparser.ConfigParser()
-        config.read(path)
-        return dict(config['mkname'])
-
-    # Start with the default configuration.
-    config_data = read_config(DEFAULT_CONFIG)
-
-    # Convert the passed configuration file location into a Path
-    # object so we can check whether it exists. If no location was
-    # passed, create a Path for a config file with a default name
-    # in the current working directory in case one happens to exist
-    # there.
-    path = Path(LOCAL_CONFIG)
-    if location:
-        path = Path(location)
-
-    # If the given config file doesn't exist, create a new file and
-    # add the default config to it. The value of location is checked
-    # here to make sure we fall back to default config if we weren't
-    # passed a config file location. Otherwise, we'd spew config
-    # files into every directory the script is ever run from.
-    if location and not path.exists():
-        content = [f'{k} = {config_data[k]}' for k in config_data]
-        content = ['[mkname]', *content]
-        with open(path, 'w') as fh:
-            fh.write('\n'.join(content))
-
-    # If the given config file now exists, get the config settings
-    # from the file and overwrite the default configuration values
-    # with the new values from the file.
-    if path.is_file() and path != DEFAULT_CONFIG:
-        config_data.update(read_config(path))
-
-    # If the passed configuration file location was a directory,
-    # replacing it would a valid config file could cause unexpected
-    # problems. Raise an exception for the user to deal with.
-    elif path.is_dir():
-        msg = 'Given location is a directory.'
-        raise IsADirectoryError(msg)
-
-    return config_data
+# def get_config(location: Union[str, Path] = '') -> dict:
+#     """Get the configuration.
+#
+#     :param location: (Optional.) The path to the configuration file.
+#         If no path is passed, it will default to using the default
+#         configuration data from mkname.constants.
+#     :return: A :class:dict object.
+#     :rtype: dict
+#
+#     Usage:
+#
+#         >>> loc = 'tests/data/test_load_config.conf'
+#         >>> get_config(loc)                 # doctest: +ELLIPSIS
+#         {'consonants': 'bcd', 'db_path':...'aei'}
+#
+#     Configuration File Format
+#     -------------------------
+#     The file structure of the configuration file is the Windows
+#     INI-like structure used by Python's configparser module.
+#     The configuration should be in a 'mkname' section. The following
+#     keys are possible:
+#
+#     :param consonants: Characters you define as consonants.
+#     :param db_path: The path to the names database.
+#     :param punctuation: Characters you define as punctuation.
+#     :param scifi_letters: A string of characters you define as being
+#         characteristic of science fiction names.
+#     :param vowels: Characters you define as vowels.
+#
+#     Example::
+#
+#         [mkname]
+#         consonants = bcdfghjklmnpqrstvwxz
+#         db_path = mkname/data/names.db
+#         punctuation = '-
+#         scifi_letters: kqxz
+#         vowels = aeiou
+#     """
+#     def read_config(path: Path) -> dict:
+#         config = configparser.ConfigParser()
+#         config.read(path)
+#         return dict(config['mkname'])
+#
+#     # Start with the default configuration.
+#     config_data = read_config(DEFAULT_CONFIG)
+#
+#     # Convert the passed configuration file location into a Path
+#     # object so we can check whether it exists. If no location was
+#     # passed, create a Path for a config file with a default name
+#     # in the current working directory in case one happens to exist
+#     # there.
+#     path = Path(LOCAL_CONFIG)
+#     if location:
+#         path = Path(location)
+#
+#     # If the given config file doesn't exist, create a new file and
+#     # add the default config to it. The value of location is checked
+#     # here to make sure we fall back to default config if we weren't
+#     # passed a config file location. Otherwise, we'd spew config
+#     # files into every directory the script is ever run from.
+#     if location and not path.exists():
+#         content = [f'{k} = {config_data[k]}' for k in config_data]
+#         content = ['[mkname]', *content]
+#         with open(path, 'w') as fh:
+#             fh.write('\n'.join(content))
+#
+#     # If the given config file now exists, get the config settings
+#     # from the file and overwrite the default configuration values
+#     # with the new values from the file.
+#     if path.is_file() and path != DEFAULT_CONFIG:
+#         config_data.update(read_config(path))
+#
+#     # If the passed configuration file location was a directory,
+#     # replacing it would a valid config file could cause unexpected
+#     # problems. Raise an exception for the user to deal with.
+#     elif path.is_dir():
+#         msg = 'Given location is a directory.'
+#         raise IsADirectoryError(msg)
+#
+#     return config_data
 
 
 def init_db(path: Union[str, Path] = '') -> Path:

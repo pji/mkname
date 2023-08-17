@@ -16,21 +16,6 @@ from mkname.model import Name
 
 # Fixtures.
 @pytest.fixture
-def default_config():
-    config = configparser.ConfigParser()
-    config.read(DEFAULT_CONFIG)
-    return dict(config['mkname'])
-
-
-@pytest.fixture
-def local_config_loc():
-    loc = Path(LOCAL_CONFIG)
-    yield loc
-    if loc.exists():
-        loc.unlink()
-
-
-@pytest.fixture
 def local_db_loc():
     loc = Path('test_names.db')
     yield loc
@@ -49,17 +34,6 @@ def names():
         'Leonardo',
         'Raphael',
     ])]
-
-
-@pytest.fixture
-def test_config():
-    return {
-        'consonants': 'bcd',
-        'db_path': 'spam.db',
-        'punctuation': "'-",
-        'scifi_letters': 'eggs',
-        'vowels': 'aei'
-    }
 
 
 # Building names test cases.
@@ -117,76 +91,3 @@ def test_init_db_without_path():
     default database for the package.
     """
     assert mn.init_db() == Path(DEFAULT_DB)
-
-
-# Tests for get_config.
-def test_get_config_default(default_config):
-    """If no path is given and there is no local config in the
-    current working directory, return the default config as a
-    dict.
-    """
-    result = mn.get_config()
-    assert result == default_config
-
-
-def test_get_config_dir():
-    """If the passed location is a directory, raise an
-    exception.
-    """
-    ex = IsADirectoryError
-    msg = 'Given location is a directory.'
-    loc = 'tests/data/__test_mkname_test_dir'
-    with pytest.raises(ex, match=msg):
-        mn.get_config(loc)
-
-
-def test_get_config_fill_missing_keys(default_config):
-    """Given the path to a config file with missing keys,
-    add those keys with default values to the returned config.
-    """
-    # Expected value.
-    expected = default_config
-    expected['db_path'] = 'spam.db'
-
-    # Test data and state.
-    location = 'tests/data/test_get_config_fill_missing_keys.cfg'
-
-    # Run test and determine result.
-    assert mn.get_config(location) == expected
-
-
-def test_get_config_in_cwd(local_config_loc, test_config):
-    """If no path is given, check if there is a config file in
-    the current working directory. If there is, return the mkname
-    section from that config.
-    """
-    test_config_loc = 'tests/data/test_load_config.conf'
-    shutil.copy2(test_config_loc, local_config_loc)
-    assert mn.get_config() == test_config
-
-
-def test_get_config_with_path(test_config):
-    """Given the path to a configuration file as a string,
-    return the mkname configuration found in that file.
-    """
-    path = Path('tests/data/test_load_config.conf')
-    assert mn.get_config(path) == test_config
-
-
-def test_get_config_with_str(test_config):
-    """Given the path to a configuration file as a string,
-    return the mkname configuration found in that file.
-    """
-    path_str = 'tests/data/test_load_config.conf'
-    assert mn.get_config(path_str) == test_config
-
-
-def test_get_config_and_not_exists(local_config_loc, default_config):
-    """Given the path to a configuration file as a string,
-    check if the file exists. If not, copy the default config
-    to that location, then return the mkname configuration found
-    in that file.
-    """
-    path = local_config_loc
-    assert mn.get_config(path) == default_config
-    assert path.is_file()

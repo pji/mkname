@@ -16,7 +16,7 @@ from mkname import mkname as mn
 def testdb(mocker):
     """Point the unit test to the test instance of the database."""
     config = mn.get_config()
-    config['db_path'] = 'tests/data/names.db'
+    config['mkname']['db_path'] = 'tests/data/names.db'
     mocker.patch('mkname.mkname.get_config', return_value=config)
 
 
@@ -24,8 +24,8 @@ def testdb(mocker):
 def testletters(mocker):
     """Change the consonants and vowels for a test."""
     config = mn.get_config()
-    config['consonants'] = 'bcdfghjkmnpqrstvwxz'
-    config['vowels'] = 'aeiouyl'
+    config['mkname']['consonants'] = 'bcdfghjkmnpqrstvwxz'
+    config['mkname']['vowels'] = 'aeiouyl'
     mocker.patch('mkname.mkname.get_config', return_value=config)
 
 
