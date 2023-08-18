@@ -10,6 +10,7 @@ from typing import Sequence, Union
 
 from mkname import db
 from mkname import mkname as mn
+from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name
 
@@ -31,6 +32,7 @@ def build_syllable_name(
     num_syllables: int
 ) -> str:
     """Construct a name from the syllables of names in the database."""
+    # raise RuntimeError(f'{config}')
     name = mn.build_from_syllables(
         num_syllables,
         names,
@@ -147,8 +149,8 @@ def parse_cli() -> None:
     config_file = ''
     if args.config:
         config_file = args.config
-    config = mn.get_config(config_file)['mkname']
-    db_loc = mn.init_db(config['db_path'])
+    config = get_config(config_file)['mkname']
+    db_loc = get_db(config['db_path'])
 
     # Get names for generation.
     if args.first_name:

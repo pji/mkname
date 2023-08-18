@@ -102,19 +102,23 @@ def get_config(path: Union[Path, str] = '') -> Config:
 
 
 def get_default_config() -> Config:
-    """Get the default configuration values."""
+    """Get the default configuration values.
+
+    :return: The default configuration as a :class:`dict`.
+    :rtype: dict
+    """
     default_path = get_default_path() / 'defaults.cfg'
     return read_config_file(default_path)
 
 
-def get_default_path() -> Path:
-    """Get the path to the default data files."""
-    data_pkg = files(mkname.data)
-    return Path(f'{data_pkg}')
-
-
 def read_config_dir(path: Path, config: Union[dict, None] = None) -> Config:
-    """Read an "INI" formatted configuration files from a directory."""
+    """Read an "INI" formatted configuration files from a directory.
+
+    :param path: The path to the configuration directory.
+    :config: Default configuration values.
+    :return: The loaded configuration as a :class:`dict`.
+    :rtype: dict
+    """
     if not config:
         config = {}
     for ext in EXTS:
@@ -155,9 +159,111 @@ def read_config_file(path: Path) -> Config:
 
 
 def write_config_file(path: Path, config: Config) -> Config:
-    """Write an "INI" formatted configuration file."""
+    """Write an "INI" formatted configuration file.
+
+    :param path: The path to the configuration file to write.
+    :param config: The values to write into the configuration file.
+    :return: The configuration values written into the files.
+    :rtype: dict
+    """
     parser = ConfigParser()
     parser.read_dict(config)
     with open(path, 'w') as fh:
         parser.write(fh)
     return config
+
+
+# Database functions.
+def get_db(path: Union[Path, str] = '') -> Path:
+    """Get the path to the names database.
+
+    :param path: The path of the names database.
+    :return: The path to the names database as a
+        :class:`pathlib.Path`.
+    :rtype: pathlib.Path
+
+    Usage::
+
+        >>> loc = 'mkname/data/names.db'
+        >>> init_db(loc)
+        PosixPath('mkname/data/names.db')
+
+    Database Structure
+    ------------------
+    The names database is a sqlite3 database with a table named
+    'names'. The names table has the following columns:
+
+    *   `id`: A unique identifier for the name.
+    *   `name`: The name.
+    *   `source`: The URL where the name was found.
+    *   `culture`: The culture or nation the name is tied to.
+    *   `date`: The approximate year the name is tied to.
+    *   `kind`: A tag for how the name is used, such as a given
+        name or a surname.
+    """
+    # By default use the default database.
+    if not path:
+        path = get_default_db()
+    path = Path(path)
+
+    # If the database doesn't exist, create it.
+    if not path.exists():
+        path = write_db_file(path)
+
+    # If the path is a directory, return the database in the directory.
+    if path.is_dir():
+        path = get_db_dir(path)
+
+    # Return the path to the database.
+    return path
+
+
+def get_db_dir(path: Path) -> Path:
+    """Get the database file from the given directory. If it doesn't
+    exist in the directory, create it.
+
+    :param path: The path of the directory.
+    :return: The path to the names database as a
+        :class:`pathlib.Path`.
+    :rtype: pathlib.Path
+    """
+    path = path / 'names.db'
+    return get_db(path)
+
+
+def get_default_db() -> Path:
+    """Get the path to the default names database.
+
+    :return: The path to the default names database as a
+        :class:`pathlib.Path`.
+    :rtype: pathlib.Path
+    """
+    return get_default_path() / 'names.db'
+
+
+def write_db_file(path: Path) -> Path:
+    """Write the default named database to the given path.
+
+    :param path: The path for the new names database.
+    :return: The path to the new names database as a
+        :class:`pathlib.Path`.
+    :rtype: pathlib.Path
+    """
+    default_path = get_default_db()
+    with open(default_path, 'rb') as fh:
+        contents = fh.read()
+    with open(path, 'wb') as fh:
+        fh.write(contents)
+    return path
+
+
+# Utility functions.
+def get_default_path() -> Path:
+    """Get the path to the default data files.
+
+    :return: The path to the default data location as a
+        :class:`pathlib.Path`.
+    :rtype: pathlib.Path
+    """
+    data_pkg = files(mkname.data)
+    return Path(f'{data_pkg}')

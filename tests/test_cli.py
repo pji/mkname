@@ -9,24 +9,26 @@ import pytest
 from mkname import cli
 from mkname import constants as c
 from mkname import mkname as mn
+from mkname import init
 
 
 # Fixtures.
 @pytest.fixture
 def testdb(mocker):
     """Point the unit test to the test instance of the database."""
-    config = mn.get_config()
+    config = init.get_config()
     config['mkname']['db_path'] = 'tests/data/names.db'
-    mocker.patch('mkname.mkname.get_config', return_value=config)
+    mocker.patch('mkname.cli.get_config', return_value=config)
 
 
 @pytest.fixture
 def testletters(mocker):
     """Change the consonants and vowels for a test."""
-    config = mn.get_config()
+    config = init.get_config()
+    config['mkname']['db_path'] = 'tests/data/names.db'
     config['mkname']['consonants'] = 'bcdfghjkmnpqrstvwxz'
     config['mkname']['vowels'] = 'aeiouyl'
-    mocker.patch('mkname.mkname.get_config', return_value=config)
+    mocker.patch('mkname.cli.get_config', return_value=config)
 
 
 # Core test functions.
@@ -74,7 +76,7 @@ def test_build_syllable_name_4_syllables(mocker, capsys, testdb):
 
 
 def test_build_syllable_name_diff_consonants(
-    mocker, capsys, testdb, testletters
+    mocker, capsys, testletters
 ):
     """The consonants and vowels from the config should affect
     how the name is generated.

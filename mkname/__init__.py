@@ -10,9 +10,8 @@ from mkname.db import (
     get_cultures,
     get_kinds
 )
+from mkname.init import get_config, get_db
 from mkname.mkname import (
-    get_config,
-    init_db,
     build_compound_name,
     build_from_syllables,
     select_name
