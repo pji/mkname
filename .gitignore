@@ -15,3 +15,4 @@
 build
 dist
 mkname.egg-info
+docs/build

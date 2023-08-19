@@ -45,8 +45,8 @@ The following changes were made in v0.2.1:
 
 *   New simple modifications can be registered.
 *   Constants are stored as configuration.
-*   (To-do) Pull constants from local config when available.
-*   (To-do) CLI moved into __main__.
+*   Pull constants from local config when available.
+*   (To-Do) Build automated documentation.
 
 
 How do I run the tests?

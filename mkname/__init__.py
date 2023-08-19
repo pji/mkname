@@ -18,9 +18,13 @@ from mkname.mkname import (
 )
 from mkname.mod import (
     add_letters,
+    add_punctuation,
     compound_names,
+    double_letter,
+    double_vowel,
     garble,
-    translate_characters,
     make_scifi,
-    mods
+    mods,
+    translate_characters,
+    vulcanize,
 )
