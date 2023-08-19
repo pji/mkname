@@ -46,7 +46,7 @@ The following changes were made in v0.2.1:
 *   New simple modifications can be registered.
 *   Constants are stored as configuration.
 *   Pull constants from local config when available.
-*   (To-Do) Build automated documentation.
+*   Build automated documentation.
 
 
 How do I run the tests?
