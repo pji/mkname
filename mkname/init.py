@@ -108,7 +108,20 @@ def get_default_config() -> Config:
     :rtype: dict
     """
     default_path = get_default_path() / 'defaults.cfg'
-    return read_config_file(default_path)
+    return read_config(default_path)
+
+
+def read_config(path: Path) -> Config:
+    """Read the configuration file at the given path.
+
+    :param path: The path to the configuration file.
+    :return: The configuration as a :class:`dict`.
+    :rtype: dict
+    """
+    parser = ConfigParser()
+    parser.read(path)
+    sections = ['mkname', 'mkname_files']
+    return {k: dict(parser[k]) for k in parser if k in sections}
 
 
 def read_config_dir(path: Path, config: Union[dict, None] = None) -> Config:
@@ -152,10 +165,7 @@ def read_config_file(path: Path) -> Config:
         return config
 
     # Otherwise, read in the config file and return it as a dict.
-    parser = ConfigParser()
-    parser.read(path)
-    sections = ['mkname', 'mkname_files']
-    return {k: dict(parser[k]) for k in parser if k in sections}
+    return read_config(path)
 
 
 def write_config_file(path: Path, config: Config) -> Config:
