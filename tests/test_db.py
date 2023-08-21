@@ -23,6 +23,57 @@ def con():
     con.close()
 
 
+@pytest.fixture
+def test_db(mocker):
+    """Point the default database to the test database."""
+    db_path = 'tests/data/names.db'
+    mocker.patch('mkname.db.get_db', return_value=db_path)
+    yield None
+
+
+@pytest.fixture
+def test_names():
+    """The contents of the test database."""
+    yield (
+        m.Name(
+            1,
+            'spam',
+            'eggs',
+            'bacon',
+            1970,
+            'sausage',
+            'given'
+        ),
+        m.Name(
+            2,
+            'ham',
+            'eggs',
+            'bacon',
+            1970,
+            'baked beans',
+            'given'
+        ),
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
+            'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+        m.Name(
+            4,
+            'waffles',
+            'mushrooms',
+            'porridge',
+            2000,
+            'baked beans',
+            'given'
+        ),
+    )
+
+
 # Connection test cases.
 def test_connect():
     """When given the path to an sqlite3 database, db.connect_db
@@ -104,101 +155,33 @@ def test_disconnect_with_pending_changes():
 
 
 # Serialization test cases.
-def test_get_names(con):
-    """When given a database connection, db.get_names should
-    return the names in the database as a tuple.
+def test_get_names(con, test_names):
+    """When given a database connection, :func:`mkname.db.get_names`
+    should return the names in the given database as a tuple.
     """
     # Expected value.
-    assert db.get_names(con) == (
-        m.Name(
-            1,
-            'spam',
-            'eggs',
-            'bacon',
-            1970,
-            'sausage',
-            'given'
-        ),
-        m.Name(
-            2,
-            'ham',
-            'eggs',
-            'bacon',
-            1970,
-            'baked beans',
-            'given'
-        ),
-        m.Name(
-            3,
-            'tomato',
-            'mushrooms',
-            'pancakes',
-            2000,
-            'sausage',
-            'surname'
-        ),
-        m.Name(
-            4,
-            'waffles',
-            'mushrooms',
-            'porridge',
-            2000,
-            'baked beans',
-            'given'
-        ),
-    )
+    assert db.get_names(con) == test_names
 
 
-def test_get_names_called_wo_connection():
-    """When called without a connection, get_names will create
-    its own connection.
+def test_get_names_called_with_path(test_names):
+    """When called with a path to a database, :func:`mkname.db.get_name`
+    should return the names in the given database as a tuple.
     """
     db_path = 'tests/data/names.db'
-    assert db.get_names(db_path) == (
-        m.Name(
-            1,
-            'spam',
-            'eggs',
-            'bacon',
-            1970,
-            'sausage',
-            'given'
-        ),
-        m.Name(
-            2,
-            'ham',
-            'eggs',
-            'bacon',
-            1970,
-            'baked beans',
-            'given'
-        ),
-        m.Name(
-            3,
-            'tomato',
-            'mushrooms',
-            'pancakes',
-            2000,
-            'sausage',
-            'surname'
-        ),
-        m.Name(
-            4,
-            'waffles',
-            'mushrooms',
-            'porridge',
-            2000,
-            'baked beans',
-            'given'
-        ),
-    )
+    assert db.get_names(db_path) == test_names
+
+
+def test_get_names_called_without_connection_or_path(test_db, test_names):
+    """When called without a connection, :func:`mknames.db.get_names`
+    should return the names in the default database as a tuple.
+    """
+    assert db.get_names() == test_names
 
 
 def test_get_cultures(con):
-    """Given a connection, return the list of unique cultures
-    for the names in the database.
+    """Given a connection, :func:`mkname.db.get_cultures` should return
+    the list of unique cultures for the names in the given database.
     """
-    # Expected value.
     assert db.get_cultures(con) == (
         'bacon',
         'pancakes',
@@ -206,9 +189,33 @@ def test_get_cultures(con):
     )
 
 
-def test_get_cultures(con):
-    """Given a connection, return the list of unique kinds of names
-    in the database.
+def test_get_cultures_with_path():
+    """Given a path to a database, :func:`mkname.db.get_cultures`
+    should return the list of unique cultures for the names in the
+    given database.
+    """
+    db_path = 'tests/data/names.db'
+    assert db.get_cultures(db_path) == (
+        'bacon',
+        'pancakes',
+        'porridge',
+    )
+
+
+def test_get_cultures_without_connection_or_path(test_db):
+    """When called, :func:`mkname.db.get_cultures` should return the
+    list of unique cultures for the names in the default database.
+    """
+    assert db.get_cultures() == (
+        'bacon',
+        'pancakes',
+        'porridge',
+    )
+
+
+def test_get_kinds(con):
+    """Given a connection, :func:`mkname.db.get_kinds` should return
+    the list of unique kinds of names in the given database.
     """
     assert db.get_kinds(con) == (
         'given',
@@ -216,14 +223,75 @@ def test_get_cultures(con):
     )
 
 
+def test_get_kinds_with_path():
+    """Given a connection, :func:`mkname.db.get_kinds` should return
+    the list of unique kinds of names in the given database.
+    """
+    db_path = 'tests/data/names.db'
+    assert db.get_kinds(db_path) == (
+        'given',
+        'surname',
+    )
+
+
+def test_get_kinds_without_connection_or_path(test_db):
+    """When called, :func:`mkname.db.get_kinds` should return the list
+    of unique kinds of names in the default database.
+    """
+    assert db.get_kinds() == (
+        'given',
+        'surname',
+    )
+
+
 def test_get_names_by_kind(con):
     """When given a database connection and a kind,
-    db.get_names_by_kind should return the names of
-    that kind in the database as a tuple.
+    :func:`mkname.db.get_names_by_kind` should return the
+    names of that kind in the given database as a tuple.
     """
     # Expected value.
     kind = 'surname'
     assert db.get_names_by_kind(con, kind) == (
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
+            'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+    )
+
+
+def test_get_names_by_kind_with_path():
+    """When given a path and a kind, :func:`mkname.db.get_names_by_kind`
+    should return the names of that kind in the given database as a tuple.
+    """
+    # Expected value.
+    db_path = 'tests/data/names.db'
+    kind = 'surname'
+    assert db.get_names_by_kind(db_path, kind) == (
+        m.Name(
+            3,
+            'tomato',
+            'mushrooms',
+            'pancakes',
+            2000,
+            'sausage',
+            'surname'
+        ),
+    )
+
+
+def test_get_names_by_kind_without_connection_or_path(test_db):
+    """When given a kind, :func:`mkname.db.get_names_by_kind`
+    should return the names of that kind in the default database
+    as a tuple.
+    """
+    # Expected value.
+    kind = 'surname'
+    assert db.get_names_by_kind(kind=kind) == (
         m.Name(
             3,
             'tomato',

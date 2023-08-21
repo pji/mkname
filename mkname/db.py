@@ -9,6 +9,7 @@ from pathlib import Path
 import sqlite3
 from typing import Any, Callable, Union
 
+from mkname.init import get_db
 from mkname.model import Name
 
 
@@ -70,6 +71,9 @@ def makes_connection(fn: Callable) -> Callable:
             con = connect_db(given_con)
         elif isinstance(given_con, sqlite3.Connection):
             con = given_con
+        else:
+            default_path = get_db()
+            con = connect_db(default_path)
         result = fn(con, *args, **kwargs)
         if isinstance(given_con, (str, Path)):
             disconnect_db(con)
