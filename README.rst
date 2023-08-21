@@ -43,7 +43,7 @@ What Changed in Version 0.2.3
 =============================
 The following changes were made in v0.2.3:
 
-*   (To-Do) Fixed automatic creation of database connections.
+*   Fixed automatic creation of database connections.
 
 
 How do I run the tests?
