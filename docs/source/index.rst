@@ -108,9 +108,7 @@ Yes, you can. For example, lets say you want to generate a compound
 name using the names from the default database::
 
     >>> import mkname
-    >>> db_path = mkname.get_db()
-    >>> con = mkname.db.connect_db(db_path)
-    >>> names = mkname.get_names(con)
+    >>> names = mkname.get_names()
     >>> name = mkname.build_compound_name(names)
 
 
