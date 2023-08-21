@@ -39,14 +39,11 @@ The easiest way to install and run `mkname` is:
 It should also be able to be imported into your Python code as a package.
 
 
-What Changed in Version 0.2.1
+What Changed in Version 0.2.3
 =============================
-The following changes were made in v0.2.1:
+The following changes were made in v0.2.3:
 
-*   New simple modifications can be registered.
-*   Constants are stored as configuration.
-*   Pull constants from local config when available.
-*   Build automated documentation.
+*   (To-Do) Fixed automatic creation of database connections.
 
 
 How do I run the tests?

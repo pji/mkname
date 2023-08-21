@@ -11,6 +11,7 @@ clean:
 	rm -rf mkname.egg-info
 	rm -rf tests/__pycache__
 	rm -rf mkname/__pycache__
+	rm -rf mkname/*.pyc
 
 .PHONY: docs
 docs:
