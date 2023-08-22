@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from mkname import init
 import mkname.constants as c
+from mkname import init
 
 
 # Fixtures.

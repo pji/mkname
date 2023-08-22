@@ -4,8 +4,8 @@ test_mkname
 """
 import configparser
 import filecmp
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
 

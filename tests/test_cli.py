@@ -8,8 +8,8 @@ import pytest
 
 from mkname import cli
 from mkname import constants as c
-from mkname import mkname as mn
 from mkname import init
+from mkname import mkname as mn
 
 
 # Fixtures.

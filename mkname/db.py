@@ -4,9 +4,9 @@ db
 
 Functions for handling the database for the names package.
 """
+import sqlite3
 from functools import wraps
 from pathlib import Path
-import sqlite3
 from typing import Any, Callable, Union
 
 from mkname.init import get_db

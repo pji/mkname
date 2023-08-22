@@ -4,10 +4,11 @@ utility
 
 Utility functions for mkname.
 """
-from mkname.constants import CONSONANTS, VOWELS
 from typing import Sequence
 
 import yadr
+
+from mkname.constants import CONSONANTS, VOWELS
 
 
 # Random number generation.

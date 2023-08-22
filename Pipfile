@@ -17,6 +17,8 @@ pytest = "*"
 pytest-mock = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
+tox = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"
