@@ -9,7 +9,7 @@ from typing import NamedTuple
 
 class Name(NamedTuple):
     """A name to use for generation.
-    
+
     :param id: A unique identifier for the name.
     :param name: The name.
     :param source: The URL where the name was found.

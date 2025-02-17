@@ -10,8 +10,8 @@ clean:
 	rm -rf dist
 	rm -rf mkname.egg-info
 	rm -rf tests/__pycache__
-	rm -rf mkname/__pycache__
-	rm -rf mkname/*.pyc
+	rm -rf src/mkname/__pycache__
+	rm -rf src/mkname/*.pyc
 
 .PHONY: docs
 docs:
@@ -27,6 +27,7 @@ pre:
 .PHONY: test
 test:
 	python -m pytest
+	python -m pytest --doctest-modules src
 
 
 .PHONY: testv

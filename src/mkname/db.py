@@ -23,7 +23,7 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
 
     Usage:
 
-        >>> loc = 'mkname/data/names.db'
+        >>> loc = 'src/mkname/data/names.db'
         >>> query = 'select name from names where id = 1;'
         >>> con = connect_db(loc)
         >>> result = con.execute(query)

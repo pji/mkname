@@ -55,8 +55,11 @@ def check_doctests(names):
 def check_requirements():
     """Check requirements."""
     print('Checking requirements...')
-    os.putenv('PIPENV_VERBOSITY', '-1')
-    cmd = '.venv/bin/python -m pipenv requirements'
+    cmd = (
+        '.venv/bin/python -m poetry export '
+        '--without-hashes '
+        '-f requirements.txt '
+    )
     current = os.popen(cmd).readlines()
     current = wrap_lines(current, 35, '', '  ')
     with open('requirements.txt') as fh:
@@ -186,7 +189,7 @@ def get_module_dir():
     """Get the directory of the module."""
     cwd = os.getcwd()
     dirs = cwd.split('/')
-    return f'{cwd}/{dirs[-1]}'
+    return f'{cwd}/src/{dirs[-1]}'
 
 
 def in_ignore(name, ignore):

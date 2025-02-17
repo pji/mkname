@@ -36,7 +36,7 @@ def get_config(path: Union[Path, str] = '') -> Config:
 
         >>> loc = 'tests/data/test_load_config.conf'
         >>> get_config(loc)                 # doctest: +ELLIPSIS
-        {'consonants': 'bcd', 'db_path':...'aei'}
+        {'mkname': {'consonants': 'bcd', 'db_path':...
 
     Configuration File Format
     =========================
@@ -194,9 +194,9 @@ def get_db(path: Union[Path, str] = '') -> Path:
 
     Usage::
 
-        >>> loc = 'mkname/data/names.db'
-        >>> init_db(loc)
-        PosixPath('mkname/data/names.db')
+        >>> loc = 'src/mkname/data/names.db'
+        >>> get_db(loc)
+        PosixPath('src/mkname/data/names.db')
 
     Database Structure
     ------------------

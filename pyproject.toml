@@ -1,3 +1,80 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "mkname"
+version = "0.2.4"
+authors = [
+    {name="Paul J. Iutzi", email="pji@mac.com"},
+]
+description = "A random name generation script."
+readme = "README.rst"
+requires-python = ">=3.10,<4.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+
+[project.scripts]
+mkname = "mkname.cli:parse_cli"
+
+
+[project.urls]
+"Homepage" = "https://github.com/pji/mkname"
+"Documentation" = "https://mkname.readthedocs.io"
+"Source" = "https://github.com/pji/mkname"
+
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
+
+
+[tool.rstcheck]
+report_level = "WARNING"
+ignore_directives = ["autoclass", "autofunction"]
+
+
+[tool.setuptools.package-data]
+yadr = ['data/names.db', "data/defaults.cfg",]
+
+
+[tool.tox]
+legacy_tox_ini = """[tox]
+envlist = py310, py311, py312, py313
+
+
+[testenv]
+allowlist_externals = isort
+commands =
+    pytest {posargs: tests}
+    isort ./src/mkname --check-only --diff --skip .tox --lai 2 -m 3
+    isort ./tests --check-only --diff --skip .tox --lai 2 -m 3
+deps = -rrequirements.txt
+    pytest
+    pytest-mock
+"""
+
+[tool.poetry.dependencies]
+yadr = "^0.1.6"
+
+[tool.poetry.group.dev.dependencies]
+pycodestyle = "^2.12.1"
+mypy = "^1.15.0"
+rstcheck = "^6.2.4"
+build = "^1.2.2.post1"
+wheel = "^0.45.1"
+twine = "^6.1.0"
+pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
+sphinx = "^8.1.3"
+furo = "^2024.8.6"
+tox = "^4.24.1"
+isort = "^6.0.0"
+poetry-plugin-export = "^1.9.0"
+
