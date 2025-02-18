@@ -2,14 +2,31 @@
 mkname
 ~~~~~~
 
-Tools for building names.
+This is the core of the public API of :mod:`mkname`.
+
+
+Making Names
+============
+The following functions select or create a name from a list of names.
+
+.. autofunction:: mkname.build_compound_name
+.. autofunction:: mkname.build_from_syllables
+.. autofunction:: mkname.select_name
 """
-from typing import Sequence
+from collections.abc import Sequence
 
 from mkname.constants import *
 from mkname.mod import compound_names
 from mkname.model import Name
 from mkname.utility import roll, split_into_syllables
+
+
+# Names that will be imported when using *.
+__all__ = [
+    'build_compound_name',
+    'build_from_syllables',
+    'select_name',
+]
 
 
 # Name making functions.

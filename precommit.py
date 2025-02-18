@@ -6,7 +6,6 @@ precommit
 Things that should be done before committing changes to the repo.
 """
 import configparser
-import doctest
 from fnmatch import fnmatch
 import glob
 import importlib
@@ -40,18 +39,6 @@ def import_modules(names):
 
 
 # Precommit checks.
-def check_doctests(names):
-    """Run documentation tests."""
-    print('Running doctests...')
-    if not names:
-        print('No doctests found.')
-    else:
-        modules = import_modules(names)
-        for mod in modules:
-            doctest.testmod(mod)
-        print('Doctests complete.')
-
-
 def check_requirements():
     """Check requirements."""
     print('Checking requirements...')
@@ -259,9 +246,6 @@ def main():
 
     # Set up the configuration for the checks.
     config = get_config(CONFIG_FILE)
-    doctest_modules = []
-    if 'doctest_modules' in config:
-        doctest_modules = config['doctest_modules'].split('\n')
     python_files = config['python_files'].split('\n')
     rst_files = config['rst_files'].split('\n')
     unit_tests = config['unit_tests']
@@ -274,8 +258,6 @@ def main():
     # Only continue with precommit checks if the unit tests passed.
     if result == pytest.ExitCode.OK:
         check_requirements()
-        if 'doctest_modules' in config:
-            check_doctests(doctest_modules)
         check_style(python_files, ignore)
         check_rst(rst_files, ignore)
         check_type_hints(get_module_dir())

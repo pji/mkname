@@ -3,13 +3,63 @@ mod
 ~~~
 
 Functions for modifying names.
+
+
+Simple Mods
+===========
+Simple mods only require one parameter: the name to modify. This
+makes them a bit limited in what they do, but it's easier to call
+them from the command line.
+
+.. autofunction:: mkname.double_vowel
+.. autofunction:: mkname.garble
+.. autofunction:: mkname.make_scifi
+.. autofunction:: mkname.vulcanize
+
+Simple mods can be registered for use in the `mkname.mods.mods`
+registry by using the :class:`mkname.simple_mods` decorator.
+
+.. autoclass:: mkname.simple_mod
+
+
+Complex Mods
+============
+Any mod that requires multiple parameters is a complex mod. These
+allow more flexible behavior but require a specific options be added
+to use them directly from the command line.
+
+.. autofunction:: mkname.add_letters
+.. autofunction:: mkname.add_punctuation
+.. autofunction:: mkname.compound_names
+.. autofunction:: mkname.double_letter
+.. autofunction:: mkname.translate_characters
+
 """
 import base64 as b64
+from collections.abc import Callable, Mapping, Sequence
 from functools import partial
-from typing import Callable, Mapping, Optional, Sequence
 
 from mkname.constants import *
 from mkname.utility import roll
+
+
+# Names that will be imported when using *.
+__all__ = [
+    # Mods.
+    'add_letters',
+    'add_punctuation',
+    'compound_names',
+    'double_letter',
+    'double_vowel',
+    'garble',
+    'make_scifi',
+    'translate_characters',
+    'vulcanize',
+
+    # Mods registration and registry.
+    'mods',
+    'simple_mod',
+]
 
 
 # Types
@@ -21,7 +71,12 @@ mods: dict[str, SimpleMod] = {}
 
 
 class simple_mod:
-    """Register a simple modifier."""
+    """Register a simple modifier.
+
+    :param key: The `dict` key the mod will be registered under.
+    :returns: A :class:`function` object.
+    :rtype: function
+    """
     def __init__(self, key: str) -> None:
         self.key = key
 
@@ -31,9 +86,6 @@ class simple_mod:
 
 
 # Simple mods.
-# Simple mods only require one parameter: the name to modify. Other
-# parameters that modify the behavior of the mod can be allowed, but
-# must be optional.
 @simple_mod('double_vowel')
 def double_vowel(name: str):
     """Double a vowel within the name, like what with that popular
@@ -237,7 +289,7 @@ def add_punctuation(
     punctuation: Sequence[str] = PUNCTUATION,
     cap_before: bool = True,
     cap_after: bool = True,
-    index: Optional[int] = None
+    index: int | None = None
 ) -> str:
     """Add a punctuation mark to the name.
 

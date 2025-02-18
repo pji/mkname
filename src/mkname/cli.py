@@ -5,8 +5,8 @@ cli
 Command line interface for the mkname package.
 """
 from argparse import ArgumentParser
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, Union
 
 from mkname import db
 from mkname import mkname as mn
@@ -32,7 +32,6 @@ def build_syllable_name(
     num_syllables: int
 ) -> str:
     """Construct a name from the syllables of names in the database."""
-    # raise RuntimeError(f'{config}')
     name = mn.build_from_syllables(
         num_syllables,
         names,
@@ -65,7 +64,7 @@ def pick_name(names: Sequence[Name]) -> str:
 
 
 # Output.
-def write_output(lines: Union[Sequence[str], str]) -> None:
+def write_output(lines: Sequence[str] | str) -> None:
     """Write the output to the terminal."""
     if isinstance(lines, str):
         lines = [lines, ]

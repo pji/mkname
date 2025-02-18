@@ -53,6 +53,7 @@ envlist = py310, py311, py312, py313
 allowlist_externals = isort
 commands =
     pytest {posargs: tests}
+    pytest --doctest-modules src
     isort ./src/mkname --check-only --diff --skip .tox --lai 2 -m 3
     isort ./tests --check-only --diff --skip .tox --lai 2 -m 3
 deps = -rrequirements.txt

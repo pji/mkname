@@ -39,11 +39,11 @@ The easiest way to install and run `mkname` is:
 It should also be able to be imported into your Python code as a package.
 
 
-What Changed in Version 0.2.3
+What Changed in Version 0.2.4
 =============================
-The following changes were made in v0.2.3:
+The following changes were made in v0.2.4:
 
-*   Fixed automatic creation of database connections.
+*   Moved dependency management to `poetry`.
 
 
 How do I run the tests?
