@@ -111,6 +111,8 @@ name using the names from the default database::
     >>> names = mkname.get_names()
     >>> name = mkname.build_compound_name(names)
 
+View the API documentation for more information.
+
 
 What about cultural bias in :mod:`mkname`?
 ==========================================

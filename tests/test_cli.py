@@ -146,6 +146,18 @@ def test_list_cultures(mocker, capsys, testdb):
     )
 
 
+def test_list_genders(mocker, capsys, testdb):
+    """When called with -G, write the unique genders from the
+    database to standard out.
+    """
+    cmd = ['python -m mkname', '-G']
+    result = cli_test(mocker, capsys, cmd)
+    assert result == (
+        'sausage\n'
+        'baked beans\n'
+    )
+
+
 def test_make_multiple_names(mocker, capsys, testdb):
     """When called with the -n 3 option, create three names."""
     cmd = ['python -m mkname', '-p', '-n', '3']

@@ -3,6 +3,34 @@ db
 ~~
 
 Functions for handling the database for the names package.
+
+
+Read Data
+=========
+The following functions all pull data out of the database. While you
+can manually pass a database connection to these functions if you
+ever need to, they will create their own connection if you don't.
+
+.. autofunction:: mkname.get_names
+.. autofunction:: mkname.get_names_by_kind
+.. autofunction:: mkname.get_cultures
+.. autofunction:: mkname.get_kinds
+
+
+Connecting to the Database
+==========================
+The "read" functions detailed above use the
+:func:`mkname.db.makes_connection` decorator to
+automatically create database connections.
+
+.. autofunction:: mkname.db.makes_connection.
+
+However, if you want to make a manual connection to the database, you
+can use the following functions to open and close the connection.
+
+.. autofunction:: mkname.connect_db
+.. autofunction:: mkname.disconnect_db
+
 """
 import sqlite3
 from functools import wraps
@@ -160,6 +188,28 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
         ('bacon', 'pancakes', 'porridge')
     """
     query = 'select distinct culture from names'
+    return _run_query_for_single_column(con, query)
+
+
+@makes_connection
+def get_genders(con: sqlite3.Connection) -> tuple[str, ...]:
+    """Get a list of unique genders in the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+
+    Usage:
+
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_genders(loc)                  # doctest: +ELLIPSIS
+        ('sausage', 'baked beans')
+    """
+    query = 'select distinct gender from names'
     return _run_query_for_single_column(con, query)
 
 

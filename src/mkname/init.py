@@ -3,19 +3,18 @@ init
 ~~~~
 
 Basic initialization functions for :mod:`mkname`.
+
+.. autofunction:: mkname.get_config
+.. autofunction:: mkname.get_db
+
 """
 from configparser import ConfigParser
-from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
 from typing import Union
 
 import mkname.data
-
-
-# Types.
-Section = dict[str, str]
-Config = dict[str, Section]
+from mkname.model import Config, Section
 
 
 # Common data.

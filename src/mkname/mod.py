@@ -40,6 +40,7 @@ from collections.abc import Callable, Mapping, Sequence
 from functools import partial
 
 from mkname.constants import *
+from mkname.model import SimpleMod
 from mkname.utility import roll
 
 
@@ -60,10 +61,6 @@ __all__ = [
     'mods',
     'simple_mod',
 ]
-
-
-# Types
-SimpleMod = Callable[[str], str]
 
 
 # Mod registration.

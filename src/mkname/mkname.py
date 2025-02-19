@@ -99,6 +99,8 @@ def build_from_syllables(
 ) -> str:
     """Build a name from the syllables of the given names.
 
+    :param num_syllables: The number of syllables in the constructed
+        name.
     :param names: A list of Name objects to use for constructing
         the new name.
     :param consonants: (Optional.) The characters to consider as

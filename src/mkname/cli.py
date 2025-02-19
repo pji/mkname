@@ -12,12 +12,20 @@ from mkname import db
 from mkname import mkname as mn
 from mkname.init import get_config, get_db
 from mkname.mod import mods
-from mkname.model import Name
+from mkname.model import Name, Section
 
 
 # Commands.
-def build_compound_name(names: Sequence[Name], config: dict) -> str:
-    """Construct a name from two names in the database."""
+def build_compound_name(names: Sequence[Name], config: Section) -> str:
+    """Command script for constructing a name from two names in
+    the database.
+
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :param config: The configuration data for :mod:`mkname`.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
     name = mn.build_compound_name(
         names,
         config['consonants'],
@@ -28,10 +36,20 @@ def build_compound_name(names: Sequence[Name], config: dict) -> str:
 
 def build_syllable_name(
     names: Sequence[Name],
-    config: dict,
+    config: Section,
     num_syllables: int
 ) -> str:
-    """Construct a name from the syllables of names in the database."""
+    """Command script for constructing a name from the syllables of
+    names in the database.
+
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :param config: The configuration data for :mod:`mkname`.
+    :param num_syllables: The number of syllables in the constructed
+        name.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
     name = mn.build_from_syllables(
         num_syllables,
         names,
@@ -42,30 +60,67 @@ def build_syllable_name(
 
 
 def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
-    """List all the names in the database."""
+    """Command script to list all the names in the database.
+
+    :param names: A list of Name objects in the database.
+    :returns: A :class:`tuple` object.
+    :rtype: tuple
+    """
     return tuple(name.name for name in names)
 
 
 def list_cultures(db_loc: Path) -> tuple[str, ...]:
-    """List the unique cultures in the database."""
+    """A command script to list the unique cultures in the database.
+
+    :param db_loc: The path to the mkname database.
+    :returns: A :class:`tuple` object.
+    :rtype: tuple
+    """
     return db.get_cultures(db_loc)
 
 
+def list_genders(db_loc: Path) -> tuple[str, ...]:
+    """A command script to list the unique genders in the database.
+
+    :param db_loc: The path to the mkname database.
+    :returns: A :class:`tuple` object.
+    :rtype: tuple
+    """
+    return db.get_genders(db_loc)
+
+
 def modify_name(name: str, mod_name: str) -> str:
-    """Use the given simple mod on the name."""
+    """A command script to use the given simple mod on the name.
+
+    :param name: The name to modify.
+    :param mod: The mod to use on the name.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
     mod = mods[mod_name]
     return mod(name)
 
 
 def pick_name(names: Sequence[Name]) -> str:
-    """Select a name from the database."""
+    """The command script to select a name from the database.
+
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
     name = mn.select_name(names)
     return name
 
 
 # Output.
 def write_output(lines: Sequence[str] | str) -> None:
-    """Write the output to the terminal."""
+    """Write the output to the terminal.
+
+    :param lines: The output to write to the terminal.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     if isinstance(lines, str):
         lines = [lines, ]
 
@@ -75,7 +130,11 @@ def write_output(lines: Sequence[str] | str) -> None:
 
 # Command parsing.
 def parse_cli() -> None:
-    """Response to commands passed through the CLI."""
+    """Response to commands passed through the CLI.
+
+    :returns: `None`.
+    :rtype: NoneType
+    """
     # Set up the command line interface.
     p = ArgumentParser(
         description='Randomized name construction.',
@@ -95,6 +154,11 @@ def parse_cli() -> None:
     p.add_argument(
         '--first_name', '-f',
         help='Generate a given name.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--list_genders', '-G',
+        help='List all the genders in the database.',
         action='store_true'
     )
     p.add_argument(
@@ -173,6 +237,9 @@ def parse_cli() -> None:
         if args.list_cultures:
             cultures = list_cultures(db_loc)
             lines.extend(cultures)
+        if args.list_genders:
+            genders = list_genders(db_loc)
+            lines.extend(genders)
         if args.pick_name:
             name = pick_name(names)
             lines.append(name)

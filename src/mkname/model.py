@@ -7,9 +7,17 @@ The data model for :mod:`mkname`.
 .. autoclass:: mkname.model.Name
 
 """
+from collections.abc import Callable
 from typing import NamedTuple
 
 
+# Types.
+Section = dict[str, str]
+Config = dict[str, Section]
+SimpleMod = Callable[[str], str]
+
+
+# Dataclasses.
 class Name(NamedTuple):
     """A name to use for generation.
 
