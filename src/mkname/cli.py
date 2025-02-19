@@ -157,6 +157,12 @@ def parse_cli() -> None:
         action='store_true'
     )
     p.add_argument(
+        '--gender', '-g',
+        help='Generate a name from the given gender.',
+        action='store',
+        type=str
+    )
+    p.add_argument(
         '--list_genders', '-G',
         help='List all the genders in the database.',
         action='store_true'
@@ -224,6 +230,8 @@ def parse_cli() -> None:
         names = db.get_names(db_loc)
     if args.culture:
         names = [name for name in names if name.culture == args.culture]
+    if args.gender:
+        names = [name for name in names if name.gender == args.gender]
 
     # Generate the names, storing the output.
     lines = []

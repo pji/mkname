@@ -87,7 +87,7 @@ def test_build_syllable_name_diff_consonants(
     assert result == 'Waf\n'
 
 
-def test_culture(mocker, capsys, testdb):
+def test_by_culture(mocker, capsys, testdb):
     """When called with the -k option and a culture, use only
     names from that culture for the generation.
     """
@@ -96,6 +96,18 @@ def test_culture(mocker, capsys, testdb):
     assert result == (
         'spam\n'
         'ham\n'
+    )
+
+
+def test_by_gender(mocker, capsys, testdb):
+    """When called with the -k option and a culture, use only
+    names from that culture for the generation.
+    """
+    cmd = ['python -m mkname', '-L', '-g', 'sausage']
+    result = cli_test(mocker, capsys, cmd)
+    assert result == (
+        'spam\n'
+        'tomato\n'
     )
 
 
