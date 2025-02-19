@@ -44,6 +44,7 @@ What Changed in Version 0.2.4
 The following changes were made in v0.2.4:
 
 *   Moved dependency management to `poetry`.
+*   Added `mkname.get_genders()`.
 
 
 How do I run the tests?

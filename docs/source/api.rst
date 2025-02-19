@@ -38,6 +38,7 @@ The following functions pull relevant information from the `names`
 database used in generating or selecting names:
 
 .. autofunction:: mkname.get_cultures
+.. autofunction:: mkname.get_genders
 .. autofunction:: mkname.get_kinds
 .. autofunction:: mkname.get_names
 .. autofunction:: mkname.get_names_by_kind

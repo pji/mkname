@@ -14,6 +14,7 @@ ever need to, they will create their own connection if you don't.
 .. autofunction:: mkname.get_names
 .. autofunction:: mkname.get_names_by_kind
 .. autofunction:: mkname.get_cultures
+.. autofunction:: mkname.get_genders
 .. autofunction:: mkname.get_kinds
 
 
@@ -39,6 +40,16 @@ from typing import Any, Callable, Union
 
 from mkname.init import get_db
 from mkname.model import Name
+
+
+# Names that will be imported when using *.
+__all__ = [
+    'get_cultures',
+    'get_genders',
+    'get_kinds',
+    'get_names',
+    'get_names_by_kind',
+]
 
 
 # Connection functions.
@@ -119,57 +130,6 @@ def _run_query_for_single_column(con: sqlite3.Connection,
 
 # Serialization/deserialization functions.
 @makes_connection
-def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
-    """Deserialize the names from the database.
-
-    :param con: The connection to the database. It defaults to
-        creating a new connection to the default database if no
-        connection is passed.
-    :return: A :class:tuple of :class:Name objects.
-    :rtype: tuple
-
-    Usage:
-
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
-        >>> loc = 'tests/data/names.db'
-        >>> get_names(loc)                  # doctest: +ELLIPSIS
-        (Name(id=1, name='spam', source='eggs', ... kind='given'))
-    """
-    query = 'select * from names'
-    result = con.execute(query)
-    return tuple(Name(*args) for args in result)
-
-
-@makes_connection
-def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
-    """Deserialize the names from the database.
-
-    :param con: The connection to the database. It defaults to
-        creating a new connection to the default database if no
-        connection is passed.
-    :param kind: The kind of names to return. By default, this is
-        either 'given' or 'surname', but if you have a custom
-        database you can add other types.
-    :return: A :class:tuple of :class:Name objects.
-    :rtype: tuple
-
-    Usage:
-
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
-        >>> loc = 'tests/data/names.db'
-        >>> kind = 'given'
-        >>> get_names_by_kind(loc, kind)    # doctest: +ELLIPSIS
-        (Name(id=1, name='spam', source='eggs', ... kind='given'))
-    """
-    query = 'select * from names where kind == ?'
-    params = (kind, )
-    result = con.execute(query, params)
-    return tuple(Name(*args) for args in result)
-
-
-@makes_connection
 def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
     """Get a list of unique cultures in the database.
 
@@ -233,3 +193,54 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
     """
     query = 'select distinct kind from names'
     return _run_query_for_single_column(con, query)
+
+
+@makes_connection
+def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
+    """Deserialize the names from the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+
+    Usage:
+
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_names(loc)                  # doctest: +ELLIPSIS
+        (Name(id=1, name='spam', source='eggs', ... kind='given'))
+    """
+    query = 'select * from names'
+    result = con.execute(query)
+    return tuple(Name(*args) for args in result)
+
+
+@makes_connection
+def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
+    """Deserialize the names from the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :param kind: The kind of names to return. By default, this is
+        either 'given' or 'surname', but if you have a custom
+        database you can add other types.
+    :return: A :class:tuple of :class:Name objects.
+    :rtype: tuple
+
+    Usage:
+
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> kind = 'given'
+        >>> get_names_by_kind(loc, kind)    # doctest: +ELLIPSIS
+        (Name(id=1, name='spam', source='eggs', ... kind='given'))
+    """
+    query = 'select * from names where kind == ?'
+    params = (kind, )
+    result = con.execute(query, params)
+    return tuple(Name(*args) for args in result)
