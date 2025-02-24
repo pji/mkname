@@ -10,6 +10,7 @@ from pathlib import Path
 
 from mkname import db
 from mkname import mkname as mn
+from mkname.constants import MSGS
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section
@@ -57,6 +58,15 @@ def build_syllable_name(
         config['vowels']
     )
     return name
+
+
+def duplicate_db(dst: str) -> str:
+    """Duplicate the names DB to the given path."""
+    dst_path = Path(dst)
+    if dst_path.exists():
+        return MSGS['en']['dup_path_exists'].format(dst_path=dst_path)
+    db.duplicate_db(dst_path)
+    return MSGS['en']['dup_success'].format(dst_path=dst_path)
 
 
 def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
@@ -148,6 +158,12 @@ def parse_cli() -> None:
     p.add_argument(
         '--config', '-C',
         help='Use the given custom config file.',
+        action='store',
+        type=str
+    )
+    p.add_argument(
+        '--duplicate_db', '-D',
+        help='Duplicate the names DB for customization.',
         action='store',
         type=str
     )
@@ -257,6 +273,11 @@ def parse_cli() -> None:
 
     if args.modify_name:
         lines = [modify_name(line, args.modify_name) for line in lines]
+
+    # Administer the database.
+    if args.duplicate_db:
+        msg = duplicate_db(args.duplicate_db)
+        lines.append(msg)
 
     # Write out the output.
     write_output(lines)

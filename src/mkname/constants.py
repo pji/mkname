@@ -28,6 +28,14 @@ PUNCTUATION = default['punctuation']
 SCIFI_LETTERS = default['scifi_letters']
 VOWELS = default['vowels']
 
+# Messages.
+MSGS = {
+    'en': {
+        'dup_success': 'The database has been copied to {dst_path}.',
+        'dup_path_exists': 'Copy failed. Path {dst_path} exists.',
+    },
+}
+
 # Define the values that will be imported with an asterisk.
 __all__ = [
     # Common paths.
@@ -43,4 +51,7 @@ __all__ = [
     'PUNCTUATION',
     'SCIFI_LETTERS',
     'VOWELS',
+
+    # Administration.
+    'MSGS',
 ]

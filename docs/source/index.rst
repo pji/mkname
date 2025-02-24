@@ -27,7 +27,7 @@ Why?
 ====
 It started with an update to a blackjack game I wrote as my first
 project in Python. I wanted to have a bunch of computer players
-playing with you, and thought they should be randomly generated
+playing with you, and I thought they should be randomly generated
 with randomly generated names. Then it came up in a few other things
 I wrote, so I figured I'd turn it into a package.
 
@@ -117,8 +117,9 @@ View the API documentation for more information.
 What about cultural bias in :mod:`mkname`?
 ==========================================
 Names are culturally specific things. What seems like a plausible name
-to me may not sound like a plausible name to you. Even worse, this can
-generate names from random pieces of other names, so it's possible the
+to me may not sound like a plausible name to you. How names are tied to
+gender may be different for you and me. Even worse, since this can
+generate names from random pieces of other names, it's possible the
 output can have undesirable connotations in its final context.
 
 I am but one Midwestern U.S. farm boy working on this package for free.
@@ -143,17 +144,18 @@ command::
 
     python3 -m pytest
 
-The full suite of style checks, mypy, and such I use can be run using a
-shortcut I have set up in the Makefile::
+The full suite of style checks, :mod:`mypy`, and such I use can be run
+using a shortcut I have set up in the Makefile::
 
     make pre
 
-Note: `precommit.py` requires itself to be run from a virtual environment
-located in the `.venv` directory at the root of the repository. This is so
-I don't accidentally run it using my system's Python and then waste hours
-troubleshooting that mess. If you want to disable this, you'll have to
-modify the script. The easiest way is probably commenting out the
-`check_venv()` call in `main()`.
+.. note::
+    `precommit.py` requires itself to be run from a virtual environment
+    located in the `.venv` directory at the root of the repository. This
+    is so I don't accidentally run it using my system's Python and then
+    waste hours troubleshooting that mess again. If you want to disable
+    this, you'll have to modify the script. The easiest way is probably
+    commenting out the `check_venv()` call in `main()`.
 
 
 Indices and tables

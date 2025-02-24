@@ -87,7 +87,7 @@ def test_build_syllable_name_diff_consonants(
     assert result == 'Waf\n'
 
 
-def test_by_culture(mocker, capsys, testdb):
+def test_culture(mocker, capsys, testdb):
     """When called with the -k option and a culture, use only
     names from that culture for the generation.
     """
@@ -99,16 +99,39 @@ def test_by_culture(mocker, capsys, testdb):
     )
 
 
-def test_by_gender(mocker, capsys, testdb):
-    """When called with the -k option and a culture, use only
-    names from that culture for the generation.
+def test_duplicate_db(mocker, capsys, testdb, tmp_path):
+    """When called with the -D option and a path, the default
+    names DB should be duplicated to that path.
     """
-    cmd = ['python -m mkname', '-L', '-g', 'sausage']
+    dst_path = tmp_path / 'spam.db'
+    cmd = ['mkname', '-D', str(dst_path),]
+    assert not dst_path.exists()
     result = cli_test(mocker, capsys, cmd)
     assert result == (
-        'spam\n'
-        'tomato\n'
+        c.MSGS['en']['dup_success'].format(dst_path=dst_path)
+        + '\n'
     )
+    assert dst_path.exists()
+
+
+def test_duplicate_db_file_exists(mocker, capsys, testdb, tmp_path):
+    """When called with the -D option and a path, the default
+    names DB should be duplicated to that path. If a file already
+    exists at that path, the duplication should fail with a warning.
+    """
+    exp = 'spam'
+    dst_path = tmp_path / 'spam.db'
+    cmd = ['mkname', '-D', str(dst_path),]
+    with open(dst_path, 'w') as fh:
+        fh.write(exp)
+    result = cli_test(mocker, capsys, cmd)
+    with open(dst_path) as fh:
+        act = fh.read()
+    assert result == (
+        c.MSGS['en']['dup_path_exists'].format(dst_path=dst_path)
+        + '\n'
+    )
+    assert act == exp
 
 
 def test_first_names(mocker, capsys, testdb):
@@ -121,6 +144,18 @@ def test_first_names(mocker, capsys, testdb):
         'spam\n'
         'ham\n'
         'waffles\n'
+    )
+
+
+def test_gender(mocker, capsys, testdb):
+    """When called with the -k option and a culture, use only
+    names from that culture for the generation.
+    """
+    cmd = ['python -m mkname', '-L', '-g', 'sausage']
+    result = cli_test(mocker, capsys, cmd)
+    assert result == (
+        'spam\n'
+        'tomato\n'
     )
 
 

@@ -18,6 +18,14 @@ ever need to, they will create their own connection if you don't.
 .. autofunction:: mkname.get_kinds
 
 
+Create Database
+===============
+The following function creates a new copy of the database for you
+to customize.
+
+.. autofunction:: mkname.duplicate_db
+
+
 Connecting to the Database
 ==========================
 The "read" functions detailed above use the
@@ -44,6 +52,7 @@ from mkname.model import Name
 
 # Names that will be imported when using *.
 __all__ = [
+    'duplicate_db',
     'get_cultures',
     'get_genders',
     'get_kinds',
@@ -128,7 +137,7 @@ def _run_query_for_single_column(con: sqlite3.Connection,
     return tuple(text[0] for text in result)
 
 
-# Serialization/deserialization functions.
+# Read functions.
 @makes_connection
 def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
     """Get a list of unique cultures in the database.
@@ -244,3 +253,27 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     params = (kind, )
     result = con.execute(query, params)
     return tuple(Name(*args) for args in result)
+
+
+# Create functions.
+def duplicate_db(dst_path: Path | str) -> None:
+    """Create a duplicate of the `names.db` database.
+
+    :param dst_path: The path to copy the database into.
+    :return: `None`.
+    :rtype: NoneType
+    """
+    # Creating a connection to a non-existant database creates a
+    # new database.
+    dst_con = sqlite3.Connection(dst_path)
+
+    # Create the connection to the original names DB.
+    src_path = get_db()
+    src_con = connect_db(src_path)
+
+    # Copy the names DB into the new DB.
+    src_con.backup(dst_con)
+
+    # Close the database connections.
+    src_con.close
+    dst_con.close()

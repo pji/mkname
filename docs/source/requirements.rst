@@ -158,13 +158,17 @@ Based on all of this, the initialization process probably looks like:
 
 1.  `mkname` is invoked.
 2.  Get the config.
+
     1.  If a config file is given and it doesn't exist: create it.
     2.  If a config file is given: read the config.
     3.  If not, use default config.
+    
 3.  Get the database location from the default config.
 4.  Initialize the database:
+
     1.  If the database exists, continue.
     2.  If not, copy base data into a db at that location.
+    
 5.  Make the connection to the database.
 
 This means users should go through the initialization process before
@@ -185,8 +189,31 @@ The goals for command line usage are:
 *   x `mkname` allows users to modify names.
 *   x `mkname` allows users to display the names in the database.
 *   x `mkname` can be called as a console script.
+*   x `mkname` allows users to backup the database.
 *   `mkname` allows users to add names to the database.
 *   `mkname` allows users to remove names from the database.
-*   `mkname` allows users to backup the database.
 *   `mkname` allows users to restore a database backup.
 *   `mkname` does not allow users to alter the default database.
+
+
+LLM/GPT Techniques
+~~~~~~~~~~~~~~~~~~
+`mkname` can already "tokenize" names and assemble new ones from them.
+That's not miles away from what an LLM/GPT does [citation needed]. Can
+I build on what I'm already doing to create names in a more LLM/GPTy
+kind of way?
+
+Assuming my syllablization works for the tokenization, these are what I
+think are the next steps:
+
+*   Create the process to use the tokens to create tensors for the model.
+*   Train the model using the existing names DB.
+*   Turn the output from the model into :class:`mkname.model.Name` objects.
+*   Add concepts like culture, gender, and kind into the model.
+*   Allow users to tweak the settings of the name generation.
+
+.. note::
+    This isn't intended to replace the exiting functionality of
+    :mod:`mkname`. Mainly, I just want to see what I can learn
+    about these systems by adding this as a feature.
+

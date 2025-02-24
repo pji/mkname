@@ -44,7 +44,8 @@ What Changed in Version 0.2.4
 The following changes were made in v0.2.4:
 
 *   Moved dependency management to `poetry`.
-*   Added `mkname.get_genders()`.
+*   Added ability to list the genders assigned to the names.
+*   Added ability to duplicate the names database for customization.
 
 
 How do I run the tests?

@@ -6,11 +6,11 @@
 #   2021.10.29
 #####
 
-cd mkname/data
+cd src/mkname/data
 sqlite3 names.db <<'END_SQL'
 .read mkname_tables.sql
 END_SQL
-cd ../..
+cd ../../..
 
 cd tests/data
 sqlite3 names.db <<'END_SQL'

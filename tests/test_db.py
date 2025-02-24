@@ -159,7 +159,7 @@ def test_disconnect_with_pending_changes():
         db.disconnect_db(con)
 
 
-# Serialization test cases.
+# Read test cases.
 class DeserializationTest:
     fn = None
     exp = None
@@ -209,11 +209,11 @@ def test_get_names(con, test_names):
     assert db.get_names(con) == test_names
 
 
-def test_get_names_called_with_path(test_names):
+@pytest.mark.dependency()
+def test_get_names_called_with_path(db_path, test_names):
     """When called with a path to a database, :func:`mkname.db.get_name`
     should return the names in the given database as a tuple.
     """
-    db_path = 'tests/data/names.db'
     assert db.get_names(db_path) == test_names
 
 
@@ -282,3 +282,27 @@ def test_get_names_by_kind_without_connection_or_path(test_db):
             'surname'
         ),
     )
+
+
+# Create test cases.
+@pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
+def test_duplicate_db(test_db, test_names, tmp_path):
+    """When given a destination path, :func:`mkname.db.duplicate_db`
+    should create a copy of the names DB in the current working directory.
+    """
+    dst_path = tmp_path / 'names.db'
+    db.duplicate_db(dst_path)
+    assert dst_path.exists()
+    assert db.get_names(dst_path) == test_names
+
+
+@pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
+def test_duplicate_db_with_str(test_db, test_names, tmp_path):
+    """When given a destination path, :func:`mkname.db.duplicate_db`
+    should create a copy of the names DB in the current working directory.
+    """
+    dst_str = str(tmp_path / 'names.db')
+    db.duplicate_db(dst_str)
+    assert pathlib.Path(dst_str).exists()
+    assert db.get_names(dst_str) == test_names
+

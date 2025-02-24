@@ -44,6 +44,14 @@ database used in generating or selecting names:
 .. autofunction:: mkname.get_names_by_kind
 
 
+Data Customization
+==================
+The following function is useful when you want to customize the data
+used to generate names:
+
+.. autofunction:: mkname.duplicate_db
+
+
 Initialization
 ==============
 The following functions are used to configure :mod:`mkname`:
