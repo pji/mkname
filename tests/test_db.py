@@ -305,4 +305,3 @@ def test_duplicate_db_with_str(test_db, test_names, tmp_path):
     db.duplicate_db(dst_str)
     assert pathlib.Path(dst_str).exists()
     assert db.get_names(dst_str) == test_names
-

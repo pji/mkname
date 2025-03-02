@@ -85,7 +85,7 @@ def get_config(path: Union[Path, str] = '') -> Config:
     # with the config from the local file.
     cwd = Path.cwd()
     for ext in EXTS:
-        for local_path in cwd.glob(f'*.{ext}'):
+        for local_path in cwd.glob(f'mkname.{ext}'):
             new = read_config_file(local_path)
             config.update(new)
 

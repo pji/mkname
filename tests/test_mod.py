@@ -138,7 +138,7 @@ def test_add_punctuation_do_not_cap_after_mark(mocker):
     isn't capitalized.
     """
     name = 'spam'
-    rolls = [1,4]
+    rolls = [1, 4]
     cap_after = False
     result = add_punctuation_test(mocker, name, rolls, cap_after=cap_after)
     assert result == "Spa'm"
@@ -148,7 +148,7 @@ def test_add_punctuation_do_not_cap_before_mark(mocker):
     """If False is passed for cap_before, then the letter before the
     mark isn't capitalized."""
     name = 'spam'
-    rolls = [1,2]
+    rolls = [1, 2]
     cap_before = False
     result = add_punctuation_test(mocker, name, rolls, cap_before=cap_before)
     assert result == "s'Pam"

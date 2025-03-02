@@ -76,7 +76,7 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
         >>> con = connect_db(loc)
         >>> result = con.execute(query)
         >>> tuple(result)
-        (('Noah',),)
+        (('Liam',),)
         >>> disconnect_db(con)
     """
     # Check to make sure the file exists, since sqlite3 fails silently.
