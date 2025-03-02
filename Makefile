@@ -8,7 +8,7 @@ build:
 clean:
 	rm -rf docs/build/html
 	rm -rf dist
-	rm -rf mkname.egg-info
+	rm -rf src/mkname.egg-info
 	rm -rf tests/__pycache__
 	rm -rf src/mkname/__pycache__
 	rm -rf src/mkname/*.pyc
