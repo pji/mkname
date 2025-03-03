@@ -29,6 +29,29 @@ def db_path():
 
 
 @pytest.fixture
+def empty_db(tmp_path):
+    db_path = tmp_path / 'empty.db'
+
+    # Create the names table.
+    con = sqlite3.Connection(db_path)
+    cur = con.cursor()
+    cur.execute((
+        'CREATE TABLE names(\n'
+        '    id          integer primary key autoincrement,\n'
+        '    name        char(64),\n'
+        '    source      char(128),\n'
+        '    culture     char(64),\n'
+        '    date        integer,\n'
+        '    gender      char(64),\n'
+        '    kind        char(16)\n'
+        ')\n'
+    ))
+    con.close
+
+    yield db_path
+
+
+@pytest.fixture
 def test_db(mocker):
     """Point the default database to the test database."""
     db_path = 'tests/data/names.db'
@@ -305,3 +328,27 @@ def test_duplicate_db_with_str(test_db, test_names, tmp_path):
     db.duplicate_db(dst_str)
     assert pathlib.Path(dst_str).exists()
     assert db.get_names(dst_str) == test_names
+
+
+# Update test cases.
+def test_add_name_to_db(empty_db):
+    """Given a name and a path to a names database,
+    :func:`mkname.db.add_name_to_db` should add the name
+    to the database.
+    """
+    name = m.Name(
+        1,
+        'spam',
+        'eggs',
+        'bacon',
+        1970,
+        'sausage',
+        'given'
+    )
+    db.add_name_to_db(empty_db, name)
+    con = sqlite3.Connection(empty_db)
+    cur = con.cursor()
+    result = cur.execute('SELECT * FROM names WHERE id=1;')
+    assert result.fetchone()[1] == name.name
+
+

@@ -277,3 +277,24 @@ def duplicate_db(dst_path: Path | str) -> None:
     # Close the database connections.
     src_con.close
     dst_con.close()
+
+
+# Update functions.
+@makes_connection
+def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
+    """Add a name to the given database."""
+    q = (
+        'INSERT INTO names '
+        '(name, source, culture, date, gender, kind) '
+        'VALUES(:name, :src, :culture, :date, :gender, :kind)'
+    )
+    cur = con.execute(q, {
+        'name': name.name,
+        'src': name.source,
+        'culture': name.culture,
+        'date': name.date,
+        'gender': name.gender,
+        'kind': name.kind,
+    })
+    con.commit()
+
