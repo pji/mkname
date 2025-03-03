@@ -331,20 +331,12 @@ def test_duplicate_db_with_str(test_db, test_names, tmp_path):
 
 
 # Update test cases.
-def test_add_name_to_db(empty_db):
+def test_add_name_to_db(empty_db, test_names):
     """Given a name and a path to a names database,
     :func:`mkname.db.add_name_to_db` should add the name
     to the database.
     """
-    name = m.Name(
-        1,
-        'spam',
-        'eggs',
-        'bacon',
-        1970,
-        'sausage',
-        'given'
-    )
+    name = test_names[0]
     db.add_name_to_db(empty_db, name)
     con = sqlite3.Connection(empty_db)
     cur = con.cursor()
@@ -352,3 +344,15 @@ def test_add_name_to_db(empty_db):
     assert result.fetchone()[1] == name.name
 
 
+def test_add_names_to_db(empty_db, test_names):
+    """Given a sequence of names and a path to a names database,
+    :func:`mkname.db.add_names_to_db` should add the names
+    to the database.
+    """
+    db.add_names_to_db(empty_db, test_names)
+    con = sqlite3.Connection(empty_db)
+    cur = con.cursor()
+    result = cur.execute('SELECT * FROM names;')
+    actuals = result.fetchall()
+    for act, exp in zip(actuals, test_names):
+        assert act[1] == exp.name

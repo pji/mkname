@@ -42,9 +42,10 @@ can use the following functions to open and close the connection.
 
 """
 import sqlite3
+from collections.abc import Callable, Sequence
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 from mkname.init import get_db
 from mkname.model import Name
@@ -298,3 +299,9 @@ def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
     })
     con.commit()
 
+
+@makes_connection
+def add_names_to_db(con: sqlite3.Connection, names: Sequence[Name]) -> None:
+    """Add multiple names to the database."""
+    for name in names:
+        add_name_to_db(con, name)
