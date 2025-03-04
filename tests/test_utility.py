@@ -7,7 +7,7 @@ Unit tests for mkname.utility.
 from mkname import utility as u
 
 
-# Test for calc_cv_pattern.
+# Test cases.
 def test_determine_cv_pattern():
     """Given a string, return the pattern of consonants and vowels in
     that pattern.
@@ -16,7 +16,27 @@ def test_determine_cv_pattern():
     assert u.calc_cv_pattern(name) == 'cvccvvc'
 
 
-# Tests for split_into_syllables.
+class TestRecapitalize:
+    def test_all_caps(self):
+        """Given a all capitalized str, :func:`mkname.utility.recapitalize`
+        should recapitalize it based on standard English name capitalization
+        rules.
+        """
+        s = 'SPAM'
+        result = u.recapitalize(s)
+        assert result == s.title()
+
+    def test_mcc(self):
+        """Given a str that starts with "mc",
+        :func:`mkname.utility.recapitalize`
+        should capitalize as "Mc" followed by
+        a capital letter.
+        """
+        s = 'mcspam'
+        result = u.recapitalize(s)
+        assert result == 'McSpam'
+
+
 def test_split_into_syllables():
     """Given a name, return a tuple of substrings that are the syllables
     of the name.

@@ -33,14 +33,6 @@ def write_csv(names: list[list[str]], path: str) -> None:
             writer.writerow(line)
 
 
-def decap(name: str, mcc_intercap: bool = True) -> str:
-    """Decapitalize a name in all capital letters."""
-    name = name.title()
-    if mcc_intercap and name.startswith('Mcc'):
-        name = f'McC{name[3:]}'
-    return name
-
-
 def process_census_surname_list(path: str, url: str, year: int) -> None:
     """Turn the U.S. Census surname list into serialized Name objects."""
     lines = read_csv(path, 3, 0)

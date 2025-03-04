@@ -33,6 +33,8 @@ MSGS = {
     'en': {
         'dup_success': 'The database has been copied to {dst_path}.',
         'dup_path_exists': 'Copy failed. Path {dst_path} exists.',
+        'read_path_not_exists': 'Read failed. Path {path} does not exist.',
+        'write_path_exists': 'Write failed. Path {path} exists',
     },
 }
 

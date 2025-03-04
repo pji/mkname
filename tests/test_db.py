@@ -52,7 +52,19 @@ def empty_db(tmp_path):
 
 
 @pytest.fixture
-def test_db(mocker):
+def protected_test_db(mocker, tmp_path):
+    """Point the default database to the temp copy of the test database."""
+    test_db_path = pathlib.Path('tests/data/names.db')
+    db_path = pathlib.Path(tmp_path / 'names.db')
+    data = test_db_path.read_bytes()
+    db_path.write_bytes(data)
+    path_str = str(db_path)
+    mocker.patch('mkname.db.get_db', return_value=path_str)
+    yield None
+
+
+@pytest.fixture
+def test_db(mocker, tmp_path):
     """Point the default database to the test database."""
     db_path = 'tests/data/names.db'
     mocker.patch('mkname.db.get_db', return_value=db_path)
@@ -344,6 +356,18 @@ def test_add_name_to_db(empty_db, test_names):
     assert result.fetchone()[1] == name.name
 
 
+def test_add_name_to_db_cannot_update_default_db(
+    protected_test_db,
+    test_names
+):
+    """When given `None` instead of a database connection or path,
+    :func:`mkname.db.add_name_to_db` should raise an exception to
+    prevent accidental changes to the default database.
+    """
+    with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+        db.add_name_to_db(None, test_names[0])
+
+
 def test_add_names_to_db(empty_db, test_names):
     """Given a sequence of names and a path to a names database,
     :func:`mkname.db.add_names_to_db` should add the names
@@ -356,3 +380,15 @@ def test_add_names_to_db(empty_db, test_names):
     actuals = result.fetchall()
     for act, exp in zip(actuals, test_names):
         assert act[1] == exp.name
+
+
+def test_add_names_to_db_cannot_update_default_db(
+    protected_test_db,
+    test_names
+):
+    """When given `None` instead of a database connection or path,
+    :func:`mkname.db.add_name_to_db` should raise an exception to
+    prevent accidental changes to the default database.
+    """
+    with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+        db.add_names_to_db(None, test_names)

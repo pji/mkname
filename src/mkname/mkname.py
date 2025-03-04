@@ -54,9 +54,9 @@ def build_compound_name(
         >>>
         >>> # The list of names needs to be Name objects.
         >>> names = []
-        >>> names.append(Name(1, 'eggs', 'url', '', '', '', 'given'))
-        >>> names.append(Name(2, 'spam', 'url', '', '', '', 'given'))
-        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>> names.append(Name(1, 'eggs', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(2, 'spam', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', 1970, '', 'given'))
         >>>
         >>> # Generate the name.
         >>> build_compound_name(names)
@@ -74,9 +74,9 @@ def build_compound_name(
         >>>
         >>> # The list of names needs to be Name objects.
         >>> names = []
-        >>> names.append(Name(1, 'eggs', 'url', '', '', '', 'given'))
-        >>> names.append(Name(2, 'spam', 'url', '', '', '', 'given'))
-        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>> names.append(Name(1, 'eggs', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(2, 'spam', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', 1970, '', 'given'))
         >>>
         >>> # Treat 't' as a vowel rather than a consonant.
         >>> consonants = 'bcdfghjklmnpqrsvwxz'
@@ -118,9 +118,9 @@ def build_from_syllables(
         >>>
         >>> # The list of names needs to be Name objects.
         >>> names = []
-        >>> names.append(Name(1, 'spameggs', 'url', '', '', '', 'given'))
-        >>> names.append(Name(2, 'eggsham', 'url', '', '', '', 'given'))
-        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>> names.append(Name(1, 'spameggs', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(2, 'eggsham', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', 1970, '', 'given'))
         >>>
         >>> # The number of syllables in the generated name.
         >>> num_syllables = 3
@@ -141,9 +141,9 @@ def build_from_syllables(
         >>>
         >>> # The list of names needs to be Name objects.
         >>> names = []
-        >>> names.append(Name(1, 'spam', 'url', '', '', '', 'given'))
-        >>> names.append(Name(2, 'eggs', 'url', '', '', '', 'given'))
-        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>> names.append(Name(1, 'spam', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(2, 'eggs', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', 1970, '', 'given'))
         >>>
         >>> # Treat 't' as a vowel rather than a consonant.
         >>> consonants = 'bcdfghjklmnpqrtvwxz'
@@ -181,9 +181,9 @@ def select_name(names: Sequence[Name]) -> str:
         >>>
         >>> # The list of names needs to be Name objects.
         >>> names = []
-        >>> names.append(Name(1, 'spam', 'url', '', '', '', 'given'))
-        >>> names.append(Name(2, 'eggs', 'url', '', '', '', 'given'))
-        >>> names.append(Name(3, 'tomato', 'url', '', '', '', 'given'))
+        >>> names.append(Name(1, 'spam', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(2, 'eggs', 'url', '', 1970, '', 'given'))
+        >>> names.append(Name(3, 'tomato', 'url', '', 1970, '', 'given'))
         >>>
         >>> # Generate the name.
         >>> select_name(names)

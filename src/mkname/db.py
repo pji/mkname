@@ -62,6 +62,15 @@ __all__ = [
 ]
 
 
+# Exceptions.
+class CannotUpdateDefaultDBError(Exception):
+    """Update operations are not allowed to update the package's
+    default database without being explicitly pointed to that
+    database. This is to prevent accidental updates to the default
+    database that will be overwritten when the package is updated.
+    """
+
+
 # Connection functions.
 def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     """Connect to the database.
@@ -123,6 +132,34 @@ def makes_connection(fn: Callable) -> Callable:
         else:
             default_path = get_db()
             con = connect_db(default_path)
+        result = fn(con, *args, **kwargs)
+        if isinstance(given_con, (str, Path)):
+            disconnect_db(con)
+        return result
+    return wrapper
+
+
+def protects_connection(fn: Callable) -> Callable:
+    """A decorator that manages a database connection for the
+    decorated function and prevents implicit connection to the
+    default database.
+
+    .. note:
+        This is intended as a guard against accidental changes to
+        the default database. It is not intended as a security control.
+    """
+    @wraps(fn)
+    def wrapper(
+        given_con: Union[sqlite3.Connection, str, Path, None] = None,
+        *args, **kwargs
+    ) -> Any:
+        if isinstance(given_con, (str, Path)):
+            con = connect_db(given_con)
+        elif isinstance(given_con, sqlite3.Connection):
+            con = given_con
+        else:
+            msg = 'Must explicitly connect to a DB for this action.'
+            raise CannotUpdateDefaultDBError(msg)
         result = fn(con, *args, **kwargs)
         if isinstance(given_con, (str, Path)):
             disconnect_db(con)
@@ -281,9 +318,16 @@ def duplicate_db(dst_path: Path | str) -> None:
 
 
 # Update functions.
-@makes_connection
+@protects_connection
 def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
-    """Add a name to the given database."""
+    """Add a name to the given database.
+
+    .. warning:
+        This function will not update the default database by default.
+        You can still explicitly point it to the default database, but
+        that is probably a bad idea because updates will be lost when
+        the package is updated.
+    """
     q = (
         'INSERT INTO names '
         '(name, source, culture, date, gender, kind) '
@@ -300,8 +344,15 @@ def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
     con.commit()
 
 
-@makes_connection
+@protects_connection
 def add_names_to_db(con: sqlite3.Connection, names: Sequence[Name]) -> None:
-    """Add multiple names to the database."""
+    """Add multiple names to the database.
+
+    .. warning:
+        This function will not update the default database by default.
+        You can still explicitly point it to the default database, but
+        that is probably a bad idea because updates will be lost when
+        the package is updated.
+    """
     for name in names:
         add_name_to_db(con, name)

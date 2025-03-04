@@ -78,6 +78,21 @@ def calc_cv_pattern(
 
 
 # Word manipulation functions.
+def recapitalize(s: str) -> str:
+    """Recapitalize the string based on common name patterns.
+
+    :param s: The string to recapitalize.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
+    normal = s.casefold()
+    if normal.startswith('mc'):
+        result = 'Mc' + normal[2:].title()
+    else:
+        result = normal.title()
+    return result
+
+
 def split_into_syllables(
     name: str,
     consonants: Sequence[str] = CONSONANTS,
