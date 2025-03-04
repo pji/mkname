@@ -5,6 +5,7 @@ utility
 General utility functions for :mod:`mkname`.
 
 .. autofunction:: mkname.utility.calc_cv_pattern
+.. autofunction:: mkname.utility.recapitalize
 .. autofunction:: mkname.utility.split_into_syllables
 .. autofunction:: mkname.utility.roll
 
@@ -84,6 +85,19 @@ def recapitalize(s: str) -> str:
     :param s: The string to recapitalize.
     :returns: A :class:`str` object.
     :rtype: str
+
+    Usage:
+
+        >>> name = 'GRAHAM'
+        >>> recapitalize(name)
+        'Graham'
+
+    It will also recognize the "Mc" pattern at the beginning of names
+    and capitalize accordingly.
+
+        >>> name = 'mccoy'
+        >>> recapitalize(name)
+        'McCoy'
     """
     normal = s.casefold()
     if normal.startswith('mc'):
