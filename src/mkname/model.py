@@ -30,7 +30,11 @@ class IsInt:
         return getattr(obj, self._name)
 
     def __set__(self, obj, value) -> None:
-        setattr(obj, self._name, int(value))
+        try:
+            normal = int(value)
+        except ValueError:
+            normal = 0
+        setattr(obj, self._name, normal)
 
 
 class IsStr:

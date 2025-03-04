@@ -68,6 +68,18 @@ class TestReadCSV:
         actual = t.read_csv(path)
         assert actual == names
 
+    def test_read_no_ids(self, names):
+        """Given a path to a CSV with serialized :class:`mkname.model.Name`
+        objects that don't have ids, :func:`mkname.tools.read_csv` should
+        read the file and return the names as a :class:`tuple` of
+        :class:`mkname.model.Name` objects. If the serialized names
+        don't have IDs, they should be given IDs when they are created.
+        """
+        names = tuple(m.Name(0, *name.astuple()[1:]) for name in names)
+        path = 'tests/data/serialized_names_no_id.csv'
+        actual = t.read_csv(path)
+        assert actual == names
+
     def test_does_not_exist(self):
         """Given a path that doesn't exist, :func:`mkname.tools.read_csv`
         should raise a PathDoesNotExistError.
@@ -75,6 +87,16 @@ class TestReadCSV:
         path = 'tests/data/__spam.eggs'
         with pytest.raises(t.PathDoesNotExistError):
             t.read_csv(path)
+
+
+def test_reindex(names):
+    """Given a sequence of :class:`mkname.model.Name` objects with
+    non-unique IDs, :func:`mkname.tools.redindex` should reindex the
+    names to have unique ideas.
+    """
+    nonunique = [m.Name(0, *name.astuple()[1:]) for name in names]
+    result = t.reindex(nonunique, offset=1)
+    assert result == names
 
 
 class TestWriteToCSV:

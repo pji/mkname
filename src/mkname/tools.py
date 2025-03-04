@@ -44,6 +44,20 @@ def read_csv(path: str | Path) -> tuple[m.Name, ...]:
         return tuple(m.Name(*row) for row in reader)
 
 
+def reindex(names: Sequence[m.Name], offset: int = 0) -> tuple[m.Name, ...]:
+    """Reindex the given sequences of names.
+
+    :param names: A sequence of names to reindex.
+    :param offset: The first index when reindexing.
+    :return: A :class:`tuple` object.
+    :rtype: tuple
+    """
+    return tuple(
+        m.Name(i + offset, *name.astuple()[1:])
+        for i, name in enumerate(names)
+    )
+
+
 def write_as_csv(
     path: str | Path,
     names: Sequence[m.Name],
