@@ -89,6 +89,89 @@ class TestReadCSV:
             t.read_csv(path)
 
 
+class TestReadNameCensus:
+    def test_read_given_names(self):
+        """Given a path to a file containing given name data
+        stored in census.name format, a source, a year, and
+        a kind, :func:`mkname.tools.read_name_census` should
+        return the names in the file as a :class:`tuple`
+        of :class:`mkname.model.Name` objects.
+        """
+        path = 'tests/data/census_name.csv'
+        year = 2025
+        kind = 'given'
+        source = 'http://census.name'
+        result = t.read_name_census(path, source, year, kind)
+        assert len(result) == 5
+        assert result[0] == m.Name(
+            0, 'Сергей', source, 'Russia', year, 'male', kind
+        )
+        assert result[-1] == m.Name(
+            4, 'Hélène', source, 'France', year, 'female', kind
+        )
+
+    def test_read_surnames(self):
+        """Given a path to a file containing surname data
+        stored in census.name format, a source, a year,
+        and a kind, :func:`mkname.tools.read_name_census`
+        should return the names in the file as a :class:`tuple`
+        of :class:`mkname.model.Name` objects.
+        """
+        path = 'tests/data/census_name_surname.csv'
+        year = 2025
+        kind = 'surname'
+        source = 'http://census.name'
+        result = t.read_name_census(path, source, year, kind)
+        assert len(result) == 6
+        assert result[0] == m.Name(
+            0, 'Nuñez', source, 'Spain', year, 'none', kind
+        )
+        assert result[-1] == m.Name(
+            5, 'иванова', source, 'Russia', year, 'female', kind
+        )
+
+
+class TestReadUSCensus:
+    def test_surname_2010(self):
+        """Given the path to a TSV file in U.S. Census 2010 Surname
+        format, a source, a year, a gender, a kind, and whether there
+        are headers, :func:`mkname.tools.read_us_census` should read
+        the file and return a :class:`tuple` object of
+        class:`mkname.model.Name` objects.
+        """
+        path = 'tests/data/us_census_surnames.tsv'
+        source = 'census.gov'
+        kind = 'surname'
+        year = 2025
+        headers = True
+        result = t.read_us_census(
+            path,
+            source=source,
+            year=year,
+            kind=kind,
+            headers=headers
+        )
+        assert len(result) == 5
+        assert result[0] == m.Name(
+            id=0,
+            name='Smith',
+            source=source,
+            culture='United States',
+            date=year,
+            gender='none',
+            kind=kind
+        )
+        assert result[-1] == m.Name(
+            id=4,
+            name='Jones',
+            source=source,
+            culture='United States',
+            date=year,
+            gender='none',
+            kind=kind
+        )
+
+
 def test_reindex(names):
     """Given a sequence of :class:`mkname.model.Name` objects with
     non-unique IDs, :func:`mkname.tools.redindex` should reindex the

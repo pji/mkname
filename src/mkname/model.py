@@ -15,6 +15,7 @@ from dataclasses import astuple, dataclass
 Section = dict[str, str]
 Config = dict[str, Section]
 SimpleMod = Callable[[str], str]
+NameCensusRecord = tuple[str, ...]
 
 
 # Descriptors.
@@ -86,6 +87,60 @@ class Name:
     date: IsInt = IsInt()
     gender: IsStr = IsStr()
     kind: IsStr = IsStr()
+
+    @classmethod
+    def from_name_census(
+        cls, data: NameCensusRecord,
+        source: str,
+        date: int,
+        kind: str,
+        id_: int = 0
+    ) -> 'Name':
+        """Deserialize data in census.name format.
+
+        :param data: The census.name data to deserialize. It will
+            detect whether the type is for given or surnames based
+            on the length of the record.
+        :param source: The URL for the data source.
+        :param date: The year the data comes from.
+        :param kind: A tag for how the name is used, such as a given
+            name or a surname.
+        :param id_: The unique ID for the name.
+        :returns: A :class:`mkname.model.Name` object.
+        :rtype: mkname.model.Name
+        """
+        name_index = 0
+        culture_index = 3
+        unisex_index = 7
+        gender_index = 6
+
+        is_given = True if len(data) == 10 else False
+        unisex_val = True if data[unisex_index].casefold() == 'y' else False
+        gender_val = data[gender_index].casefold()
+        if is_given and not unisex_val and gender_val == 'm':
+            gender = 'male'
+        elif is_given and not unisex_val and gender_val == 'f':
+            gender = 'female'
+        elif is_given and unisex_val:
+            gender = 'none'
+        elif not is_given and gender_val == 'm':
+            gender = 'male'
+        elif not is_given and gender_val == 'f':
+            gender = 'female'
+        elif not is_given and not gender_val:
+            gender = 'none'
+        else:
+            gender = gender_val
+
+        return cls(
+            id=id_,
+            name=data[name_index],
+            source=source,
+            culture=data[culture_index],
+            date=date,
+            gender=gender,
+            kind=kind
+        )
 
     def astuple(self) -> tuple[int, str, str, str, int, str, str]:
         """Serializes the object to a :class:`tuple`."""
