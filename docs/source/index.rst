@@ -12,6 +12,7 @@ Welcome to mkname's documentation!
    
    self
    /api.rst
+   /tools.rst
    /requirements.rst
 
 
