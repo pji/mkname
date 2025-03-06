@@ -5,58 +5,100 @@ test_tools
 Unit tests for :mod:`mkname.tools`.
 """
 import csv
+import sqlite3
 
 import pytest
 
 import mkname.model as m
 import mkname.tools as t
+from tests.fixtures import csv_path, db_path, empty_db, names, test_db
 
 
-# Fixtures.
-@pytest.fixture
-def names():
-    """The contents of the test database."""
-    yield (
-        m.Name(
-            1,
-            'spam',
-            'eggs',
-            'bacon',
-            1970,
-            'sausage',
-            'given'
-        ),
-        m.Name(
-            2,
-            'ham',
-            'eggs',
-            'bacon',
-            1970,
-            'baked beans',
-            'given'
-        ),
-        m.Name(
-            3,
-            'tomato',
-            'mushrooms',
-            'pancakes',
-            2000,
-            'sausage',
-            'surname'
-        ),
-        m.Name(
-            4,
-            'waffles',
-            'mushrooms',
-            'porridge',
-            2000,
-            'baked beans',
-            'given'
-        ),
-    )
+# Utility functions.
+def db_matches_names(path, names):
+    """Compare the names in the DB to the given names."""
+    query = 'SELECT * FROM names'
+    con = sqlite3.Connection(path)
+    rows = con.execute(query)
+    results = [m.Name(*row) == name for row, name in zip(rows, names)]
+    con.close()
+    return results
+
+
+def csv_matches_names(path, names):
+    """Compare the names in the CSV file to the given names."""
+    with open(path) as fh:
+        reader = csv.reader(fh)
+        results = [m.Name(*row) == name for row, name in zip(reader, names)]
+    return results
 
 
 # Test cases.
+class TestExport:
+    def test_can_overwrite(self, names, test_db, tmp_path):
+        """Given a destination path that exists and a `overwrite`
+        value of `True`, :func:`mkname.tools.export` should overwrite
+        the path.
+        """
+        path = tmp_path / 'names.csv'
+        path.touch()
+        assert path.exists()
+        t.export(path, overwrite=True)
+        assert all(csv_matches_names(path, names))
+
+    def test_export_default_db(self, names, test_db, tmp_path):
+        """Given a path, :func:`mkname.tools.export` should export
+        the names in the default names database to a CSV file at
+        the path.
+        """
+        path = tmp_path / 'names.csv'
+        assert not path.exists()
+        t.export(path)
+        assert all(csv_matches_names(path, names))
+
+    def test_export_given_db(self, db_path, names, tmp_path):
+        """Given a destination and a source path,
+        :func:`mkname.tools.export` should export the
+        names in the source names database to a CSV
+        file at the destination path.
+        """
+        dst_path = tmp_path / 'names.csv'
+        assert not dst_path.exists()
+        t.export(dst_path, src_path=db_path)
+        assert all(csv_matches_names(dst_path, names))
+
+    def test_will_not_overwrite(self, tmp_path):
+        """Given a destination path that exists,
+        :func:`mkname.tools.export` should raise
+        an exception rather than overwrite the
+        file at the path.
+        """
+        dst_path = tmp_path / 'spam'
+        dst_path.touch()
+        assert dst_path.exists()
+        with pytest.raises(t.PathExistsError):
+            t.export(dst_path)
+
+
+class TestImport_:
+    def test_import_into_existing(self, csv_path, empty_db, names):
+        """Given a path to an existing names database and a path to
+        an existing CSV file of name data, :func:`mkname.tools.import`
+        should add the names in the CSV to the database.
+        """
+        t.import_(empty_db, csv_path)
+        assert all(db_matches_names(empty_db, names))
+
+    def test_import_into_nonexisting(self, csv_path, names, tmp_path):
+        """Given a path to a nonexisting names database and a path to
+        an existing CSV file of name data, :func:`mkname.tools.import`
+        should add the names in the CSV to the database.
+        """
+        path = tmp_path / 'names.db'
+        t.import_(path, csv_path)
+        assert all(db_matches_names(path, names))
+
+
 class TestReadCSV:
     def test_read(self, names):
         """Given a path to a CSV with serialized :class:`mkname.model.Name`
@@ -190,10 +232,7 @@ class TestWriteToCSV:
         """
         path = tmp_path / 'names.csv'
         t.write_as_csv(path, names)
-        with open(path) as fh:
-            reader = csv.reader(fh)
-            for row, name in zip(reader, names):
-                assert m.Name(*row) == name
+        assert all(csv_matches_names(path, names))
 
     def test_file_exists(self, names, tmp_path):
         """If the given path exists, :func:`mkname.tools.write_as_csv`
@@ -211,10 +250,7 @@ class TestWriteToCSV:
         """
         path = tmp_path / 'names.csv'
         t.write_as_csv(str(path), names)
-        with open(path) as fh:
-            reader = csv.reader(fh)
-            for row, name in zip(reader, names):
-                assert m.Name(*row) == name
+        assert all(csv_matches_names(path, names))
 
     def test_overwrite_existing_file(self, names, tmp_path):
         """If override is `True`, :mod:`mkname.tools.write_as_csv`
@@ -223,7 +259,4 @@ class TestWriteToCSV:
         path = tmp_path / 'names.csv'
         path.touch()
         t.write_as_csv(path, names, overwrite=True)
-        with open(path) as fh:
-            reader = csv.reader(fh)
-            for row, name in zip(reader, names):
-                assert m.Name(*row) == name
+        assert all(csv_matches_names(path, names))

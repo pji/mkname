@@ -12,9 +12,11 @@ Tools for working with alternate sources of name data.
 
 """
 import csv
+from argparse import ArgumentParser
 from collections.abc import Sequence
 from pathlib import Path
 
+from mkname import db
 from mkname import model as m
 from mkname.constants import MSGS
 from mkname.utility import recapitalize
@@ -179,3 +181,26 @@ def _get_rows_from_csv(
     with open(path) as fh:
         reader = csv.reader(fh, delimiter=delim)
         return tuple(tuple(row) for row in reader)
+
+
+# Command scripts.
+def export(
+    dst_path: Path | str,
+    src_path: Path | str | None = None,
+    overwrite: bool = False
+) -> None:
+    """Export names databases to CSV files for manual updating."""
+    names = db.get_names(src_path)
+    write_as_csv(dst_path, names, overwrite=overwrite)
+
+
+def import_(
+    dst_path: Path | str,
+    src_path: Path | str
+) -> None:
+    """Import names from a file to a database."""
+    dst_path = Path(dst_path)
+    names = read_csv(src_path)
+    if not dst_path.exists():
+        db.create_empty_db(dst_path)
+    db.add_names_to_db(dst_path, names)

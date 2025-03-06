@@ -20,10 +20,10 @@ ever need to, they will create their own connection if you don't.
 
 Create Database
 ===============
-The following function creates a new copy of the database for you
-to customize.
+The following functions create new databases.
 
 .. autofunction:: mkname.duplicate_db
+.. autofunction:: mkname.create_empty_db
 
 
 Connecting to the Database
@@ -315,6 +315,29 @@ def duplicate_db(dst_path: Path | str) -> None:
     # Close the database connections.
     src_con.close
     dst_con.close()
+
+
+def create_empty_db(path: Path | str) -> None:
+    """Create an empty names database.
+
+    :param path: Where to create the database.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    query = (
+        'CREATE TABLE names(\n'
+        '    id          integer primary key autoincrement,\n'
+        '    name        char(64),\n'
+        '    source      char(128),\n'
+        '    culture     char(64),\n'
+        '    date        integer,\n'
+        '    gender      char(64),\n'
+        '    kind        char(16)\n'
+        ')\n'
+    )
+    con = sqlite3.Connection(path)
+    con.execute(query)
+    con.close()
 
 
 # Update functions.

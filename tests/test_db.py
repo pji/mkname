@@ -11,6 +11,7 @@ import pytest
 
 from mkname import db
 from mkname import model as m
+from tests.fixtures import db_path, empty_db, names, test_db
 
 
 # Fixtures
@@ -24,34 +25,6 @@ def con():
 
 
 @pytest.fixture
-def db_path():
-    return 'tests/data/names.db'
-
-
-@pytest.fixture
-def empty_db(tmp_path):
-    db_path = tmp_path / 'empty.db'
-
-    # Create the names table.
-    con = sqlite3.Connection(db_path)
-    cur = con.cursor()
-    cur.execute((
-        'CREATE TABLE names(\n'
-        '    id          integer primary key autoincrement,\n'
-        '    name        char(64),\n'
-        '    source      char(128),\n'
-        '    culture     char(64),\n'
-        '    date        integer,\n'
-        '    gender      char(64),\n'
-        '    kind        char(16)\n'
-        ')\n'
-    ))
-    con.close
-
-    yield db_path
-
-
-@pytest.fixture
 def protected_test_db(mocker, tmp_path):
     """Point the default database to the temp copy of the test database."""
     test_db_path = pathlib.Path('tests/data/names.db')
@@ -61,57 +34,6 @@ def protected_test_db(mocker, tmp_path):
     path_str = str(db_path)
     mocker.patch('mkname.db.get_db', return_value=path_str)
     yield None
-
-
-@pytest.fixture
-def test_db(mocker, tmp_path):
-    """Point the default database to the test database."""
-    db_path = 'tests/data/names.db'
-    mocker.patch('mkname.db.get_db', return_value=db_path)
-    yield None
-
-
-@pytest.fixture
-def test_names():
-    """The contents of the test database."""
-    yield (
-        m.Name(
-            1,
-            'spam',
-            'eggs',
-            'bacon',
-            1970,
-            'sausage',
-            'given'
-        ),
-        m.Name(
-            2,
-            'ham',
-            'eggs',
-            'bacon',
-            1970,
-            'baked beans',
-            'given'
-        ),
-        m.Name(
-            3,
-            'tomato',
-            'mushrooms',
-            'pancakes',
-            2000,
-            'sausage',
-            'surname'
-        ),
-        m.Name(
-            4,
-            'waffles',
-            'mushrooms',
-            'porridge',
-            2000,
-            'baked beans',
-            'given'
-        ),
-    )
 
 
 # Connection test cases.
@@ -236,27 +158,27 @@ class TestGetKinds(DeserializationTest):
     exp = ('given', 'surname',)
 
 
-def test_get_names(con, test_names):
+def test_get_names(con, names):
     """When given a database connection, :func:`mkname.db.get_names`
     should return the names in the given database as a tuple.
     """
     # Expected value.
-    assert db.get_names(con) == test_names
+    assert db.get_names(con) == names
 
 
 @pytest.mark.dependency()
-def test_get_names_called_with_path(db_path, test_names):
+def test_get_names_called_with_path(db_path, names):
     """When called with a path to a database, :func:`mkname.db.get_name`
     should return the names in the given database as a tuple.
     """
-    assert db.get_names(db_path) == test_names
+    assert db.get_names(db_path) == names
 
 
-def test_get_names_called_without_connection_or_path(test_db, test_names):
+def test_get_names_called_without_connection_or_path(test_db, names):
     """When called without a connection, :func:`mknames.db.get_names`
     should return the names in the default database as a tuple.
     """
-    assert db.get_names() == test_names
+    assert db.get_names() == names
 
 
 def test_get_names_by_kind(con):
@@ -321,34 +243,61 @@ def test_get_names_by_kind_without_connection_or_path(test_db):
 
 # Create test cases.
 @pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
-def test_duplicate_db(test_db, test_names, tmp_path):
+def test_duplicate_db(test_db, names, tmp_path):
     """When given a destination path, :func:`mkname.db.duplicate_db`
     should create a copy of the names DB in the current working directory.
     """
     dst_path = tmp_path / 'names.db'
     db.duplicate_db(dst_path)
     assert dst_path.exists()
-    assert db.get_names(dst_path) == test_names
+    assert db.get_names(dst_path) == names
 
 
 @pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
-def test_duplicate_db_with_str(test_db, test_names, tmp_path):
+def test_duplicate_db_with_str(test_db, names, tmp_path):
     """When given a destination path, :func:`mkname.db.duplicate_db`
     should create a copy of the names DB in the current working directory.
     """
     dst_str = str(tmp_path / 'names.db')
     db.duplicate_db(dst_str)
     assert pathlib.Path(dst_str).exists()
-    assert db.get_names(dst_str) == test_names
+    assert db.get_names(dst_str) == names
+
+
+class TestCreateEmptyDB:
+    def test_create_db(self, names, tmp_path):
+        """Given a path, :func:`mkname.db.create_empty_db` should
+        create an empty copy of the names database at that location.
+        """
+        name = names[0]
+        path = tmp_path / 'names.db'
+        assert not path.exists()
+        db.create_empty_db(path)
+        con = sqlite3.Connection(path)
+        con.execute(
+            (
+                'INSERT INTO names '
+                'VALUES(:id, :name, :src, :culture, :date, :gender, :kind)'
+            ),
+            {
+                'id': name.id,
+                'name': name.name,
+                'src': name.source,
+                'culture': name.culture,
+                'date': name.date,
+                'gender': name.gender,
+                'kind': name.kind,
+            }
+        )
 
 
 # Update test cases.
-def test_add_name_to_db(empty_db, test_names):
+def test_add_name_to_db(empty_db, names):
     """Given a name and a path to a names database,
     :func:`mkname.db.add_name_to_db` should add the name
     to the database.
     """
-    name = test_names[0]
+    name = names[0]
     db.add_name_to_db(empty_db, name)
     con = sqlite3.Connection(empty_db)
     cur = con.cursor()
@@ -358,37 +307,37 @@ def test_add_name_to_db(empty_db, test_names):
 
 def test_add_name_to_db_cannot_update_default_db(
     protected_test_db,
-    test_names
+    names
 ):
     """When given `None` instead of a database connection or path,
     :func:`mkname.db.add_name_to_db` should raise an exception to
     prevent accidental changes to the default database.
     """
     with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
-        db.add_name_to_db(None, test_names[0])
+        db.add_name_to_db(None, names[0])
 
 
-def test_add_names_to_db(empty_db, test_names):
+def test_add_names_to_db(empty_db, names):
     """Given a sequence of names and a path to a names database,
     :func:`mkname.db.add_names_to_db` should add the names
     to the database.
     """
-    db.add_names_to_db(empty_db, test_names)
+    db.add_names_to_db(empty_db, names)
     con = sqlite3.Connection(empty_db)
     cur = con.cursor()
     result = cur.execute('SELECT * FROM names;')
     actuals = result.fetchall()
-    for act, exp in zip(actuals, test_names):
+    for act, exp in zip(actuals, names):
         assert act[1] == exp.name
 
 
 def test_add_names_to_db_cannot_update_default_db(
     protected_test_db,
-    test_names
+    names
 ):
     """When given `None` instead of a database connection or path,
     :func:`mkname.db.add_name_to_db` should raise an exception to
     prevent accidental changes to the default database.
     """
     with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
-        db.add_names_to_db(None, test_names)
+        db.add_names_to_db(None, names)
