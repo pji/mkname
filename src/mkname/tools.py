@@ -189,18 +189,52 @@ def export(
     src_path: Path | str | None = None,
     overwrite: bool = False
 ) -> None:
-    """Export names databases to CSV files for manual updating."""
+    """Export names databases to CSV files for manual updating.
+
+    :param dst_path: The CSV destination for the export.
+    :param src_path: (Optional.) The database source of the
+        data to export. Defaults to the default database.
+    :param overwrite: (Optional.) Whether to overwrite an existing
+        destination path. Defaults to `False`.
+    """
     names = db.get_names(src_path)
     write_as_csv(dst_path, names, overwrite=overwrite)
 
 
 def import_(
     dst_path: Path | str,
-    src_path: Path | str
+    src_path: Path | str,
+    format: str = 'csv',
+    source: str = 'unknown',
+    date: int = 1970,
+    kind: str = 'unknown'
 ) -> None:
-    """Import names from a file to a database."""
+    """Import names from a file to a database.
+
+    :param dst_path: The database destination for the import.
+    :param src_path: The source of the name data to import.
+    :param format: The format of the source data.
+    :param source: (Optional.) Where the source data comes from.
+        Defaults to `unknown`. This is used only for formats that
+        need it.
+    :param date: (Optional.) The approximate year for the imported
+        data. Defaults to `1970`. This is used only for formats that
+        need it.
+    :param kind: (Optional.) The kind of name in the imported data.
+        Defaults to `unknown`. This is used only for formats that
+        need it.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     dst_path = Path(dst_path)
-    names = read_csv(src_path)
+    if format == 'csv':
+        names = read_csv(src_path)
+    elif format == 'census.name':
+        names = read_name_census(src_path, source, date, kind)
     if not dst_path.exists():
         db.create_empty_db(dst_path)
+
+    i = db.get_max_id(dst_path)
+    if i:
+        names = reindex(names, offset=i + 1)
     db.add_names_to_db(dst_path, names)

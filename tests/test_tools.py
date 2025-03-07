@@ -11,7 +11,7 @@ import pytest
 
 import mkname.model as m
 import mkname.tools as t
-from tests.fixtures import csv_path, db_path, empty_db, names, test_db
+from tests.fixtures import *
 
 
 # Utility functions.
@@ -20,6 +20,8 @@ def db_matches_names(path, names):
     query = 'SELECT * FROM names'
     con = sqlite3.Connection(path)
     rows = con.execute(query)
+    for row, name in zip(rows, names):
+        assert m.Name(*row) == name
     results = [m.Name(*row) == name for row, name in zip(rows, names)]
     con.close()
     return results
@@ -98,6 +100,60 @@ class TestImport_:
         t.import_(path, csv_path)
         assert all(db_matches_names(path, names))
 
+    def test_census_name_given_names(
+        self, census_name_given_names,
+        census_name_given_path,
+        empty_db
+    ):
+        """Given a path to an existing name database, a path to
+        an existing file of given name data in census.name format,
+        :func:`mkname.tools.import_` should add the names in the
+        census.name file to the database.
+        """
+        format = 'census.name'
+        source = 'census.name'
+        date = 2025
+        kind = 'given'
+        t.import_(
+            dst_path=empty_db,
+            src_path=census_name_given_path,
+            format=format,
+            source=source,
+            date=date,
+            kind=kind
+        )
+        assert all(db_matches_names(empty_db, census_name_given_names))
+
+    def test_will_reindex_unique_ids(
+        self, census_name_given_names,
+        census_name_given_path,
+        names,
+        tmp_db
+    ):
+        """Given names with unique IDs that match names already in
+        the database, :func:`mkname.tools.import_` should reindex
+        the new names to ensure there are no collisions.
+        """
+        expected = []
+        expected.extend(names)
+        for name in census_name_given_names:
+            reindexed = m.Name(len(expected) + 1, *name.astuple()[1:])
+            expected.append(reindexed)
+
+        format = 'census.name'
+        source = 'census.name'
+        date = 2025
+        kind = 'given'
+        t.import_(
+            dst_path=tmp_db,
+            src_path=census_name_given_path,
+            format=format,
+            source=source,
+            date=date,
+            kind=kind
+        )
+        assert all(db_matches_names(tmp_db, expected))
+
 
 class TestReadCSV:
     def test_read(self, names):
@@ -132,25 +188,23 @@ class TestReadCSV:
 
 
 class TestReadNameCensus:
-    def test_read_given_names(self):
+    def test_read_given_names(
+        self, census_name_given_names,
+        census_name_given_path
+    ):
         """Given a path to a file containing given name data
         stored in census.name format, a source, a year, and
         a kind, :func:`mkname.tools.read_name_census` should
         return the names in the file as a :class:`tuple`
         of :class:`mkname.model.Name` objects.
         """
-        path = 'tests/data/census_name.csv'
+        path = census_name_given_path
         year = 2025
         kind = 'given'
-        source = 'http://census.name'
+        source = 'census.name'
         result = t.read_name_census(path, source, year, kind)
-        assert len(result) == 5
-        assert result[0] == m.Name(
-            0, 'Сергей', source, 'Russia', year, 'male', kind
-        )
-        assert result[-1] == m.Name(
-            4, 'Hélène', source, 'France', year, 'female', kind
-        )
+        for actual, expected in zip(result, census_name_given_names):
+            assert actual == expected
 
     def test_read_surnames(self):
         """Given a path to a file containing surname data

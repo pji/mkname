@@ -47,6 +47,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Union
 
+from mkname.constants import MSGS
 from mkname.init import get_db
 from mkname.model import Name
 
@@ -68,6 +69,12 @@ class CannotUpdateDefaultDBError(Exception):
     default database without being explicitly pointed to that
     database. This is to prevent accidental updates to the default
     database that will be overwritten when the package is updated.
+    """
+
+
+class IDCollisionError(ValueError):
+    """The ID of the Name you tried to add to the database matches
+    the ID of a name already in the database.
     """
 
 
@@ -100,16 +107,21 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     return con
 
 
-def disconnect_db(con: sqlite3.Connection) -> None:
+def disconnect_db(
+    con: sqlite3.Connection,
+    override_commit: bool = False
+) -> None:
     """Disconnect from the database.
 
     :param con: A database connection.
+    :param override_commit: (Optional.) Whether to override errors
+        due to uncommitted changes. Defaults to `False`.
     :return: None.
     :rtype: :class:NoneType
 
     See connect_db() for usage.
     """
-    if con.in_transaction:
+    if con.in_transaction and not override_commit:
         msg = 'Connection has uncommitted changes.'
         raise RuntimeError(msg)
     con.close()
@@ -168,8 +180,10 @@ def protects_connection(fn: Callable) -> Callable:
 
 
 # Private query functions.
-def _run_query_for_single_column(con: sqlite3.Connection,
-                                 query: str) -> tuple[str, ...]:
+def _run_query_for_single_column(
+    con: sqlite3.Connection,
+    query: str
+) -> tuple[str, ...]:
     """Run the query and return the results."""
     result = con.execute(query)
     return tuple(text[0] for text in result)
@@ -183,7 +197,7 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
-    :return: A :class:tuple of :class:Name objects.
+    :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
@@ -205,7 +219,7 @@ def get_genders(con: sqlite3.Connection) -> tuple[str, ...]:
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
-    :return: A :class:tuple of :class:Name objects.
+    :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
@@ -227,7 +241,7 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
-    :return: A :class:tuple of :class:Name objects.
+    :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
@@ -243,13 +257,32 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
 
 
 @makes_connection
+def get_max_id(con: sqlite3.Connection) -> int:
+    """Get the highest ID in the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: An :class:`int` object.
+    :rtype: tuple
+    """
+    q = 'SELECT id FROM names ORDER BY id DESC LIMIT 1'
+    cur = con.execute(q)
+    result = cur.fetchone()
+    if result is None:
+        return 0
+    else:
+        return result[0]
+
+
+@makes_connection
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
     """Deserialize the names from the database.
 
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
-    :return: A :class:tuple of :class:Name objects.
+    :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
@@ -275,7 +308,7 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     :param kind: The kind of names to return. By default, this is
         either 'given' or 'surname', but if you have a custom
         database you can add other types.
-    :return: A :class:tuple of :class:Name objects.
+    :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
@@ -353,18 +386,23 @@ def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
     """
     q = (
         'INSERT INTO names '
-        '(name, source, culture, date, gender, kind) '
-        'VALUES(:name, :src, :culture, :date, :gender, :kind)'
+        '(id, name, source, culture, date, gender, kind) '
+        'VALUES(:id, :name, :src, :culture, :date, :gender, :kind)'
     )
-    cur = con.execute(q, {
-        'name': name.name,
-        'src': name.source,
-        'culture': name.culture,
-        'date': name.date,
-        'gender': name.gender,
-        'kind': name.kind,
-    })
-    con.commit()
+    try:
+        cur = con.execute(q, {
+            'id': name.id,
+            'name': name.name,
+            'src': name.source,
+            'culture': name.culture,
+            'date': name.date,
+            'gender': name.gender,
+            'kind': name.kind,
+        })
+        con.commit()
+    except sqlite3.IntegrityError:
+        msg = MSGS['en']['id_collision'].format(id=name.id)
+        raise IDCollisionError(msg)
 
 
 @protects_connection
