@@ -139,7 +139,7 @@ def run_in_tmp(tmp_path):
 
 
 @pt.fixture
-def test_db(mocker, tmp_path):
+def test_db(mocker):
     """Point the default database to the test database."""
     db_path = Path.cwd() / 'tests/data/names.db'
     mocker.patch('mkname.db.get_db', return_value=db_path)

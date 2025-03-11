@@ -57,7 +57,6 @@ def tools_cli_test(mocker, capsys, cmd):
 
 
 # Test cases.
-# @pytest.mark.skip()
 class TestMknameToolsExport:
     def test_default(
         self, mocker, capsys, names, test_db, run_in_tmp, tmp_path
@@ -70,6 +69,17 @@ class TestMknameToolsExport:
         cmd = ['mkname_tools', 'export',]
         exp_msg = f'Database exported to {csv_path}.\n\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+
+    def test_output(self, mocker, capsys, names, test_db, tmp_path):
+        """When `-o` and a path is passed, `mknname_tools export`
+        should export the contents of the default database to
+        a CSV at the given path`.
+        """
+        csv_path = tmp_path / 'spam.csv'
+        cmd = ['mkname_tools', 'export', '-o', f'{csv_path}']
+        exp_msg = f'Database exported to {csv_path}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        csv_path.unlink()
 
 
 def test_build_compound_name(mocker, capsys, testdb):
