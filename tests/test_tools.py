@@ -11,6 +11,7 @@ import pytest
 
 import mkname.model as m
 import mkname.tools as t
+from tests.common import csv_matches_names
 from tests.fixtures import *
 
 
@@ -24,14 +25,6 @@ def db_matches_names(path, names):
         assert m.Name(*row) == name
     results = [m.Name(*row) == name for row, name in zip(rows, names)]
     con.close()
-    return results
-
-
-def csv_matches_names(path, names):
-    """Compare the names in the CSV file to the given names."""
-    with open(path) as fh:
-        reader = csv.reader(fh)
-        results = [m.Name(*row) == name for row, name in zip(reader, names)]
     return results
 
 
@@ -83,23 +76,6 @@ class TestExport:
 
 
 class TestImport_:
-    def test_import_into_existing(self, csv_path, empty_db, names):
-        """Given a path to an existing names database and a path to
-        an existing CSV file of name data, :func:`mkname.tools.import`
-        should add the names in the CSV to the database.
-        """
-        t.import_(empty_db, csv_path)
-        assert all(db_matches_names(empty_db, names))
-
-    def test_import_into_nonexisting(self, csv_path, names, tmp_path):
-        """Given a path to a nonexisting names database and a path to
-        an existing CSV file of name data, :func:`mkname.tools.import`
-        should add the names in the CSV to the database.
-        """
-        path = tmp_path / 'names.db'
-        t.import_(path, csv_path)
-        assert all(db_matches_names(path, names))
-
     def test_census_name_given_names(
         self, census_name_given_names,
         census_name_given_path,
@@ -123,6 +99,57 @@ class TestImport_:
             kind=kind
         )
         assert all(db_matches_names(empty_db, census_name_given_names))
+
+    def test_import_into_existing(self, csv_path, empty_db, names):
+        """Given a path to an existing names database and a path to
+        an existing CSV file of name data, :func:`mkname.tools.import`
+        should add the names in the CSV to the database.
+        """
+        t.import_(empty_db, csv_path)
+        assert all(db_matches_names(empty_db, names))
+
+    def test_import_into_nonexisting(self, csv_path, names, tmp_path):
+        """Given a path to a nonexisting names database and a path to
+        an existing CSV file of name data, :func:`mkname.tools.import`
+        should add the names in the CSV to the database.
+        """
+        path = tmp_path / 'names.db'
+        t.import_(path, csv_path)
+        assert all(db_matches_names(path, names))
+
+    def test_invalid_format(self):
+        """If given an invalid format value, :func:`makname.tools.import_`
+        should raise a `InvvalidImportFormatError` exception.
+        """
+        dst_path = 'spam'
+        src_path = 'eggs'
+        format = 'bacon'
+        with pytest.raises(t.InvalidImportFormatError):
+            t.import_(dst_path, src_path, format)
+
+    def test_us_census_surnames(
+        self, empty_db,
+        us_census_surnames_names,
+        us_census_surnames_path
+    ):
+        """Given a path to an existing name database, a path to
+        an existing file of given name data in census.gov format,
+        :func:`mkname.tools.import_` should add the names in the
+        census.gov file to the database.
+        """
+        format = 'census.gov'
+        source = 'census.gov'
+        date = 2010
+        kind = 'surname'
+        t.import_(
+            dst_path=empty_db,
+            src_path=us_census_surnames_path,
+            format=format,
+            source=source,
+            date=date,
+            kind=kind
+        )
+        assert all(db_matches_names(empty_db, us_census_surnames_names))
 
     def test_will_reindex_unique_ids(
         self, census_name_given_names,

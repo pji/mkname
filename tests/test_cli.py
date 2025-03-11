@@ -4,12 +4,16 @@ test_cli
 
 Unit tests for mkname.cli.
 """
+import os
+from pathlib import Path
+
 import pytest
 
 from mkname import cli
 from mkname import constants as c
 from mkname import init
 from mkname import mkname as mn
+from tests.fixtures import *
 
 
 # Fixtures.
@@ -44,7 +48,30 @@ def cli_test(mocker, capsys, cmd, roll=None):
     return captured.out
 
 
+def tools_cli_test(mocker, capsys, cmd):
+    """Run a standard test of the CLI."""
+    mocker.patch('sys.argv', cmd)
+    cli.parse_mkname_tools()
+    captured = capsys.readouterr()
+    return captured.out
+
+
 # Test cases.
+# @pytest.mark.skip()
+class TestMknameToolsExport:
+    def test_default(
+        self, mocker, capsys, names, test_db, run_in_tmp, tmp_path
+    ):
+        """When no options are passed, `mknname_tools export`
+        should export the contents of the default database to
+        a CSV file named `names.csv`.
+        """
+        csv_path = Path('./names.csv')
+        cmd = ['mkname_tools', 'export',]
+        exp_msg = f'Database exported to {csv_path}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+
+
 def test_build_compound_name(mocker, capsys, testdb):
     """When called with the -c option, construct a name from
     compounding two names from the database.

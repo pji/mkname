@@ -4,8 +4,8 @@ cli
 
 Command line interface for the mkname package.
 """
-from argparse import ArgumentParser
-from collections.abc import Sequence
+from argparse import ArgumentParser, Namespace, _SubParsersAction
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from mkname import db
@@ -14,9 +14,38 @@ from mkname.constants import MSGS
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section
+from mkname.tools import export
 
 
-# Commands.
+# Typing.
+Subparser = Callable[[_SubParsersAction], None]
+Registry = dict[str, dict[str, Subparser]]
+
+
+# Command registration.
+subparsers: Registry = {'mkname_tools': {}}
+
+
+def subparser(script: str) -> Callable[
+    [Callable[[_SubParsersAction], None]],
+    Callable[[_SubParsersAction], None]
+]:
+    def decorator(
+        fn: Callable[[_SubParsersAction], None]
+    ) -> Callable[[_SubParsersAction], None]:
+        """A decorator for registering subparsers.
+
+        :param fn: The function being registered.
+        :return: The registered :class:`collections.abc.Callable`.
+        :rtype: collections.abc.Callable
+        """
+        key = fn.__name__.split('_', 1)[-1]
+        subparsers[script][key] = fn
+        return fn
+    return decorator
+
+
+# mkname commands.
 def build_compound_name(names: Sequence[Name], config: Section) -> str:
     """Command script for constructing a name from two names in
     the database.
@@ -121,6 +150,14 @@ def pick_name(names: Sequence[Name]) -> str:
     """
     name = mn.select_name(names)
     return name
+
+
+# mkname_tools command modes.
+def mode_export(args: Namespace) -> None:
+    """Execute the `export` command for `mkname_tools`."""
+    export(dst_path=args.output)
+    print(MSGS['en']['export_success'].format(path=args.output))
+    print()
 
 
 # Output.
@@ -281,3 +318,46 @@ def parse_cli() -> None:
 
     # Write out the output.
     write_output(lines)
+
+
+def parse_mkname_tools() -> None:
+    """Response to commands passed through the CLI.
+
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    # Get the valid subparsers.
+    subparsers_list = ', '.join(key for key in subparsers['mkname_tools'])
+
+    # Set up the command line interface.
+    p = ArgumentParser(
+        description='Randomized name construction.',
+        prog='mkname',
+    )
+    spa = p.add_subparsers(
+        help=f'Available modes: {subparsers_list}',
+        metavar='mode',
+        required=True
+    )
+    for subparser in subparsers['mkname_tools']:
+        subparsers['mkname_tools'][subparser](spa)
+    args = p.parse_args()
+    args.func(args)
+
+
+# mkname_tools command subparsing.
+@subparser('mkname_tools')
+def parse_export(spa: _SubParsersAction) -> None:
+    """Parse the `export` command for `mkname_tools`."""
+    sp = spa.add_parser(
+        'export',
+        description='Export name data to a CSV file.'
+    )
+    sp.add_argument(
+        '-o', '--output',
+        help='The path to export the data to.',
+        action='store',
+        default='names.csv',
+        type=str
+    )
+    sp.set_defaults(func=mode_export)

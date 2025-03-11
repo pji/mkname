@@ -4,6 +4,7 @@ fixtures
 
 Common fixtures for :mod:`mkname` tests.
 """
+import os
 import sqlite3
 from pathlib import Path
 
@@ -19,8 +20,11 @@ __all__ = [
     'db_path',
     'empty_db',
     'names',
+    'run_in_tmp',
     'test_db',
     'tmp_db',
+    'us_census_surnames_names',
+    'us_census_surnames_path',
 ]
 
 
@@ -124,9 +128,20 @@ def names():
 
 
 @pt.fixture
+def run_in_tmp(tmp_path):
+    """Run the test while the current working directory is in
+    a temp director.
+    """
+    home = Path.cwd()
+    os.chdir(tmp_path)
+    yield None
+    os.chdir(home)
+
+
+@pt.fixture
 def test_db(mocker, tmp_path):
     """Point the default database to the test database."""
-    db_path = 'tests/data/names.db'
+    db_path = Path.cwd() / 'tests/data/names.db'
     mocker.patch('mkname.db.get_db', return_value=db_path)
     yield None
 
@@ -139,3 +154,22 @@ def tmp_db(db_path, tmp_path):
     data = path.read_bytes()
     cp_path.write_bytes(data)
     yield cp_path
+
+
+@pt.fixture
+def us_census_surnames_names():
+    src = 'census.gov'
+    culture = 'United States'
+    date = 2010
+    kind = 'surname'
+    gender = 'none'
+    data = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones',]
+    return tuple(
+        m.Name(i, name, src, culture, date, gender, kind)
+        for i, name in enumerate(data)
+    )
+
+
+@pt.fixture
+def us_census_surnames_path():
+    return 'tests/data/us_census_surnames.tsv'

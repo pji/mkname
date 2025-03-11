@@ -21,6 +21,7 @@ classifiers = [
 
 [project.scripts]
 mkname = "mkname.cli:parse_cli"
+mkname_tools = "mkname.cli:parse_mkname_tools"
 
 
 [project.urls]

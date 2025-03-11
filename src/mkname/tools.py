@@ -10,6 +10,15 @@ Tools for working with alternate sources of name data.
 .. autofunction:: mkname.tools.reindex
 .. autofunction:: mkname.tools.write_as_csv
 
+
+Command Scripts
+===============
+The following are the core command scripts that allow easy use of
+:mod:`mkname.tools` from the command line.
+
+.. autofunction:: mkname.tools.import_
+.. autofunction:: mkname.tools.export
+
 """
 import csv
 from argparse import ArgumentParser
@@ -23,6 +32,12 @@ from mkname.utility import recapitalize
 
 
 # Exceptions.
+class InvalidImportFormatError(ValueError):
+    """The format assigned to the file to be imported was not a
+    format that :mod:`mkname` knows how to format.
+    """
+
+
 class PathDoesNotExistError(FileNotFoundError):
     """Raised when a path unexpectedly doesn't exist. This is usually
     used to handle requests to read from non-existing files.
@@ -213,7 +228,8 @@ def import_(
 
     :param dst_path: The database destination for the import.
     :param src_path: The source of the name data to import.
-    :param format: The format of the source data.
+    :param format: The format of the source data. Valid options
+        are `csv`, `census.name`, and `census.gov`.
     :param source: (Optional.) Where the source data comes from.
         Defaults to `unknown`. This is used only for formats that
         need it.
@@ -231,6 +247,11 @@ def import_(
         names = read_csv(src_path)
     elif format == 'census.name':
         names = read_name_census(src_path, source, date, kind)
+    elif format == 'census.gov':
+        names = read_us_census(src_path, source, year=date, kind=kind)
+    else:
+        msg = MSGS['en']['invalid_format'].format(format=format)
+        raise InvalidImportFormatError(msg)
     if not dst_path.exists():
         db.create_empty_db(dst_path)
 
