@@ -4,28 +4,12 @@ test_tools
 
 Unit tests for :mod:`mkname.tools`.
 """
-import csv
-import sqlite3
-
 import pytest
 
 import mkname.model as m
 import mkname.tools as t
-from tests.common import csv_matches_names
+from tests.common import csv_matches_names, db_matches_names
 from tests.fixtures import *
-
-
-# Utility functions.
-def db_matches_names(path, names):
-    """Compare the names in the DB to the given names."""
-    query = 'SELECT * FROM names'
-    con = sqlite3.Connection(path)
-    rows = con.execute(query)
-    for row, name in zip(rows, names):
-        assert m.Name(*row) == name
-    results = [m.Name(*row) == name for row, name in zip(rows, names)]
-    con.close()
-    return results
 
 
 # Test cases.

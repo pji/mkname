@@ -23,6 +23,7 @@ __all__ = [
     'run_in_tmp',
     'test_db',
     'tmp_db',
+    'tmp_empty_db',
     'us_census_surnames_names',
     'us_census_surnames_path',
 ]
@@ -154,6 +155,13 @@ def tmp_db(db_path, tmp_path):
     data = path.read_bytes()
     cp_path.write_bytes(data)
     yield cp_path
+
+
+@pt.fixture
+def tmp_empty_db(empty_db):
+    """Point the default database to an empty database."""
+    mocker.patch('mkname.db.get_db', return_value=empty_db)
+    yield None
 
 
 @pt.fixture

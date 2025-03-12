@@ -13,6 +13,7 @@ from mkname import cli
 from mkname import constants as c
 from mkname import init
 from mkname import mkname as mn
+from tests.common import csv_matches_names, db_matches_names
 from tests.fixtures import *
 
 
@@ -69,6 +70,7 @@ class TestMknameToolsExport:
         cmd = ['mkname_tools', 'export',]
         exp_msg = f'Database exported to {csv_path}.\n\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert csv_matches_names(csv_path, names)
 
     def test_output(self, mocker, capsys, names, test_db, tmp_path):
         """When `-o` and a path is passed, `mknname_tools export`
@@ -76,10 +78,35 @@ class TestMknameToolsExport:
         a CSV at the given path`.
         """
         csv_path = tmp_path / 'spam.csv'
+        assert not csv_path.exists()
         cmd = ['mkname_tools', 'export', '-o', f'{csv_path}']
         exp_msg = f'Database exported to {csv_path}.\n\n'
+        try:
+            assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+            assert csv_matches_names(csv_path, names)
+        except Exception as ex:
+            raise ex
+        else:
+            csv_path.unlink()
+
+
+class TestMknameToolsInput:
+    def test_csv_to_existing_db(
+        self, mocker, capsys, csv_path, empty_db, names,
+    ):
+        """When passed `-i` and the path to a CSV file and a `-o` and
+        the path to a name database, `mkname_tools import` should import
+        the contents of the CSV file into the database.
+        """
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(csv_path),
+            '-o', str(empty_db)
+        ]
+        exp_msg = f'Imported {csv_path} to {empty_db}.\n\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
-        csv_path.unlink()
+        assert db_matches_names(empty_db, names)
+
 
 
 def test_build_compound_name(mocker, capsys, testdb):

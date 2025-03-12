@@ -14,7 +14,7 @@ from mkname.constants import MSGS
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section
-from mkname.tools import export
+from mkname.tools import export, import_
 
 
 # Typing.
@@ -157,6 +157,16 @@ def mode_export(args: Namespace) -> None:
     """Execute the `export` command for `mkname_tools`."""
     export(dst_path=args.output)
     print(MSGS['en']['export_success'].format(path=args.output))
+    print()
+
+
+def mode_import(args: Namespace) -> None:
+    """Execute the `import` command for `mkname_tools`."""
+    import_(dst_path=args.output, src_path=args.input)
+    print(MSGS['en']['import_success'].format(
+        src=args.input,
+        dst=args.output
+    ))
     print()
 
 
@@ -361,3 +371,27 @@ def parse_export(spa: _SubParsersAction) -> None:
         type=str
     )
     sp.set_defaults(func=mode_export)
+
+
+@subparser('mkname_tools')
+def parse_import(spa: _SubParsersAction) -> None:
+    """Parse the `import` command for `mkname_tools`."""
+    sp = spa.add_parser(
+        'import',
+        description='Import name data from a file.'
+    )
+    sp.add_argument(
+        '-i', '--input',
+        help='The path to import the data from.',
+        action='store',
+        default='names.csv',
+        type=str
+    )
+    sp.add_argument(
+        '-o', '--output',
+        help='The path to import the data to.',
+        action='store',
+        default='names.db',
+        type=str
+    )
+    sp.set_defaults(func=mode_import)

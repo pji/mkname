@@ -35,6 +35,7 @@ MSGS = {
         'dup_path_exists': 'Copy failed. Path {dst_path} exists.',
         'export_success': 'Database exported to {path}.',
         'id_collision': 'ID {id} already exists in database.',
+        'import_success': 'Imported {src} to {dst}.',
         'invalid_format': 'Format {format} is unknown.',
         'read_path_not_exists': 'Read failed. Path {path} does not exist.',
         'write_path_exists': 'Write failed. Path {path} exists',
