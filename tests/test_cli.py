@@ -141,6 +141,29 @@ class TestMknameToolsInput:
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(path, names)
 
+    def test_census_gov_to_existing_db(
+        self, mocker, capsys, census_gov_surnames_path, empty_db,
+        census_gov_surnames_names
+    ):
+        """When passed `-i` and the path to a census.name file, a
+        `-o` and the path to a name database, a `-f` and `census_name`,
+        `-s` and a source, `-d` and a date, a `-g` and a gender,
+        and `-k` and a kind, `mkname_tools import` should import the
+        contents of the census.gov file into the database.
+        """
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(census_gov_surnames_path),
+            '-o', str(empty_db),
+            '-f', 'census.gov',
+            '-s', 'census.gov',
+            '-d', '2010',
+            '-k', 'surname',
+        ]
+        exp_msg = f'Imported {census_gov_surnames_path} to {empty_db}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(empty_db, census_gov_surnames_names)
+
     def test_census_name_to_existing_db(
         self, mocker, capsys, census_name_given_path, empty_db,
         census_name_given_names

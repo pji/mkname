@@ -113,8 +113,8 @@ class TestImport_:
 
     def test_us_census_surnames(
         self, empty_db,
-        us_census_surnames_names,
-        us_census_surnames_path
+        census_gov_surnames_names,
+        census_gov_surnames_path
     ):
         """Given a path to an existing name database, a path to
         an existing file of given name data in census.gov format,
@@ -127,13 +127,13 @@ class TestImport_:
         kind = 'surname'
         t.import_(
             dst_path=empty_db,
-            src_path=us_census_surnames_path,
+            src_path=census_gov_surnames_path,
             format=format,
             source=source,
             date=date,
             kind=kind
         )
-        assert db_matches_names(empty_db, us_census_surnames_names)
+        assert db_matches_names(empty_db, census_gov_surnames_names)
 
     def test_will_reindex_unique_ids(
         self, census_name_given_names,
@@ -239,44 +239,28 @@ class TestReadNameCensus:
 
 
 class TestReadUSCensus:
-    def test_surname_2010(self):
+    def test_surname_2010(
+        self, census_gov_surnames_names,
+        census_gov_surnames_path
+    ):
         """Given the path to a TSV file in U.S. Census 2010 Surname
         format, a source, a year, a gender, a kind, and whether there
         are headers, :func:`mkname.tools.read_us_census` should read
         the file and return a :class:`tuple` object of
         class:`mkname.model.Name` objects.
         """
-        path = 'tests/data/us_census_surnames.tsv'
         source = 'census.gov'
         kind = 'surname'
-        year = 2025
+        year = 2010
         headers = True
         result = t.read_us_census(
-            path,
+            census_gov_surnames_path,
             source=source,
             year=year,
             kind=kind,
             headers=headers
         )
-        assert len(result) == 5
-        assert result[0] == m.Name(
-            id=0,
-            name='Smith',
-            source=source,
-            culture='United States',
-            date=year,
-            gender='none',
-            kind=kind
-        )
-        assert result[-1] == m.Name(
-            id=4,
-            name='Jones',
-            source=source,
-            culture='United States',
-            date=year,
-            gender='none',
-            kind=kind
-        )
+        assert result == census_gov_surnames_names
 
 
 def test_reindex(names):

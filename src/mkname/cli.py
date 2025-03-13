@@ -409,6 +409,13 @@ def parse_import(spa: _SubParsersAction) -> None:
         type=str
     )
     sp.add_argument(
+        '-g', '--gender',
+        help='The gender for the names.',
+        action='store',
+        default='unknown',
+        type=str
+    )
+    sp.add_argument(
         '-i', '--input',
         help='The path to import the data from.',
         action='store',

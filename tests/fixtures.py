@@ -14,6 +14,8 @@ import mkname.model as m
 
 
 __all__ = [
+    'census_gov_surnames_names',
+    'census_gov_surnames_path',
     'census_name_given_path',
     'census_name_given_names',
     'csv_path',
@@ -24,14 +26,26 @@ __all__ = [
     'test_db',
     'tmp_db',
     'tmp_empty_db',
-    'us_census_surnames_names',
-    'us_census_surnames_path',
 ]
 
 
 @pt.fixture
-def census_name_given_path():
-    return 'tests/data/census_name.csv'
+def census_gov_surnames_names():
+    src = 'census.gov'
+    date = 2010
+    kind = 'surname'
+    gender = 'none'
+    culture = 'United States'
+    data = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones',]
+    return tuple(
+        m.Name(i, name, src, culture, date, gender, kind)
+        for i, name in enumerate(data)
+    )
+
+
+@pt.fixture
+def census_gov_surnames_path():
+    return 'tests/data/us_census_surnames.tsv'
 
 
 @pt.fixture
@@ -50,6 +64,11 @@ def census_name_given_names():
         m.Name(i, name[0], src, name[1], date, name[2], kind)
         for i, name in enumerate(data)
     )
+
+
+@pt.fixture
+def census_name_given_path():
+    return 'tests/data/census_name.csv'
 
 
 @pt.fixture
@@ -162,22 +181,3 @@ def tmp_empty_db(mocker, empty_db):
     """Point the default database to an empty database."""
     mocker.patch('mkname.init.get_default_db', return_value=empty_db)
     yield empty_db
-
-
-@pt.fixture
-def us_census_surnames_names():
-    src = 'census.gov'
-    culture = 'United States'
-    date = 2010
-    kind = 'surname'
-    gender = 'none'
-    data = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones',]
-    return tuple(
-        m.Name(i, name, src, culture, date, gender, kind)
-        for i, name in enumerate(data)
-    )
-
-
-@pt.fixture
-def us_census_surnames_path():
-    return 'tests/data/us_census_surnames.tsv'
