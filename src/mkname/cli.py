@@ -2,7 +2,30 @@
 cli
 ~~~
 
-Command line interface for the mkname package.
+The :mod:`mkname` package has two command line utilities:
+*   `mkname`
+*   `mkname_tools`
+
+`mkname`
+========
+The `mkname` utility allows you to generate random names at the command
+line::
+
+    $ mkname
+    Barron
+
+The available options and what they do can be found in the help::
+
+    $ mkname -h
+
+
+`mkname_tools`
+=============
+The `mkname_tools` utility allows you to perform administrative actions
+for `mkname`. For more information, view the help::
+
+    $ mkname_tools -h
+
 """
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 from collections.abc import Callable, Sequence
@@ -204,63 +227,27 @@ def parse_cli() -> None:
     """
     # Set up the command line interface.
     p = ArgumentParser(
-        description='Randomized name construction.',
+        description=(
+            'Generate a random name. By default this selects a '
+            'random name from the built-in database.'
+        ),
         prog='mkname',
     )
+    
+    # Name generation modes.
     p.add_argument(
         '--compound_name', '-c',
         help='Construct a name from two names in the database.',
         action='store_true'
     )
     p.add_argument(
-        '--config', '-C',
-        help='Use the given custom config file.',
+        '--syllable_name', '-s',
+        help='Construct a name from the syllables of names in the database.',
         action='store',
-        type=str
+        type=int
     )
-    p.add_argument(
-        '--duplicate_db', '-D',
-        help='Duplicate the names DB for customization.',
-        action='store',
-        type=str
-    )
-    p.add_argument(
-        '--first_name', '-f',
-        help='Generate a given name.',
-        action='store_true'
-    )
-    p.add_argument(
-        '--gender', '-g',
-        help='Generate a name from the given gender.',
-        action='store',
-        type=str
-    )
-    p.add_argument(
-        '--list_genders', '-G',
-        help='List all the genders in the database.',
-        action='store_true'
-    )
-    p.add_argument(
-        '--last_name', '-l',
-        help='Generate a surname.',
-        action='store_true'
-    )
-    p.add_argument(
-        '--culture', '-k',
-        help='Generate a name from the given culture.',
-        action='store',
-        type=str
-    )
-    p.add_argument(
-        '--list_cultures', '-K',
-        help='List all the cultures in the database.',
-        action='store_true'
-    )
-    p.add_argument(
-        '--list_all_names', '-L',
-        help='List all the names in the database.',
-        action='store_true'
-    )
+
+    # Generation modification.
     p.add_argument(
         '--modify_name', '-m',
         help='Modify the name.',
@@ -274,17 +261,57 @@ def parse_cli() -> None:
         type=int,
         default=1
     )
+
+    # Name selection modification.
     p.add_argument(
-        '--pick_name', '-p',
-        help='Pick a random name from the database.',
+        '--first_name', '-f',
+        help='Generate a given name.',
         action='store_true'
     )
     p.add_argument(
-        '--syllable_name', '-s',
-        help='Construct a name from the syllables of names in the database.',
+        '--gender', '-g',
+        help='Generate a name from the given gender.',
         action='store',
-        type=int
+        type=str
     )
+    p.add_argument(
+        '--last_name', '-l',
+        help='Generate a surname.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--culture', '-k',
+        help='Generate a name from the given culture.',
+        action='store',
+        type=str
+    )
+
+    # Script configuration.
+    p.add_argument(
+        '--config', '-C',
+        help='Use the given custom config file.',
+        action='store',
+        type=str
+    )
+    
+    # Administration modes.
+    # These should probably move to `mkname_tools`.
+    p.add_argument(
+        '--list_genders', '-G',
+        help='List all the genders in the database.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--list_cultures', '-K',
+        help='List all the cultures in the database.',
+        action='store_true'
+    )
+    p.add_argument(
+        '--list_all_names', '-L',
+        help='List all the names in the database.',
+        action='store_true'
+    )
+    
     args = p.parse_args()
 
     # Set up the configuration.
@@ -312,29 +339,24 @@ def parse_cli() -> None:
         if args.compound_name:
             name = build_compound_name(names, config)
             lines.append(name)
-        if args.list_all_names:
+        elif args.list_all_names:
             names = list_all_names(names)
             lines.extend(names)
-        if args.list_cultures:
+        elif args.list_cultures:
             cultures = list_cultures(db_loc)
             lines.extend(cultures)
-        if args.list_genders:
+        elif args.list_genders:
             genders = list_genders(db_loc)
             lines.extend(genders)
-        if args.pick_name:
-            name = pick_name(names)
-            lines.append(name)
-        if args.syllable_name:
+        elif args.syllable_name:
             name = build_syllable_name(names, config, args.syllable_name)
+            lines.append(name)
+        else:
+            name = pick_name(names)
             lines.append(name)
 
     if args.modify_name:
         lines = [modify_name(line, args.modify_name) for line in lines]
-
-    # Administer the database.
-    if args.duplicate_db:
-        msg = duplicate_db(args.duplicate_db)
-        lines.append(msg)
 
     # Write out the output.
     write_output(lines)
@@ -368,7 +390,12 @@ def parse_mkname_tools() -> None:
 # mkname_tools command subparsing.
 @subparser('mkname_tools')
 def parse_export(spa: _SubParsersAction) -> None:
-    """Parse the `export` command for `mkname_tools`."""
+    """Parse the `export` command for `mkname_tools`.
+    
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     sp = spa.add_parser(
         'export',
         description='Export name data to a CSV file.'
@@ -385,7 +412,12 @@ def parse_export(spa: _SubParsersAction) -> None:
 
 @subparser('mkname_tools')
 def parse_import(spa: _SubParsersAction) -> None:
-    """Parse the `import` command for `mkname_tools`."""
+    """Parse the `import` command for `mkname_tools`.
+    
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     formats = ', '.join(format for format in INPUT_FORMATS)
     sp = spa.add_parser(
         'import',
@@ -406,13 +438,6 @@ def parse_import(spa: _SubParsersAction) -> None:
         ),
         action='store',
         default='csv',
-        type=str
-    )
-    sp.add_argument(
-        '-g', '--gender',
-        help='The gender for the names.',
-        action='store',
-        default='unknown',
         type=str
     )
     sp.add_argument(

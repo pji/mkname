@@ -242,41 +242,6 @@ def test_culture(mocker, capsys, testdb):
     )
 
 
-def test_duplicate_db(mocker, capsys, testdb, tmp_path):
-    """When called with the -D option and a path, the default
-    names DB should be duplicated to that path.
-    """
-    dst_path = tmp_path / 'spam.db'
-    cmd = ['mkname', '-D', str(dst_path),]
-    assert not dst_path.exists()
-    result = cli_test(mocker, capsys, cmd)
-    assert result == (
-        c.MSGS['en']['dup_success'].format(dst_path=dst_path)
-        + '\n'
-    )
-    assert dst_path.exists()
-
-
-def test_duplicate_db_file_exists(mocker, capsys, testdb, tmp_path):
-    """When called with the -D option and a path, the default
-    names DB should be duplicated to that path. If a file already
-    exists at that path, the duplication should fail with a warning.
-    """
-    exp = 'spam'
-    dst_path = tmp_path / 'spam.db'
-    cmd = ['mkname', '-D', str(dst_path),]
-    with open(dst_path, 'w') as fh:
-        fh.write(exp)
-    result = cli_test(mocker, capsys, cmd)
-    with open(dst_path) as fh:
-        act = fh.read()
-    assert result == (
-        c.MSGS['en']['dup_path_exists'].format(dst_path=dst_path)
-        + '\n'
-    )
-    assert act == exp
-
-
 def test_first_names(mocker, capsys, testdb):
     """When called with the -F option, use only given names for
     the generation.
@@ -350,7 +315,7 @@ def test_list_genders(mocker, capsys, testdb):
 
 def test_make_multiple_names(mocker, capsys, testdb):
     """When called with the -n 3 option, create three names."""
-    cmd = ['python -m mkname', '-p', '-n', '3']
+    cmd = ['python -m mkname', '-n', '3']
     roll = [3, 1, 4]
     result = cli_test(mocker, capsys, cmd, roll)
     assert result == (
@@ -364,7 +329,7 @@ def test_modify_name(mocker, capsys, testdb):
     """When called with the -m garble option, perform the garble
     mod on the name.
     """
-    cmd = ['python -m mkname', '-p', '-m', 'garble']
+    cmd = ['python -m mkname', '-m', 'garble']
     roll = [3, 5]
     result = cli_test(mocker, capsys, cmd, roll)
     assert result == 'Tomadao\n'
@@ -374,7 +339,7 @@ def test_pick_name(mocker, capsys, testdb):
     """When called with the -p option, select a random name
     from the list of names.
     """
-    cmd = ['python -m mkname', '-p']
+    cmd = ['python -m mkname',]
     roll = [3,]
     result = cli_test(mocker, capsys, cmd, roll)
     assert result == 'tomato\n'
