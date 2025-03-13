@@ -31,6 +31,7 @@ VOWELS = default['vowels']
 # Messages.
 MSGS = {
     'en': {
+        'default_db_write': 'Cannot import to the default database.',
         'dup_success': 'The database has been copied to {dst_path}.',
         'dup_path_exists': 'Copy failed. Path {dst_path} exists.',
         'export_success': 'Database exported to {path}.',

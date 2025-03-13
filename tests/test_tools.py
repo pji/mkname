@@ -23,7 +23,7 @@ class TestExport:
         path.touch()
         assert path.exists()
         t.export(path, overwrite=True)
-        assert all(csv_matches_names(path, names))
+        assert csv_matches_names(path, names)
 
     def test_export_default_db(self, names, test_db, tmp_path):
         """Given a path, :func:`mkname.tools.export` should export
@@ -33,7 +33,7 @@ class TestExport:
         path = tmp_path / 'names.csv'
         assert not path.exists()
         t.export(path)
-        assert all(csv_matches_names(path, names))
+        assert csv_matches_names(path, names)
 
     def test_export_given_db(self, db_path, names, tmp_path):
         """Given a destination and a source path,
@@ -44,7 +44,7 @@ class TestExport:
         dst_path = tmp_path / 'names.csv'
         assert not dst_path.exists()
         t.export(dst_path, src_path=db_path)
-        assert all(csv_matches_names(dst_path, names))
+        assert csv_matches_names(dst_path, names)
 
     def test_will_not_overwrite(self, tmp_path):
         """Given a destination path that exists,
@@ -82,7 +82,7 @@ class TestImport_:
             date=date,
             kind=kind
         )
-        assert all(db_matches_names(empty_db, census_name_given_names))
+        assert db_matches_names(empty_db, census_name_given_names)
 
     def test_import_into_existing(self, csv_path, empty_db, names):
         """Given a path to an existing names database and a path to
@@ -90,7 +90,7 @@ class TestImport_:
         should add the names in the CSV to the database.
         """
         t.import_(empty_db, csv_path)
-        assert all(db_matches_names(empty_db, names))
+        assert db_matches_names(empty_db, names)
 
     def test_import_into_nonexisting(self, csv_path, names, tmp_path):
         """Given a path to a nonexisting names database and a path to
@@ -99,7 +99,7 @@ class TestImport_:
         """
         path = tmp_path / 'names.db'
         t.import_(path, csv_path)
-        assert all(db_matches_names(path, names))
+        assert db_matches_names(path, names)
 
     def test_invalid_format(self):
         """If given an invalid format value, :func:`makname.tools.import_`
@@ -133,7 +133,7 @@ class TestImport_:
             date=date,
             kind=kind
         )
-        assert all(db_matches_names(empty_db, us_census_surnames_names))
+        assert db_matches_names(empty_db, us_census_surnames_names)
 
     def test_will_reindex_unique_ids(
         self, census_name_given_names,
@@ -163,7 +163,7 @@ class TestImport_:
             date=date,
             kind=kind
         )
-        assert all(db_matches_names(tmp_db, expected))
+        assert db_matches_names(tmp_db, expected)
 
 
 class TestReadCSV:
@@ -297,7 +297,7 @@ class TestWriteToCSV:
         """
         path = tmp_path / 'names.csv'
         t.write_as_csv(path, names)
-        assert all(csv_matches_names(path, names))
+        assert csv_matches_names(path, names)
 
     def test_file_exists(self, names, tmp_path):
         """If the given path exists, :func:`mkname.tools.write_as_csv`
@@ -315,7 +315,7 @@ class TestWriteToCSV:
         """
         path = tmp_path / 'names.csv'
         t.write_as_csv(str(path), names)
-        assert all(csv_matches_names(path, names))
+        assert csv_matches_names(path, names)
 
     def test_overwrite_existing_file(self, names, tmp_path):
         """If override is `True`, :mod:`mkname.tools.write_as_csv`
@@ -324,4 +324,4 @@ class TestWriteToCSV:
         path = tmp_path / 'names.csv'
         path.touch()
         t.write_as_csv(path, names, overwrite=True)
-        assert all(csv_matches_names(path, names))
+        assert csv_matches_names(path, names)

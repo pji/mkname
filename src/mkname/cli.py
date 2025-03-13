@@ -14,7 +14,7 @@ from mkname.constants import MSGS
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section
-from mkname.tools import export, import_
+from mkname.tools import DefaultDatabaseWriteError, export, import_
 
 
 # Typing.
@@ -162,11 +162,14 @@ def mode_export(args: Namespace) -> None:
 
 def mode_import(args: Namespace) -> None:
     """Execute the `import` command for `mkname_tools`."""
-    import_(dst_path=args.output, src_path=args.input)
-    print(MSGS['en']['import_success'].format(
-        src=args.input,
-        dst=args.output
-    ))
+    try:
+        import_(dst_path=args.output, src_path=args.input)
+        print(MSGS['en']['import_success'].format(
+            src=args.input,
+            dst=args.output
+        ))
+    except DefaultDatabaseWriteError:
+        print(MSGS['en']['default_db_write'])
     print()
 
 

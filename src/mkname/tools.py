@@ -25,13 +25,20 @@ from argparse import ArgumentParser
 from collections.abc import Sequence
 from pathlib import Path
 
-from mkname import db
+from mkname import db, init
 from mkname import model as m
 from mkname.constants import MSGS
 from mkname.utility import recapitalize
 
 
 # Exceptions.
+class DefaultDatabaseWriteError(IOError):
+    """There was an attempt to write directly to the default database.
+    This is prevented because updates to this package would overwrite
+    any changes to the default database, causing confusion.
+    """
+
+
 class InvalidImportFormatError(ValueError):
     """The format assigned to the file to be imported was not a
     format that :mod:`mkname` knows how to format.
@@ -243,6 +250,10 @@ def import_(
     :rtype: NoneType
     """
     dst_path = Path(dst_path)
+    default_db = init.get_default_db()
+    if dst_path == default_db:
+        raise DefaultDatabaseWriteError(MSGS['en']['default_db_write'])
+
     if format == 'csv':
         names = read_csv(src_path)
     elif format == 'census.name':

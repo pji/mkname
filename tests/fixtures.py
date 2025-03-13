@@ -143,7 +143,7 @@ def run_in_tmp(tmp_path):
 def test_db(mocker):
     """Point the default database to the test database."""
     db_path = Path.cwd() / 'tests/data/names.db'
-    mocker.patch('mkname.db.get_db', return_value=db_path)
+    mocker.patch('mkname.init.get_default_db', return_value=db_path)
     yield None
 
 
@@ -158,10 +158,10 @@ def tmp_db(db_path, tmp_path):
 
 
 @pt.fixture
-def tmp_empty_db(empty_db):
+def tmp_empty_db(mocker, empty_db):
     """Point the default database to an empty database."""
-    mocker.patch('mkname.db.get_db', return_value=empty_db)
-    yield None
+    mocker.patch('mkname.init.get_default_db', return_value=empty_db)
+    yield empty_db
 
 
 @pt.fixture

@@ -91,6 +91,22 @@ class TestMknameToolsExport:
 
 
 class TestMknameToolsInput:
+    def test_cannot_write_to_default_db(
+        self, mocker, capsys, csv_path, names, tmp_empty_db
+    ):
+        """When not given the path to a name database,
+        `mkname_tools import` will return an error message
+        and not write to the default database.
+        """
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(csv_path),
+            '-o', str(init.get_default_db()),
+        ]
+        exp_msg = f'Cannot import to the default database.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(tmp_empty_db, [])
+
     def test_csv_to_existing_db(
         self, mocker, capsys, csv_path, empty_db, names,
     ):
@@ -106,7 +122,6 @@ class TestMknameToolsInput:
         exp_msg = f'Imported {csv_path} to {empty_db}.\n\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(empty_db, names)
-
 
 
 def test_build_compound_name(mocker, capsys, testdb):
