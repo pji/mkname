@@ -123,6 +123,47 @@ class TestMknameToolsInput:
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(empty_db, names)
 
+    def test_csv_to_new_db(
+        self, mocker, capsys, csv_path, names, tmp_path
+    ):
+        """When passed `-i` and the path to a CSV file and a `-o` and
+        the path to a nonexistent database, `mkname_tools import` should
+        create that database and import the contents of the CSV file
+        into the database.
+        """
+        path = tmp_path / 'spam'
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(csv_path),
+            '-o', str(path)
+        ]
+        exp_msg = f'Imported {csv_path} to {path}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, names)
+
+    def test_census_name_to_existing_db(
+        self, mocker, capsys, census_name_given_path, empty_db,
+        census_name_given_names
+    ):
+        """When passed `-i` and the path to a census.name file, a
+        `-o` and the path to a name database, a `-f` and `census_name`,
+        `-s` and a source, `-d` and a date, and `-k` and a kind,
+        `mkname_tools import` should import the contents of the
+        census.name file into the database.
+        """
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(census_name_given_path),
+            '-o', str(empty_db),
+            '-f', 'census.name',
+            '-s', 'census.name',
+            '-d', '2025',
+            '-k', 'given'
+        ]
+        exp_msg = f'Imported {census_name_given_path} to {empty_db}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(empty_db, census_name_given_names)
+
 
 def test_build_compound_name(mocker, capsys, testdb):
     """When called with the -c option, construct a name from

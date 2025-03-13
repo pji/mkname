@@ -26,7 +26,13 @@ def db_matches_names(path, names):
     """Compare the names in the DB to the given names."""
     query = 'SELECT * FROM names'
     con = sqlite3.Connection(path)
-    rows = con.execute(query)
-    results = [m.Name(*row) == name for row, name in zip_longest(rows, names)]
+    qresult = con.execute(query)
+    rows = [m.Name(*row) for row in qresult]
+    for row, name in zip_longest(rows, names):
+        try:
+            assert row.astuple() == name.astuple()
+        except AssertionError:
+            raise ValueError(f'{row}, {name}')
+    results = [row == name for row, name in zip_longest(rows, names)]
     con.close()
     return all(results)

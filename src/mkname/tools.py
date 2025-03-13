@@ -31,6 +31,21 @@ from mkname.constants import MSGS
 from mkname.utility import recapitalize
 
 
+# Names exported with *.
+__all__ = [
+    'DefaultDatabaseWriteError',
+    'InvalidImportFormatError',
+    'PathDoesNotExistError',
+    'PathExistsError',
+    'export',
+    'import_',
+    'INPUT_FORMATS',
+]
+
+# Constants.
+INPUT_FORMATS = ['csv', 'census.name', 'census.gov',]
+
+
 # Exceptions.
 class DefaultDatabaseWriteError(IOError):
     """There was an attempt to write directly to the default database.
@@ -232,6 +247,14 @@ def import_(
     kind: str = 'unknown'
 ) -> None:
     """Import names from a file to a database.
+
+    .. warning:
+        This will not directly write to the default database. This
+        is because updates to this package would overwrite any
+        changes made by users to the default database. If you
+        really want to do this anyway, you can still do it manually
+        by writing out to a copy of the default database and then
+        copying that copy over the default database.
 
     :param dst_path: The database destination for the import.
     :param src_path: The source of the name data to import.

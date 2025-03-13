@@ -14,7 +14,7 @@ from mkname.constants import MSGS
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section
-from mkname.tools import DefaultDatabaseWriteError, export, import_
+from mkname.tools import *
 
 
 # Typing.
@@ -163,10 +163,17 @@ def mode_export(args: Namespace) -> None:
 def mode_import(args: Namespace) -> None:
     """Execute the `import` command for `mkname_tools`."""
     try:
-        import_(dst_path=args.output, src_path=args.input)
+        import_(
+            dst_path=args.output,
+            src_path=args.input,
+            format=args.format,
+            source=args.source,
+            date=args.date,
+            kind=args.kind
+        )
         print(MSGS['en']['import_success'].format(
             src=args.input,
-            dst=args.output
+            dst=args.output,
         ))
     except DefaultDatabaseWriteError:
         print(MSGS['en']['default_db_write'])
@@ -379,9 +386,27 @@ def parse_export(spa: _SubParsersAction) -> None:
 @subparser('mkname_tools')
 def parse_import(spa: _SubParsersAction) -> None:
     """Parse the `import` command for `mkname_tools`."""
+    formats = ', '.join(format for format in INPUT_FORMATS)
     sp = spa.add_parser(
         'import',
         description='Import name data from a file.'
+    )
+    sp.add_argument(
+        '-d', '--date',
+        help='The date for the names.',
+        action='store',
+        default=1970,
+        type=int
+    )
+    sp.add_argument(
+        '-f', '--format',
+        help=(
+            'The format of the input file. '
+            f'The supported formats are: {formats}'
+        ),
+        action='store',
+        default='csv',
+        type=str
     )
     sp.add_argument(
         '-i', '--input',
@@ -391,10 +416,24 @@ def parse_import(spa: _SubParsersAction) -> None:
         type=str
     )
     sp.add_argument(
+        '-k', '--kind',
+        help='The kind for the names.',
+        action='store',
+        default='unknown',
+        type=str
+    )
+    sp.add_argument(
         '-o', '--output',
         help='The path to import the data to.',
         action='store',
         default='names.db',
+        type=str
+    )
+    sp.add_argument(
+        '-s', '--source',
+        help='The source of the input file.',
+        action='store',
+        default='unknown',
         type=str
     )
     sp.set_defaults(func=mode_import)
