@@ -182,7 +182,7 @@ def protects_connection(fn: Callable) -> Callable:
 # Private query functions.
 def _run_query_for_single_column(
     con: sqlite3.Connection,
-    query: str
+    query: str,
 ) -> tuple[str, ...]:
     """Run the query and return the results."""
     result = con.execute(query)

@@ -38,6 +38,7 @@ MSGS = {
         'id_collision': 'ID {id} already exists in database.',
         'import_success': 'Imported {src} to {dst}.',
         'invalid_format': 'Format {format} is unknown.',
+        'option_conflict': 'Options {opts} cannot be used at the same time.',
         'read_path_not_exists': 'Read failed. Path {path} does not exist.',
         'write_path_exists': 'Write failed. Path {path} exists',
     },

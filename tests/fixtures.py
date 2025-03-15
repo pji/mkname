@@ -19,10 +19,12 @@ __all__ = [
     'census_name_given_path',
     'census_name_given_names',
     'csv_path',
+    'conf_path',
     'db_path',
     'empty_db',
     'names',
     'run_in_tmp',
+    'prot_db',
     'test_db',
     'tmp_db',
     'tmp_empty_db',
@@ -69,6 +71,11 @@ def census_name_given_names():
 @pt.fixture
 def census_name_given_path():
     return 'tests/data/census_name.csv'
+
+
+@pt.fixture
+def conf_path():
+    return 'tests/data/test_use_config.cfg'
 
 
 @pt.fixture
@@ -145,6 +152,17 @@ def names():
             'given'
         ),
     )
+
+
+@pt.fixture
+def prot_db(mocker, db_path, tmp_path):
+    """Point the default db to a temporary copy of the test db."""
+    path = Path(db_path)
+    cp_path = Path(tmp_path / 'names.db')
+    data = path.read_bytes()
+    cp_path.write_bytes(data)
+    mocker.patch('mkname.db.get_db', return_value=cp_path)
+    yield tmp_db
 
 
 @pt.fixture

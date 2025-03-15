@@ -112,15 +112,86 @@ def build_syllable_name(
     return name
 
 
-def duplicate_db(dst: str) -> str:
-    """Duplicate the names DB to the given path."""
-    dst_path = Path(dst)
-    if dst_path.exists():
-        return MSGS['en']['dup_path_exists'].format(dst_path=dst_path)
-    db.duplicate_db(dst_path)
-    return MSGS['en']['dup_success'].format(dst_path=dst_path)
+def modify_name(name: str, mod_name: str) -> str:
+    """A command script to use the given simple mod on the name.
+
+    :param name: The name to modify.
+    :param mod: The mod to use on the name.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
+    mod = mods[mod_name]
+    return mod(name)
 
 
+def pick_name(names: Sequence[Name]) -> str:
+    """The command script to select a name from the database.
+
+    :param names: A list of Name objects to use for constructing
+        the new name.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
+    name = mn.select_name(names)
+    return name
+
+
+# mkname_tools command modes.
+def mode_export(args: Namespace) -> None:
+    """Execute the `export` command for `mkname_tools`."""
+    db_path = get_db_from_invoation(args)
+    export(dst_path=args.output, src_path=db_path)
+    print(MSGS['en']['export_success'].format(path=args.output))
+    print()
+
+
+def mode_import(args: Namespace) -> None:
+    """Execute the `import` command for `mkname_tools`."""
+    try:
+        import_(
+            dst_path=args.output,
+            src_path=args.input,
+            format=args.format,
+            source=args.source,
+            date=args.date,
+            kind=args.kind
+        )
+        print(MSGS['en']['import_success'].format(
+            src=args.input,
+            dst=args.output,
+        ))
+    except DefaultDatabaseWriteError:
+        print(MSGS['en']['default_db_write'])
+    print()
+
+
+def mode_list(args: Namespace) -> None:
+    """Execute the `list` command for `mkname_tools`."""
+    db_path = get_db_from_invoation(args, args.db)
+
+    if args.list_cultures:
+        lines = list_cultures(db_path)
+
+    elif args.list_genders:
+        lines = list_genders(db_path)
+
+    elif args.list_kinds:
+        lines = list_kinds(db_path)
+
+    else:
+        names = db.get_names(db_path)
+        if args.culture:
+            names = [name for name in names if name.culture == args.culture]
+        if args.gender:
+            names = [name for name in names if name.gender == args.gender]
+        if args.kind:
+            names = [name for name in names if name.kind == args.kind]
+        lines = list_all_names(names)
+
+    write_output(lines)
+
+
+# mkname_tools commands.
 def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
     """Command script to list all the names in the database.
 
@@ -151,56 +222,14 @@ def list_genders(db_loc: Path) -> tuple[str, ...]:
     return db.get_genders(db_loc)
 
 
-def modify_name(name: str, mod_name: str) -> str:
-    """A command script to use the given simple mod on the name.
+def list_kinds(db_loc: Path) -> tuple[str, ...]:
+    """A command script to list the unique kinds in the database.
 
-    :param name: The name to modify.
-    :param mod: The mod to use on the name.
-    :returns: A :class:`str` object.
-    :rtype: str
+    :param db_loc: The path to the mkname database.
+    :returns: A :class:`tuple` object.
+    :rtype: tuple
     """
-    mod = mods[mod_name]
-    return mod(name)
-
-
-def pick_name(names: Sequence[Name]) -> str:
-    """The command script to select a name from the database.
-
-    :param names: A list of Name objects to use for constructing
-        the new name.
-    :returns: A :class:`str` object.
-    :rtype: str
-    """
-    name = mn.select_name(names)
-    return name
-
-
-# mkname_tools command modes.
-def mode_export(args: Namespace) -> None:
-    """Execute the `export` command for `mkname_tools`."""
-    export(dst_path=args.output)
-    print(MSGS['en']['export_success'].format(path=args.output))
-    print()
-
-
-def mode_import(args: Namespace) -> None:
-    """Execute the `import` command for `mkname_tools`."""
-    try:
-        import_(
-            dst_path=args.output,
-            src_path=args.input,
-            format=args.format,
-            source=args.source,
-            date=args.date,
-            kind=args.kind
-        )
-        print(MSGS['en']['import_success'].format(
-            src=args.input,
-            dst=args.output,
-        ))
-    except DefaultDatabaseWriteError:
-        print(MSGS['en']['default_db_write'])
-    print()
+    return db.get_kinds(db_loc)
 
 
 # Output.
@@ -218,6 +247,25 @@ def write_output(lines: Sequence[str] | str) -> None:
         print(line)
 
 
+# Utilities for configuring from invocation.
+def get_db_from_invoation(args: Namespace, path: str | Path = '') -> Path:
+    """Get the database from the options used when invoking the script."""
+    config = load_config(args)
+    return load_db_from_config(config, path)
+
+
+def load_config(args: Namespace) -> Section:
+    """Get the config from a config file."""
+    config_file = args.config if args.config else ''
+    return get_config(config_file)['mkname']
+
+
+def load_db_from_config(config: Section, path: str | Path = '') -> Path:
+    """Get the database based on configuration and invocation."""
+    db_path = path if path else config['db_path']
+    return Path(get_db(db_path))
+
+
 # Command parsing.
 def parse_cli() -> None:
     """Response to commands passed through the CLI.
@@ -233,53 +281,65 @@ def parse_cli() -> None:
         ),
         prog='mkname',
     )
-    
+
     # Name generation modes.
-    p.add_argument(
+    g_genmodes = p.add_argument_group(
+        'Alternate Name Generation Modes',
+        description=(
+            'Options how the name is generated. The default is to '
+            'just select a name from the database.'
+        )
+    )
+    g_exclude = g_genmodes.add_mutually_exclusive_group()
+    g_exclude.add_argument(
         '--compound_name', '-c',
         help='Construct a name from two names in the database.',
         action='store_true'
     )
-    p.add_argument(
+    g_exclude.add_argument(
         '--syllable_name', '-s',
-        help='Construct a name from the syllables of names in the database.',
+        help=(
+            'Construct a name from the syllables of names in the database. '
+            'The value of the option is the number of syllables to use.'
+        ),
         action='store',
         type=int
     )
 
-    # Generation modification.
-    p.add_argument(
+    # Post processing.
+    g_post = p.add_argument_group(
+        'Post Processing',
+        description='Options for what happens after a name is generated.'
+    )
+    g_post.add_argument(
         '--modify_name', '-m',
         help='Modify the name.',
         action='store',
         choices=mods
     )
-    p.add_argument(
-        '--num_names', '-n',
-        help='The number of names to create.',
-        action='store',
-        type=int,
-        default=1
-    )
 
     # Name selection modification.
-    p.add_argument(
+    g_filter = p.add_argument_group(
+        'Filtering',
+        description='Options for filtering data used to generate the name.'
+    )
+    g_filter.add_argument(
         '--first_name', '-f',
         help='Generate a given name.',
         action='store_true'
     )
-    p.add_argument(
+    g_filter.add_argument(
         '--gender', '-g',
         help='Generate a name from the given gender.',
         action='store',
         type=str
     )
-    p.add_argument(
+    g_filter.add_argument(
         '--last_name', '-l',
         help='Generate a surname.',
         action='store_true'
     )
-    p.add_argument(
+    g_filter.add_argument(
         '--culture', '-k',
         help='Generate a name from the given culture.',
         action='store',
@@ -287,39 +347,30 @@ def parse_cli() -> None:
     )
 
     # Script configuration.
-    p.add_argument(
+    g_config = p.add_argument_group(
+        'Configuration',
+        description='Options for configuring the run.'
+    )
+    g_config.add_argument(
         '--config', '-C',
         help='Use the given custom config file.',
         action='store',
         type=str
     )
-    
-    # Administration modes.
-    # These should probably move to `mkname_tools`.
-    p.add_argument(
-        '--list_genders', '-G',
-        help='List all the genders in the database.',
-        action='store_true'
+    g_config.add_argument(
+        '--num_names', '-n',
+        help='The number of names to create.',
+        action='store',
+        type=int,
+        default=1
     )
-    p.add_argument(
-        '--list_cultures', '-K',
-        help='List all the cultures in the database.',
-        action='store_true'
-    )
-    p.add_argument(
-        '--list_all_names', '-L',
-        help='List all the names in the database.',
-        action='store_true'
-    )
-    
+
+    # Parse the invocation arguments.
     args = p.parse_args()
 
     # Set up the configuration.
-    config_file = ''
-    if args.config:
-        config_file = args.config
-    config = get_config(config_file)['mkname']
-    db_loc = get_db(config['db_path'])
+    config = load_config(args)
+    db_loc = load_db_from_config(config)
 
     # Get names for generation.
     if args.first_name:
@@ -339,15 +390,6 @@ def parse_cli() -> None:
         if args.compound_name:
             name = build_compound_name(names, config)
             lines.append(name)
-        elif args.list_all_names:
-            names = list_all_names(names)
-            lines.extend(names)
-        elif args.list_cultures:
-            cultures = list_cultures(db_loc)
-            lines.extend(cultures)
-        elif args.list_genders:
-            genders = list_genders(db_loc)
-            lines.extend(genders)
         elif args.syllable_name:
             name = build_syllable_name(names, config, args.syllable_name)
             lines.append(name)
@@ -376,6 +418,15 @@ def parse_mkname_tools() -> None:
         description='Randomized name construction.',
         prog='mkname',
     )
+    p.add_argument(
+        '--config', '-f',
+        help=(
+            'Use the given custom config file. This must be passsed before '
+            'the mode.'
+        ),
+        action='store',
+        type=str
+    )
     spa = p.add_subparsers(
         help=f'Available modes: {subparsers_list}',
         metavar='mode',
@@ -391,7 +442,7 @@ def parse_mkname_tools() -> None:
 @subparser('mkname_tools')
 def parse_export(spa: _SubParsersAction) -> None:
     """Parse the `export` command for `mkname_tools`.
-    
+
     :param spa: The subparsers action for `mkname_tools`.
     :returns: `None`.
     :rtype: NoneType
@@ -413,15 +464,14 @@ def parse_export(spa: _SubParsersAction) -> None:
 @subparser('mkname_tools')
 def parse_import(spa: _SubParsersAction) -> None:
     """Parse the `import` command for `mkname_tools`.
-    
+
     :param spa: The subparsers action for `mkname_tools`.
     :returns: `None`.
     :rtype: NoneType
     """
-    formats = ', '.join(format for format in INPUT_FORMATS)
     sp = spa.add_parser(
         'import',
-        description='Import name data from a file.'
+        description='Import name data from a file into a names database.'
     )
     sp.add_argument(
         '-d', '--date',
@@ -432,12 +482,10 @@ def parse_import(spa: _SubParsersAction) -> None:
     )
     sp.add_argument(
         '-f', '--format',
-        help=(
-            'The format of the input file. '
-            f'The supported formats are: {formats}'
-        ),
+        help='The format of the input file.',
         action='store',
         default='csv',
+        choices=INPUT_FORMATS,
         type=str
     )
     sp.add_argument(
@@ -469,3 +517,72 @@ def parse_import(spa: _SubParsersAction) -> None:
         type=str
     )
     sp.set_defaults(func=mode_import)
+
+
+@subparser('mkname_tools')
+def parse_list(spa: _SubParsersAction) -> None:
+    """Parse the `list` command for `mkname_tools`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'list',
+        description='List data in names databases.'
+    )
+    sp.add_argument(
+        '--db', '-d',
+        help='The database to get data from.',
+        action='store',
+        default='',
+        type=str
+    )
+
+    # Unique value lists.
+    g_values = sp.add_argument_group(
+        'List Unique Values',
+        description='List the unique values for a specific field.'
+    )
+    g_exclude = g_values.add_mutually_exclusive_group()
+    g_exclude.add_argument(
+        '--list_cultures', '-C',
+        help='List the cultures.',
+        action='store_true'
+    )
+    g_exclude.add_argument(
+        '--list_genders', '-G',
+        help='List the genders.',
+        action='store_true'
+    )
+    g_exclude.add_argument(
+        '--list_kinds', '-K',
+        help='List the kinds.',
+        action='store_true'
+    )
+
+    # Data filters.
+    g_filter = sp.add_argument_group(
+        'Data filters',
+        description='Filter for the data to be listed.'
+    )
+    g_filter.add_argument(
+        '--culture', '-c',
+        help='List names from the given culture.',
+        action='store',
+        type=str
+    )
+    g_filter.add_argument(
+        '--gender', '-g',
+        help='List names from the given gender.',
+        action='store',
+        type=str
+    )
+    g_filter.add_argument(
+        '--kind', '-k',
+        help='List names from the given kind.',
+        action='store',
+        type=str
+    )
+
+    sp.set_defaults(func=mode_list)

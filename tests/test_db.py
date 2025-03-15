@@ -11,7 +11,7 @@ import pytest
 
 from mkname import db
 from mkname import model as m
-from tests.fixtures import db_path, empty_db, names, test_db
+from tests.fixtures import db_path, empty_db, names, prot_db, test_db
 
 
 # Fixtures
@@ -22,18 +22,6 @@ def con():
     con = sqlite3.Connection(db_path)
     yield con
     con.close()
-
-
-@pytest.fixture
-def protected_test_db(mocker, tmp_path):
-    """Point the default database to the temp copy of the test database."""
-    test_db_path = pathlib.Path('tests/data/names.db')
-    db_path = pathlib.Path(tmp_path / 'names.db')
-    data = test_db_path.read_bytes()
-    db_path.write_bytes(data)
-    path_str = str(db_path)
-    mocker.patch('mkname.db.get_db', return_value=path_str)
-    yield None
 
 
 # Connection test cases.
@@ -242,29 +230,7 @@ def test_get_names_by_kind_without_connection_or_path(test_db):
 
 
 # Create test cases.
-@pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
-def test_duplicate_db(test_db, names, tmp_path):
-    """When given a destination path, :func:`mkname.db.duplicate_db`
-    should create a copy of the names DB in the current working directory.
-    """
-    dst_path = tmp_path / 'names.db'
-    db.duplicate_db(dst_path)
-    assert dst_path.exists()
-    assert db.get_names(dst_path) == names
-
-
-@pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
-def test_duplicate_db_with_str(test_db, names, tmp_path):
-    """When given a destination path, :func:`mkname.db.duplicate_db`
-    should create a copy of the names DB in the current working directory.
-    """
-    dst_str = str(tmp_path / 'names.db')
-    db.duplicate_db(dst_str)
-    assert pathlib.Path(dst_str).exists()
-    assert db.get_names(dst_str) == names
-
-
-class TestCreateEmptyDB:
+class TestAdminActions:
     def test_create_db(self, names, tmp_path):
         """Given a path, :func:`mkname.db.create_empty_db` should
         create an empty copy of the names database at that location.
@@ -290,54 +256,69 @@ class TestCreateEmptyDB:
             }
         )
 
+    @pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
+    def test_duplicate_db(self, test_db, names, tmp_path):
+        """When given a destination path, :func:`mkname.db.duplicate_db`
+        should create a copy of the names DB in the current working directory.
+        """
+        dst_path = tmp_path / 'names.db'
+        db.duplicate_db(dst_path)
+        assert dst_path.exists()
+        assert db.get_names(dst_path) == names
 
-# Update test cases.
-def test_add_name_to_db(empty_db, names):
-    """Given a name and a path to a names database,
-    :func:`mkname.db.add_name_to_db` should add the name
-    to the database.
-    """
-    name = names[0]
-    db.add_name_to_db(empty_db, name)
-    con = sqlite3.Connection(empty_db)
-    cur = con.cursor()
-    result = cur.execute('SELECT * FROM names WHERE id=1;')
-    assert result.fetchone()[1] == name.name
-
-
-def test_add_name_to_db_cannot_update_default_db(
-    protected_test_db,
-    names
-):
-    """When given `None` instead of a database connection or path,
-    :func:`mkname.db.add_name_to_db` should raise an exception to
-    prevent accidental changes to the default database.
-    """
-    with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
-        db.add_name_to_db(None, names[0])
+    @pytest.mark.dependency(depends=['test_get_names_called_with_path'],)
+    def test_duplicate_db_with_str(self, test_db, names, tmp_path):
+        """When given a destination path, :func:`mkname.db.duplicate_db`
+        should create a copy of the names DB in the current working directory.
+        """
+        dst_str = str(tmp_path / 'names.db')
+        db.duplicate_db(dst_str)
+        assert pathlib.Path(dst_str).exists()
+        assert db.get_names(dst_str) == names
 
 
-def test_add_names_to_db(empty_db, names):
-    """Given a sequence of names and a path to a names database,
-    :func:`mkname.db.add_names_to_db` should add the names
-    to the database.
-    """
-    db.add_names_to_db(empty_db, names)
-    con = sqlite3.Connection(empty_db)
-    cur = con.cursor()
-    result = cur.execute('SELECT * FROM names;')
-    actuals = result.fetchall()
-    for act, exp in zip(actuals, names):
-        assert act[1] == exp.name
+class TestCreateActions:
+    def test_add_name_to_db(self, empty_db, names):
+        """Given a name and a path to a names database,
+        :func:`mkname.db.add_name_to_db` should add the name
+        to the database.
+        """
+        name = names[0]
+        db.add_name_to_db(empty_db, name)
+        con = sqlite3.Connection(empty_db)
+        cur = con.cursor()
+        result = cur.execute('SELECT * FROM names WHERE id=1;')
+        assert result.fetchone()[1] == name.name
 
+    def test_add_name_to_db_cannot_update_default_db(
+        self, prot_db, names
+    ):
+        """When given `None` instead of a database connection or path,
+        :func:`mkname.db.add_name_to_db` should raise an exception to
+        prevent accidental changes to the default database.
+        """
+        with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+            db.add_name_to_db(None, names[0])
 
-def test_add_names_to_db_cannot_update_default_db(
-    protected_test_db,
-    names
-):
-    """When given `None` instead of a database connection or path,
-    :func:`mkname.db.add_name_to_db` should raise an exception to
-    prevent accidental changes to the default database.
-    """
-    with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
-        db.add_names_to_db(None, names)
+    def test_add_names_to_db(self, empty_db, names):
+        """Given a sequence of names and a path to a names database,
+        :func:`mkname.db.add_names_to_db` should add the names
+        to the database.
+        """
+        db.add_names_to_db(empty_db, names)
+        con = sqlite3.Connection(empty_db)
+        cur = con.cursor()
+        result = cur.execute('SELECT * FROM names;')
+        actuals = result.fetchall()
+        for act, exp in zip(actuals, names):
+            assert act[1] == exp.name
+
+    def test_add_names_to_db_cannot_update_default_db(
+        self, prot_db, names
+    ):
+        """When given `None` instead of a database connection or path,
+        :func:`mkname.db.add_name_to_db` should raise an exception to
+        prevent accidental changes to the default database.
+        """
+        with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+            db.add_names_to_db(None, names)
