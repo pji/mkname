@@ -20,6 +20,7 @@ __all__ = [
     'census_name_given_names',
     'csv_path',
     'conf_path',
+    'conf_full_path',
     'db_path',
     'empty_db',
     'names',
@@ -75,7 +76,14 @@ def census_name_given_path():
 
 @pt.fixture
 def conf_path():
-    return 'tests/data/test_use_config.cfg'
+    """Path to a partial config file for testing."""
+    return Path.cwd() / 'tests/data/test_use_config.cfg'
+
+
+@pt.fixture
+def conf_full_path():
+    """Path to a full config file for testing."""
+    return Path.cwd() / 'tests/data/test_load_config.conf'
 
 
 @pt.fixture
@@ -172,7 +180,7 @@ def run_in_tmp(tmp_path):
     """
     home = Path.cwd()
     os.chdir(tmp_path)
-    yield None
+    yield tmp_path
     os.chdir(home)
 
 
@@ -181,7 +189,7 @@ def test_db(mocker):
     """Point the default database to the test database."""
     db_path = Path.cwd() / 'tests/data/names.db'
     mocker.patch('mkname.init.get_default_db', return_value=db_path)
-    yield None
+    yield db_path
 
 
 @pt.fixture

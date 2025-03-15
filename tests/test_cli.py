@@ -126,7 +126,7 @@ class TestMkname:
         """
         cmd = [
             'python -m mkname',
-            '-C', conf_path,
+            '-C', str(conf_path),
         ]
         roll = [3,]
         result = cli_test(mocker, capsys, cmd, roll)

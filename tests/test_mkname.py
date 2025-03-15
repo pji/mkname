@@ -16,14 +16,6 @@ from mkname.model import Name
 
 # Fixtures.
 @pytest.fixture
-def local_db_loc():
-    loc = Path('test_names.db')
-    yield loc
-    if loc.exists():
-        loc.unlink()
-
-
-@pytest.fixture
 def names():
     return [Name(id, name, '', '', 0, '', '') for id, name in enumerate([
         'Alice',
