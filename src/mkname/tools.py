@@ -16,8 +16,9 @@ Command Scripts
 The following are the core command scripts that allow easy use of
 :mod:`mkname.tools` from the command line.
 
-.. autofunction:: mkname.tools.import_
+.. autofunction:: mkname.tools.add
 .. autofunction:: mkname.tools.export
+.. autofunction:: mkname.tools.import_
 
 """
 import csv
@@ -37,6 +38,7 @@ __all__ = [
     'InvalidImportFormatError',
     'PathDoesNotExistError',
     'PathExistsError',
+    'add',
     'export',
     'import_',
     'INPUT_FORMATS',
@@ -221,6 +223,57 @@ def _get_rows_from_csv(
 
 
 # Command scripts.
+def add(
+    dst_path: Path | str,
+    name: str,
+    source: str = 'unknown',
+    culture: str = 'unknown',
+    date: int = 1970,
+    gender: str = 'unknown',
+    kind: str = 'unknown'
+) -> None:
+    """Add a name to a names database.
+
+    .. warning:
+        This will not directly write to the default database. This
+        is because updates to this package would overwrite any
+        changes made by users to the default database. If you
+        really want to do this anyway, you can still do it manually
+        by writing out to a copy of the default database and then
+        copying that copy over the default database.
+
+    :param dst_path: The database destination for the new name.
+    :param name: The name.
+    :param source: The URL where the name was found.
+    :param culture: The culture or nation the name is tied to.
+    :param date: The approximate year the name is tied to.
+    :param gender: The gender typically associated with the name
+        during the time and in the culture the name is from.
+    :param kind: A tag for how the name is used, such as a given
+        name or a surname.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    # Protect the default database.
+    dst_path = Path(dst_path)
+    default_db = init.get_default_db()
+    if dst_path == default_db:
+        raise DefaultDatabaseWriteError(MSGS['en']['default_db_write'])
+
+    # Add the name to the database.
+    id_ = db.get_max_id(dst_path) + 1
+    new = m.Name(
+        id=id_,
+        name=name,
+        source=source,
+        culture=culture,
+        date=date,
+        gender=gender,
+        kind=kind
+    )
+    db.add_name_to_db(dst_path, new)
+
+
 def export(
     dst_path: Path | str,
     src_path: Path | str | None = None,

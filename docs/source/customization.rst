@@ -57,5 +57,15 @@ create an empty `names.db` in the current working directory::
 
     mkname_tools new
 
+If you want to create the empty database in a specific location::
 
-.. _add_names_to_db
+    mkname_tools new -o data/spam.db
+
+
+.. _add_name_to_db
+
+Adding a Name to a Names Database
+---------------------------------
+Once you have created your new names database, it's time to add new
+names to it. If you just need to add a single name, you can do that
+manually.

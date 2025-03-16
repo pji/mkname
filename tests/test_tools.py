@@ -13,6 +13,42 @@ from tests.fixtures import *
 
 
 # Test cases.
+class TestAdd:
+    def test_add(self, name, names, tmp_db):
+        """Given the path to a database and name data,
+        :func:`mkname.tools.add` should add that name to
+        the database.
+        """
+        t.add(
+            dst_path=tmp_db,
+            name=name.name,
+            source=name.source,
+            culture=name.culture,
+            date=name.date,
+            gender=name.gender,
+            kind=name.kind
+        )
+        assert db_matches_names(tmp_db, [*names, name])
+
+    def test_cannot_write_to_default(self, name, names, prot_db):
+        """If you try to add a name to the default db,
+        :func:`mkname.tools.add` will raise a
+        :class:`mkname.tools.DefaultDatabaseWriteError`
+        exception.
+        """
+        with pytest.raises(t.DefaultDatabaseWriteError):
+            t.add(
+                dst_path=prot_db,
+                name=name.name,
+                source=name.source,
+                culture=name.culture,
+                date=name.date,
+                gender=name.gender,
+                kind=name.kind
+            )
+        assert db_matches_names(prot_db, names)
+
+
 class TestExport:
     def test_can_overwrite(self, names, test_db, tmp_path):
         """Given a destination path that exists and a `overwrite`

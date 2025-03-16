@@ -23,6 +23,7 @@ __all__ = [
     'conf_full_path',
     'db_path',
     'empty_db',
+    'name',
     'names',
     'run_in_tmp',
     'prot_db',
@@ -120,6 +121,19 @@ def empty_db(tmp_path):
 
 
 @pt.fixture
+def name():
+    return m.Name(
+        id=5,
+        name='Graham',
+        source='https://montypython.com/',
+        culture='Monty Python',
+        date=1941,
+        gender='male',
+        kind='given'
+    )
+
+
+@pt.fixture
 def names():
     """The contents of the test database."""
     yield (
@@ -169,8 +183,8 @@ def prot_db(mocker, db_path, tmp_path):
     cp_path = Path(tmp_path / 'names.db')
     data = path.read_bytes()
     cp_path.write_bytes(data)
-    mocker.patch('mkname.db.get_db', return_value=cp_path)
-    yield tmp_db
+    mocker.patch('mkname.init.get_default_db', return_value=cp_path)
+    yield cp_path
 
 
 @pt.fixture
