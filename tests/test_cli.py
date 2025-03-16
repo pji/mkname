@@ -14,7 +14,7 @@ from mkname import cli
 from mkname import constants as c
 from mkname import init
 from mkname import mkname as mn
-from tests.common import csv_matches_names, db_matches_names
+from tests.common import *
 from tests.fixtures import *
 
 
@@ -133,6 +133,66 @@ class TestMkname:
         assert result == 'tomato\n'
 
 
+class TestMknameToolsCopy:
+    def test_copy_default(
+        self, mocker, capsys, names, test_db, run_in_tmp
+    ):
+        """When invoked, `mkname_tools copy` should create a copy
+        of the default names database in the current working directory.
+        """
+        new_path = run_in_tmp / 'names.db'
+        cmd = ['mkname_tools', 'copy',]
+        exp_msg = f'The database has been copied to {new_path.absolute()}.\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(new_path, names)
+
+    def test_to_file(
+        self, mocker, capsys, names, test_db, tmp_path
+    ):
+        """When invoked with `-o` and the path to save the db copy to,
+        `mkname_tools copy` should create a copy of the default names
+        database in the given path.
+        """
+        path = tmp_path / 'names.db'
+        cmd = [
+            'mkname_tools', 'copy',
+            '-o', str(path),
+        ]
+        exp_msg = f'The database has been copied to {path.absolute()}.\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, names)
+
+    def test_will_not_overwrite(self, mocker, capsys, test_db, tmp_path):
+        """When pointed to a path with an existing file, `mkname_tools`
+        should print an error message and not overwrite the file.
+        """
+        text = 'spam'
+        path = tmp_path / 'spam'
+        path.write_text('spam')
+        cmd = [
+            'mkname_tools', 'copy',
+            '-o', str(path),
+        ]
+        exp_msg = c.MSGS['en']['dup_path_exists'].format(dst_path=path) + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert file_matched_text(path, text)
+
+    def test_will_make_file_in_directory(
+        self, mocker, capsys, names, test_db, tmp_path
+    ):
+        """When pointed to a directory, `mkname_tools` should create
+        the `names.db` in the directory.
+        """
+        path = tmp_path / 'names.db'
+        cmd = [
+            'mkname_tools', 'copy',
+            '-o', str(tmp_path),
+        ]
+        exp_msg = f'The database has been copied to {path.absolute()}.\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, names)
+
+
 class TestMknameToolsExport:
     def test_default(
         self, mocker, capsys, names, test_db, run_in_tmp, tmp_path
@@ -185,7 +245,7 @@ class TestMknameToolsExport:
             csv_path.unlink()
 
 
-class TestMknameToolsInput:
+class TestMknameToolsImport:
     def test_cannot_write_to_default_db(
         self, mocker, capsys, csv_path, names, tmp_empty_db
     ):

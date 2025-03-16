@@ -65,12 +65,12 @@ How can I pick a random name from the database?
 -----------------------------------------------
 To pick a random name from the database use `mkname -p`::
 
-    $ mkname -p
+    $ mkname
     Cheryl
 
 To pick a name from the family names in the database, add `-l`::
 
-    $ mkname -pl
+    $ mkname -l
     Kaiser
 
 

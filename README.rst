@@ -47,6 +47,7 @@ The following changes were made in v0.2.4:
 *   Added ability to list the genders assigned to the names.
 *   Added ability to duplicate the names database for customization.
 *   Added tools for adding names to a names database.
+*   Added `mkname_tools` script for administering the names database.
 
 
 How do I run the tests?

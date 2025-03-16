@@ -11,6 +11,13 @@ from itertools import zip_longest
 import mkname.model as m
 
 
+__all__ = [
+    'csv_matches_names',
+    'db_matches_names',
+    'file_matched_text',
+]
+
+
 def csv_matches_names(path, names):
     """Compare the names in the CSV file to the given names."""
     with open(path) as fh:
@@ -42,3 +49,8 @@ def db_matches_names(path, names):
     results = [row == name for row, name in zip_longest(rows, names)]
     con.close()
     return all(results)
+
+
+def file_matched_text(path, text):
+    """Compare the text in the file to the given text."""
+    return path.read_text() == text

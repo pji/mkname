@@ -137,8 +137,44 @@ def pick_name(names: Sequence[Name]) -> str:
 
 
 # mkname_tools command modes.
+def mode_copy(args: Namespace) -> None:
+    """Execute the `copy` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    lines = []
+
+    # Determine the path for the copy.
+    path = Path('names.db')
+    if args.output:
+        path = Path(args.output)
+    if path.is_dir():
+        path = path / 'names.db'
+
+    # Do not overwrite existing files.
+    if path.exists():
+        msg = MSGS['en']['dup_path_exists'].format(dst_path=path)
+        lines.append(msg)
+
+    # Copy the database to the path.
+    else:
+        db.duplicate_db(path)
+        msg = MSGS['en']['dup_success'].format(dst_path=path.resolve())
+        lines.append(msg)
+
+    # Write any messages to standard out.
+    write_output(lines)
+
+
 def mode_export(args: Namespace) -> None:
-    """Execute the `export` command for `mkname_tools`."""
+    """Execute the `export` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     db_path = get_db_from_invoation(args)
     export(dst_path=args.output, src_path=db_path)
     print(MSGS['en']['export_success'].format(path=args.output))
@@ -146,7 +182,12 @@ def mode_export(args: Namespace) -> None:
 
 
 def mode_import(args: Namespace) -> None:
-    """Execute the `import` command for `mkname_tools`."""
+    """Execute the `import` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     try:
         import_(
             dst_path=args.output,
@@ -166,7 +207,12 @@ def mode_import(args: Namespace) -> None:
 
 
 def mode_list(args: Namespace) -> None:
-    """Execute the `list` command for `mkname_tools`."""
+    """Execute the `list` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     db_path = get_db_from_invoation(args, args.db)
 
     if args.list_cultures:
@@ -439,6 +485,27 @@ def parse_mkname_tools() -> None:
 
 
 # mkname_tools command subparsing.
+@subparser('mkname_tools')
+def parse_copy(spa: _SubParsersAction) -> None:
+    """Parse the `copy` command for `mkname_tools`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'copy',
+        description='Copy the default names database.'
+    )
+    sp.add_argument(
+        '-o', '--output',
+        help='The path to export the data to.',
+        action='store',
+        type=str
+    )
+    sp.set_defaults(func=mode_copy)
+
+
 @subparser('mkname_tools')
 def parse_export(spa: _SubParsersAction) -> None:
     """Parse the `export` command for `mkname_tools`.
