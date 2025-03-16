@@ -455,3 +455,67 @@ class TestMknameToolsList:
             'given\n'
             'surname\n'
         )
+
+
+class TestMknameToolsNew:
+    def test_default(
+        self, mocker, capsys, test_db, run_in_tmp
+    ):
+        """When invoked, `mkname_tools new` should create an empty
+        names database in the current working directory.
+        """
+        path = run_in_tmp / 'names.db'
+        cmd = ['mkname_tools', 'new',]
+        exp_msg = c.MSGS['en']['new_success'].format(
+            dst_path=str(path.absolute())
+        ) + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, [])
+
+    def test_to_file(self, mocker, capsys, test_db, tmp_path):
+        """When invoked with `-o` and the path to save the db copy to,
+        `mkname_tools new` should create a copy of the default names
+        database in the given path.
+        """
+        path = tmp_path / 'names.db'
+        cmd = [
+            'mkname_tools', 'new',
+            '-o', str(path),
+        ]
+        exp_msg = c.MSGS['en']['new_success'].format(
+            dst_path=str(path.absolute())
+        ) + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, [])
+
+    def test_will_not_overwrite(self, mocker, capsys, test_db, tmp_path):
+        """When pointed to a path with an existing file, `mkname_tools`
+        should print an error message and not overwrite the file.
+        """
+        text = 'spam'
+        path = tmp_path / 'spam'
+        path.write_text('spam')
+        cmd = [
+            'mkname_tools', 'new',
+            '-o', str(path),
+        ]
+        exp_msg = c.MSGS['en']['new_path_exists'].format(dst_path=path) + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert file_matched_text(path, text)
+
+    def test_will_make_file_in_directory(
+        self, mocker, capsys, test_db, tmp_path
+    ):
+        """When pointed to a directory, `mkname_tools` should create
+        the `names.db` in the directory.
+        """
+        path = tmp_path / 'names.db'
+        cmd = [
+            'mkname_tools', 'new',
+            '-o', str(tmp_path),
+        ]
+        exp_msg = c.MSGS['en']['new_success'].format(
+            dst_path=str(path.absolute())
+        ) + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(path, [])

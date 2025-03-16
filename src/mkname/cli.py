@@ -237,6 +237,37 @@ def mode_list(args: Namespace) -> None:
     write_output(lines)
 
 
+def mode_new(args: Namespace) -> None:
+    """Execute the `new` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    lines = []
+
+    # Determine the path for the copy.
+    path = Path('names.db')
+    if args.output:
+        path = Path(args.output)
+    if path.is_dir():
+        path = path / 'names.db'
+
+    # Do not overwrite existing files.
+    if path.exists():
+        msg = MSGS['en']['new_path_exists'].format(dst_path=path)
+        lines.append(msg)
+
+    # Copy the database to the path.
+    else:
+        db.create_empty_db(path)
+        msg = MSGS['en']['new_success'].format(dst_path=path.resolve())
+        lines.append(msg)
+
+    # Write any messages to standard out.
+    write_output(lines)
+
+
 # mkname_tools commands.
 def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
     """Command script to list all the names in the database.
@@ -653,3 +684,24 @@ def parse_list(spa: _SubParsersAction) -> None:
     )
 
     sp.set_defaults(func=mode_list)
+
+
+@subparser('mkname_tools')
+def parse_new(spa: _SubParsersAction) -> None:
+    """Parse the `new` command for `mkname_tools`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'new',
+        description='Create an empty names database.'
+    )
+    sp.add_argument(
+        '-o', '--output',
+        help='The path for the empty database.',
+        action='store',
+        type=str
+    )
+    sp.set_defaults(func=mode_new)

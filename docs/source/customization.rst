@@ -28,7 +28,7 @@ get into details about some of the things it can do below, but if
 you ever want a quick overview of everything it does, you can access
 its help at the command line::
 
-    $ mkname_tools -h
+    mkname_tools -h
 
 
 .. _copy_default_db
@@ -40,8 +40,22 @@ create a copy of the default database supplied with the package.
 Let's say you want to create a copy of the `names.db` in the
 current working directory::
 
-    $ mkname_tools copy
+    mkname_tools copy
+
+You can copy the database to a specific path with the `-o` option::
+
+    mkname_tools copy -o data/spam.db
 
 
 .. _create_empty_db
+
+Creating an Empty Database
+--------------------------
+If you want to start from scratch without any of the information from
+the default database, you can create an empty database. If you want to
+create an empty `names.db` in the current working directory::
+
+    mkname_tools new
+
+
 .. _add_names_to_db
