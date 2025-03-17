@@ -68,4 +68,9 @@ Adding a Name to a Names Database
 ---------------------------------
 Once you have created your new names database, it's time to add new
 names to it. If you just need to add a single name, you can do that
-manually.
+manually::
+
+    mkname_tools add data/spam.db --name Graham
+    --source https://montypython.com --culture MontyPython
+    --date 1941 --gender python --kind given
+

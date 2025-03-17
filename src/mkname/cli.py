@@ -137,6 +137,36 @@ def pick_name(names: Sequence[Name]) -> str:
 
 
 # mkname_tools command modes.
+def mode_add(args: Namespace) -> None:
+    """Execute the `add` command for `mkname_tools`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    lines = []
+
+    try:
+        add(
+            dst_path=args.db,
+            name=args.name,
+            source=args.source,
+            culture=args.culture,
+            date=args.date,
+            gender=args.gender,
+            kind=args.kind
+        )
+        msg = MSGS['en']['add_success'].format(
+            name=args.name,
+            dst_path=args.db
+        )
+    except DefaultDatabaseWriteError:
+        msg = MSGS['en']['add_default_db']
+
+    lines.append(msg)
+    write_output(lines)
+
+
 def mode_copy(args: Namespace) -> None:
     """Execute the `copy` command for `mkname_tools`.
 
@@ -516,6 +546,64 @@ def parse_mkname_tools() -> None:
 
 
 # mkname_tools command subparsing.
+@subparser('mkname_tools')
+def parse_add(spa: _SubParsersAction) -> None:
+    """Parse the `add` command for `mkname_tools`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'add',
+        description='Add a name to the database.'
+    )
+    sp.add_argument(
+        'db',
+        help='The database to add the data too.',
+        action='store',
+        type=str
+    )
+    sp.add_argument(
+        '--name', '-n',
+        help='The name.',
+        action='store',
+        type=str
+    )
+    sp.add_argument(
+        '--source', '-s',
+        help='The source of the name data.',
+        action='store',
+        type=str
+    )
+    sp.add_argument(
+        '--culture', '-c',
+        help='The culture for the name.',
+        action='store',
+        type=str
+    )
+    sp.add_argument(
+        '--date', '-d',
+        help='The date for the name.',
+        action='store',
+        type=int
+    )
+    sp.add_argument(
+        '--gender', '-g',
+        help='The gender for the name.',
+        action='store',
+        type=str
+    )
+    sp.add_argument(
+        '--kind', '-k',
+        help='The kind for the name.',
+        action='store',
+        type=str
+    )
+
+    sp.set_defaults(func=mode_add)
+
+
 @subparser('mkname_tools')
 def parse_copy(spa: _SubParsersAction) -> None:
     """Parse the `copy` command for `mkname_tools`.

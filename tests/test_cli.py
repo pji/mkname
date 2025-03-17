@@ -133,6 +133,51 @@ class TestMkname:
         assert result == 'tomato\n'
 
 
+class TestMknameAdd:
+    def test_add(self, mocker, capsys, name, names, tmp_db):
+        """Given a database and information for a name,
+        `mkname_tools add` should add the name to the
+        given database.
+        """
+        cmd = [
+            'mkname_tool', 'add',
+            str(tmp_db),
+            '-n', name.name,
+            '-s', name.source,
+            '-c', name.culture,
+            '-d', str(name.date),
+            '-g', name.gender,
+            '-k', name.kind,
+        ]
+        exp_msg = c.MSGS['en']['add_success'].format(
+            name=name.name,
+            dst_path=tmp_db
+        )
+        assert tools_cli_test(mocker, capsys, cmd)
+        assert db_matches_names(tmp_db, [*names, name])
+
+    def test_cannot_write_to_default_db(
+        self, mocker, capsys, name, names, prot_db
+    ):
+        """When given the path to the default database,
+        `mkname_tools add` will return an error message
+        and not write to the default database.
+        """
+        cmd = [
+            'mkname_tool', 'add',
+            str(prot_db),
+            '-n', name.name,
+            '-s', name.source,
+            '-c', name.culture,
+            '-d', str(name.date),
+            '-g', name.gender,
+            '-k', name.kind,
+        ]
+        exp_msg = c.MSGS['en']['add_default_db'] + '\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(prot_db, names)
+
+
 class TestMknameToolsCopy:
     def test_copy_default(
         self, mocker, capsys, names, test_db, run_in_tmp
