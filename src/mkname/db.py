@@ -375,7 +375,11 @@ def create_empty_db(path: Path | str) -> None:
 
 # Update functions.
 @protects_connection
-def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
+def add_name_to_db(
+    con: sqlite3.Connection,
+    name: Name,
+    update: bool = False
+) -> None:
     """Add a name to the given database.
 
     .. warning:
@@ -387,26 +391,37 @@ def add_name_to_db(con: sqlite3.Connection, name: Name) -> None:
     q = (
         'INSERT INTO names '
         '(id, name, source, culture, date, gender, kind) '
-        'VALUES(:id, :name, :src, :culture, :date, :gender, :kind)'
+        'VALUES(:id, :name, :source, :culture, :date, :gender, :kind)'
     )
+
     try:
-        cur = con.execute(q, {
-            'id': name.id,
-            'name': name.name,
-            'src': name.source,
-            'culture': name.culture,
-            'date': name.date,
-            'gender': name.gender,
-            'kind': name.kind,
-        })
+        cur = con.execute(q, name.asdict())
         con.commit()
     except sqlite3.IntegrityError:
-        msg = MSGS['en']['id_collision'].format(id=name.id)
-        raise IDCollisionError(msg)
+        if not update:
+            msg = MSGS['en']['id_collision'].format(id=name.id)
+            raise IDCollisionError(msg)
+        else:
+            q = (
+                'UPDATE names '
+                'SET name = :name, '
+                'source = :source, '
+                'culture = :culture, '
+                'date = :date, '
+                'gender = :gender, '
+                'kind = :kind '
+                'WHERE id = :id'
+            )
+            cur = con.execute(q, name.asdict())
+            con.commit()
 
 
 @protects_connection
-def add_names_to_db(con: sqlite3.Connection, names: Sequence[Name]) -> None:
+def add_names_to_db(
+    con: sqlite3.Connection,
+    names: Sequence[Name],
+    update: bool = False
+) -> None:
     """Add multiple names to the database.
 
     .. warning:
@@ -416,4 +431,4 @@ def add_names_to_db(con: sqlite3.Connection, names: Sequence[Name]) -> None:
         the package is updated.
     """
     for name in names:
-        add_name_to_db(con, name)
+        add_name_to_db(con, name, update)

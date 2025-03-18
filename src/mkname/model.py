@@ -8,7 +8,7 @@ The data model for :mod:`mkname`.
 
 """
 from collections.abc import Callable, Sequence
-from dataclasses import astuple, dataclass
+from dataclasses import asdict, astuple, dataclass
 
 
 # Types.
@@ -141,6 +141,10 @@ class Name:
             gender=gender,
             kind=kind
         )
+
+    def asdict(self) -> dict[str, str | int]:
+        """Serializes the object to a :class:`dict`."""
+        return asdict(self)
 
     def astuple(self) -> tuple[int, str, str, str, int, str, str]:
         """Serializes the object to a :class:`tuple`."""

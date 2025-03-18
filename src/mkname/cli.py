@@ -225,7 +225,8 @@ def mode_import(args: Namespace) -> None:
             format=args.format,
             source=args.source,
             date=args.date,
-            kind=args.kind
+            kind=args.kind,
+            update=args.update
         )
         print(MSGS['en']['import_success'].format(
             src=args.input,
@@ -701,6 +702,11 @@ def parse_import(spa: _SubParsersAction) -> None:
         action='store',
         default='unknown',
         type=str
+    )
+    sp.add_argument(
+        '-u', '--update',
+        help='Update names that arleady exist in the database.',
+        action='store_true'
     )
     sp.set_defaults(func=mode_import)
 

@@ -7,6 +7,7 @@ Common functions for :mod:`mkname` tests.
 import csv
 import sqlite3
 from itertools import zip_longest
+from operator import itemgetter
 
 import mkname.model as m
 
@@ -40,7 +41,8 @@ def db_matches_names(path, names):
     query = 'SELECT * FROM names'
     con = sqlite3.Connection(path)
     qresult = con.execute(query)
-    rows = [m.Name(*row) for row in qresult]
+    ordered = sorted([row for row in qresult], key=itemgetter(0))
+    rows = [m.Name(*row) for row in ordered]
     for row, name in zip_longest(rows, names):
         try:
             assert row.astuple() == name.astuple()

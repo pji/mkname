@@ -18,9 +18,10 @@ __all__ = [
     'census_gov_surnames_path',
     'census_name_given_path',
     'census_name_given_names',
-    'csv_path',
+    'change_db',
     'conf_path',
     'conf_full_path',
+    'csv_path',
     'db_path',
     'empty_db',
     'name',
@@ -73,6 +74,16 @@ def census_name_given_names():
 @pt.fixture
 def census_name_given_path():
     return 'tests/data/census_name.csv'
+
+
+@pt.fixture
+def change_db(tmp_path):
+    """A temporary database to update."""
+    path = Path('tests/data/names_to_change.db')
+    cp_path = Path(tmp_path / 'names_to_change.db')
+    data = path.read_bytes()
+    cp_path.write_bytes(data)
+    return cp_path
 
 
 @pt.fixture

@@ -12,6 +12,8 @@ Welcome to mkname's documentation!
    
    self
    /api.rst
+   /model.rst
+   /customization.rst
    /tools.rst
    /requirements.rst
 

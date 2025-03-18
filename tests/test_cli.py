@@ -323,6 +323,25 @@ class TestMknameToolsImport:
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(empty_db, names)
 
+    def test_csv_to_existing_db_with_update(
+        self, mocker, capsys, csv_path, change_db, names,
+    ):
+        """When passed `-i` and the path to a CSV file, a `-o` and
+        the path to a name database, and `-u`, `mkname_tools import`
+        should import the contents of the CSV file into the database,
+        updating any existing records with IDs that collide with
+        values in the CSV file.
+        """
+        cmd = [
+            'mkname_tools', 'import',
+            '-i', str(csv_path),
+            '-o', str(change_db),
+            '-u'
+        ]
+        exp_msg = f'Imported {csv_path} to {change_db}.\n\n'
+        assert tools_cli_test(mocker, capsys, cmd) == exp_msg
+        assert db_matches_names(change_db, names)
+
     def test_csv_to_new_db(
         self, mocker, capsys, csv_path, names, tmp_path
     ):

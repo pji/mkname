@@ -297,7 +297,8 @@ def import_(
     format: str = 'csv',
     source: str = 'unknown',
     date: int = 1970,
-    kind: str = 'unknown'
+    kind: str = 'unknown',
+    update: bool = False
 ) -> None:
     """Import names from a file to a database.
 
@@ -322,6 +323,9 @@ def import_(
     :param kind: (Optional.) The kind of name in the imported data.
         Defaults to `unknown`. This is used only for formats that
         need it.
+    :param update: (Optional.) Whether to update records with
+        colliding IDs or throw an error. Defaults to False, which
+        throws the error.
     :returns: `None`.
     :rtype: NoneType
     """
@@ -343,6 +347,6 @@ def import_(
         db.create_empty_db(dst_path)
 
     i = db.get_max_id(dst_path)
-    if i:
+    if i and not update:
         names = reindex(names, offset=i + 1)
-    db.add_names_to_db(dst_path, names)
+    db.add_names_to_db(dst_path, names, update=update)

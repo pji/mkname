@@ -128,6 +128,18 @@ class TestImport_:
         t.import_(empty_db, csv_path)
         assert db_matches_names(empty_db, names)
 
+    def test_import_into_exisiting_with_changes(
+        self, csv_path, change_db, names
+    ):
+        """Given a path to an existing names database, a path to
+        an existing CSV file of name data, and the update option,
+        :func:`mkname.tools.import` should add the names in the CSV
+        to the database, updating any names with IDs that exist in
+        the database and CSV.
+        """
+        t.import_(change_db, csv_path, update=True)
+        assert db_matches_names(change_db, names)
+
     def test_import_into_nonexisting(self, csv_path, names, tmp_path):
         """Given a path to a nonexisting names database and a path to
         an existing CSV file of name data, :func:`mkname.tools.import`

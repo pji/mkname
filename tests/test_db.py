@@ -11,7 +11,8 @@ import pytest
 
 from mkname import db
 from mkname import model as m
-from tests.fixtures import db_path, empty_db, names, prot_db, test_db
+from tests.common import db_matches_names
+from tests.fixtures import *
 
 
 # Fixtures
@@ -322,3 +323,13 @@ class TestCreateActions:
         """
         with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
             db.add_names_to_db(None, names)
+
+    def test_add_names_to_db_with_updates(self, change_db, names):
+        """Given a sequence of names, a path to a names database,
+        and update `True`, :func:`mkname.db.add_names_to_db` should
+        add the names to the database and update any records with
+        IDs that conflict with the new names to the values of the
+        new name.
+        """
+        db.add_names_to_db(change_db, names, update=True)
+        assert db_matches_names(change_db, names)

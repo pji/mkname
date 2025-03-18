@@ -1,5 +1,3 @@
-.. _customization:
-
 #############
 Customization
 #############
@@ -31,7 +29,7 @@ its help at the command line::
     mkname_tools -h
 
 
-.. _copy_default_db
+.. _copy_default_db:
 
 Copying the Default Names Database
 ----------------------------------
@@ -47,7 +45,7 @@ You can copy the database to a specific path with the `-o` option::
     mkname_tools copy -o data/spam.db
 
 
-.. _create_empty_db
+.. _create_empty_db:
 
 Creating an Empty Database
 --------------------------
@@ -62,7 +60,7 @@ If you want to create the empty database in a specific location::
     mkname_tools new -o data/spam.db
 
 
-.. _add_name_to_db
+.. _add_name_to_db:
 
 Adding a Name to a Names Database
 ---------------------------------
@@ -73,4 +71,36 @@ manually::
     mkname_tools add data/spam.db --name Graham
     --source https://montypython.com --culture MontyPython
     --date 1941 --gender python --kind given
+
+The difference options needed when adding a new name to a database
+correspond to the fields for a record in the names database. See
+the The Name fields: :ref:`name_fields`
+
+
+.. _importing_names:
+
+Importing Serialized Names Data
+-------------------------------
+The easiest way of customizing a names database is:
+
+*   Export an existing names database to a CSV file.
+*   Use the spreadsheet software of your choice to add names to
+    the CSV file.
+*   Import the CSV file into a new names database file.
+
+.. warning:
+    :mod:`mkname` tries to prevent changes to the default
+    database to prevent unexpected problems when you update
+    the package. While it's possible to bypass those protections,
+    I highly recommend that you don't. Instead, create a copy
+    of the names database to modify and use that modified copy
+    for name generation.
+
+To export a copy of the default database to a CSV file::
+
+    mkname_tools export -o data/spam.csv
+
+To import it into a new names database once changes have been made::
+
+    mkname_tools import -f csv -i data/spam.csv -o data/spam.db --update
 
