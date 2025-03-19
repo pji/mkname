@@ -7,6 +7,7 @@ Unit tests for :mod:`mkname.init`.
 import configparser
 import filecmp
 from pathlib import Path
+from sys import version_info
 
 import pytest
 
@@ -44,23 +45,6 @@ def given_config():
 
 
 @pytest.fixture
-def local_config(conf_full_path, run_in_tmp):
-    """Moves a config file into the current working directory,
-    yields the contents of that config, then cleans up.
-    """
-    # Create the test config in the CWD.
-    text = Path(conf_full_path).read_text()
-    temp_conf = run_in_tmp / 'mkname.conf'
-    temp_conf.write_text(text)
-
-    # Send the contents of the config to the test.
-    config = configparser.ConfigParser()
-    config.read(temp_conf)
-    keys = ['mkname', 'mkname_files']
-    yield {k: dict(config[k]) for k in config if k in keys}
-
-
-@pytest.fixture
 def partial_local_config(conf_path, run_in_tmp):
     """Moves a partial config file into the current working directory,
     yields the contents of that config, then cleans up.
@@ -85,58 +69,61 @@ class TestGetConfig:
         """
         assert init.get_config() == default_config
 
-    def test_config_in_setup(self, given_config, setup_conf):
+    def test_config_in_mkname_toml(
+        self, conf_full, default_config, mkname_toml
+    ):
+        """If there is configuration in the `mkname.toml` file,
+        load the configuration from the `mkname.toml` file.`.
+        """
+        if version_info < (3, 11):
+            assert init.get_config() == default_config
+        else:
+            assert init.get_config() == conf_full
+
+    def test_config_in_pyproject(
+        self, conf_full, default_config, pyproject_toml
+    ):
+        """If there is configuration in the `pyproject.toml` file,
+        load the configuration from the `pyproject.toml` file.`.
+        """
+        if version_info < (3, 11):
+            assert init.get_config() == default_config
+        else:
+            assert init.get_config() == conf_full
+
+    def test_config_in_setup(
+        self, conf_full, setup_conf
+    ):
         """If there is configuration in the `setup.cfg` file, load the
         configuration from the default configuration file stored in
         `mkname/mkname/data`.
         """
-        assert init.get_config() == given_config
+        assert init.get_config() == conf_full
 
-    def test_get_config_with_given_path(self, given_config):
+    def test_get_config_with_given_path(self, conf_full, test_conf_file):
         """If given a path to a configuration file,
         :func:`mkname.init.get_config` should load the
         configuration from that file.
         """
-        path = Path('tests/data/test_load_config.conf')
-        assert init.get_config(path) == given_config
+        path = Path(test_conf_file)
+        assert init.get_config(path) == conf_full
 
-    def test_get_config_with_given_path_does_not_exist(
-        self, default_config, tmp_path
-    ):
-        """If given a path to a configuration file,
-        :func:`mkname.init.get_config` should load the
-        configuration from that file. If that file does
-        not exist, that file should be created and
-        populated with the default config.
+    def test_get_config_with_given_dir(self, conf_full, test_conf_file):
+        """If given a path to a directory with a configuration
+        file, :func:`mkname.init.get_config` should load the
+        configuration from that directory.
         """
-        path = tmp_path / 'mkname.ini'
-        assert not path.exists()
-        assert init.get_config(path) == default_config
-        assert path.exists()
-        assert init.get_config(path) == default_config
+        path = Path(test_conf_file).parent
+        assert init.get_config(path) == conf_full
 
-    def test_get_config_with_given_path_is_config_directory(
-        self, given_config, config_directory
-    ):
-        """If given a path to a directory with a configuration file,
-        :func:`mkname.init.get_config` should read the configuration
-        from the configuration file.
+    def test_get_config_with_given_path_does_not_exist(self, tmp_path):
+        """If given a path to a configuration file that
+        doesn't exist', :func:`mkname.init.get_config`
+        should raise a :class:`mkname.init.ConfigFileDoesNotExistError`.
         """
-        assert init.get_config(config_directory) == given_config
-
-    def test_get_config_with_given_path_is_empty_directory(
-        self, default_config, tmp_path
-    ):
-        """If given a path to a directory without a configuration file,
-        :func:`mkname.init.get_config` should create a file with the
-        default local configuration file name in that directory with
-        the default configuration values.
-        """
-        assert init.get_config(tmp_path) == default_config
-
         path = tmp_path / 'mkname.cfg'
-        assert path.exists()
-        assert init.get_config(path) == default_config
+        with pytest.raises(init.ConfigFileDoesNotExistError):
+            init.get_config(path)
 
     def test_get_config_with_given_str(self, given_config):
         """If given a str with the path to a configuration file,
@@ -146,24 +133,22 @@ class TestGetConfig:
         path = 'tests/data/test_load_config.conf'
         assert init.get_config(path) == given_config
 
-    def test_get_config_with_local(self, local_config):
+    def test_get_config_with_local(self, mkname_cfg, conf_full):
         """If there is a configuration file in the current working directory,
         :func:`mkname.init.get_config` should load the configuration from
         that file.
         """
-        assert init.get_config() == local_config
+        assert init.get_config() == conf_full
 
     def test_get_config_with_partial_local(
-        self, partial_local_config, default_config
+        self, mkname_cfg_partial, conf_partial
     ):
         """If there is a configuration file in the current working directory,
         :func:`mkname.init.get_config` should load the configuration from
         that file. If the config doesn't have values for all possible keys,
         the missing keys should have the default values.
         """
-        config = default_config
-        config.update(partial_local_config)
-        assert init.get_config() == config
+        assert init.get_config() == conf_partial
 
 
 # Test init_db.

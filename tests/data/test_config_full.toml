@@ -1,0 +1,27 @@
+[baked_beans]
+spam = 0
+eggs = 1
+
+
+[DEFAULT]
+db_path = "spam.db"
+
+
+[mkname]
+consonants = "bcd"
+db_path = "tests/data/names.db"
+punctuation = "'-"
+scifi_letters = "eggs"
+vowels = "aei"
+
+
+[mkname_files]
+config_file = "ham.cfg"
+db_path = "spam.db"
+default_db = "toast.db"
+local_config = "tomato.cfg"
+local_db = "pancakes.db"
+
+
+[bacon]
+sausage = "ham"

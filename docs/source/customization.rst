@@ -153,7 +153,18 @@ config file or not.
 Configuration is loaded in the following order:
 
 *   The default configuration,
-*   A `setuo.cfg` file in the current working directory,
+*   A `setup.cfg` file in the current working directory,
+*   A `pyproject.toml` file in the current working directory (Python >= 3.11),
 *   A `mkname.cfg` file in the current working directory,
-*   A config file explicitly passed to :mod:`mkname`.
+*   A `mkname.toml` file in the current working directory (Python >= 3.11),
+*   If a config file is explicitly passed to :mod:`mkname`, that file,
+*   If a directory is explicitly passed to :mod:`mkname`, it will
+    look for the following in that directory:
+    *   `setup.cfg`,
+    *   `pyproject.toml` (Python >= 3.11),
+    *   `mkname.cfg`,
+    *   `mkname.toml` (Python >= 3.11).
+
+Since the values from the files are loaded on top of each other, files
+loaded later will override values in files loaded earlier.
 

@@ -20,18 +20,25 @@ __all__ = [
     'census_name_given_path',
     'census_name_given_names',
     'change_db',
+    'conf_full',
+    'conf_partial',
     'conf_path',
     'conf_full_path',
     'csv_path',
     'db_path',
     'empty_db',
+    'mkname_cfg',
+    'mkname_cfg_partial',
+    'mkname_toml',
     'name',
     'names',
     'run_in_tmp',
     'run_in_tmp_with_db',
     'prot_db',
+    'pyproject_toml',
     'setup_conf',
     'test_conf',
+    'test_conf_file',
     'test_db',
     'tmp_db',
     'tmp_empty_db',
@@ -103,6 +110,41 @@ def conf_full_path():
 
 
 @pt.fixture
+def conf_full():
+    """Config values for testing."""
+    return {
+        'mkname': {
+            'consonants': 'bcd',
+            "db_path": "tests/data/names.db",
+            "punctuation": "'-",
+            "scifi_letters": "eggs",
+            "vowels": "aei",
+        },
+        'mkname_files': {
+            "config_file": "ham.cfg",
+            'db_path': "spam.db",
+            "default_db": "toast.db",
+            "local_config": "tomato.cfg",
+            "local_db": "pancakes.db",
+        },
+    }
+
+
+@pt.fixture
+def conf_partial():
+    """Config values for testing partial config files."""
+    return {
+        'mkname': {
+            'consonants': 'bcdfghjklmnpqrstvwxz',
+            "db_path": 'spam.db',
+            "punctuation": "'-.?!/:@+|•",
+            "scifi_letters": "kqxz",
+            "vowels": "aeiouy",
+        },
+    }
+
+
+@pt.fixture
 def csv_path():
     return 'tests/data/serialized_names.csv'
 
@@ -133,6 +175,40 @@ def empty_db(tmp_path):
     con.close
 
     yield db_path
+
+
+@pt.fixture
+def mkname_cfg(tmp_path):
+    """Run the test from a temporary directory with config in a
+    `mkname.cfg` file.
+    """
+    home = Path.cwd()
+
+    cp_path = tmp_path / 'mkname.cfg'
+    src_path = Path('tests/data/test_load_config.conf')
+    text = src_path.read_text()
+    cp_path.write_text(text)
+
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(home)
+
+
+@pt.fixture
+def mkname_cfg_partial(tmp_path):
+    """Run the test from a temporary directory with partial config in a
+    `mkname.cfg` file.
+    """
+    home = Path.cwd()
+
+    cp_path = tmp_path / 'mkname.cfg'
+    src_path = Path('tests/data/test_get_config_fill_missing_keys.cfg')
+    text = src_path.read_text()
+    cp_path.write_text(text)
+
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(home)
 
 
 @pt.fixture
@@ -203,6 +279,40 @@ def prot_db(mocker, db_path, tmp_path):
 
 
 @pt.fixture
+def mkname_toml(tmp_path):
+    """Run the test from a temporary directory with config in a
+    `mkname.toml` file.
+    """
+    home = Path.cwd()
+
+    cp_path = tmp_path / 'mkname.toml'
+    src_path = Path('tests/data/test_config_full.toml')
+    text = src_path.read_text()
+    cp_path.write_text(text)
+
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(home)
+
+
+@pt.fixture
+def pyproject_toml(tmp_path):
+    """Run the test from a temporary directory with config in a
+    `pyproject.toml` file.
+    """
+    home = Path.cwd()
+
+    cp_path = tmp_path / 'pyproject.toml'
+    src_path = Path('tests/data/test_config_full.toml')
+    text = src_path.read_text()
+    cp_path.write_text(text)
+
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(home)
+
+
+@pt.fixture
 def run_in_tmp(tmp_path):
     """Run the test while the current working directory is in
     a temp director.
@@ -257,6 +367,14 @@ def test_conf(mocker, conf_full_path):
         if k in sections
     })
     yield conf_path
+
+
+@pt.fixture
+def test_conf_file(conf_full_path, tmp_path):
+    cp_path = tmp_path / 'mkname.cfg'
+    text = Path(conf_full_path).read_text()
+    cp_path.write_text(text)
+    return cp_path
 
 
 @pt.fixture

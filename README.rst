@@ -48,6 +48,7 @@ The following changes were made in v0.2.4:
 *   Added ability to duplicate the names database for customization.
 *   Added tools for adding names to a names database.
 *   Added `mkname_tools` script for administering the names database.
+*   More documentation!
 
 
 How do I run the tests?

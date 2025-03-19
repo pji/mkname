@@ -1,8 +1,164 @@
 """
-init
-~~~~
+.. config:
 
-Basic initialization functions for :mod:`mkname`.
+#############
+Configuration
+#############
+
+Configuration of :mod:`mkname` is handled by configuration files.
+Two formats are supported:
+
+*   INI-like syntax supported by :mod:`configparser`,
+*   `TOML`_ (requires Python 3.11 or higher).
+
+.. _TOML: https://toml.io
+
+The following describes the configuration file and how :mod:`mkname`
+loads the configuration.
+
+
+.. _config_files:
+
+Configuration File Structure
+============================
+As mentioned above, configuration files need to be in INI-like format
+or, if you are running Python 3.11 or higher, TOML format. The two
+formats are very similar, so the examples will be in TOML format.
+Just remember that if you use INI-like format instead, the string
+values are not quoted in INI-like format.
+
+.. note:
+    Why doesn't :mod:`mkname` support TOML under Python 3.10?
+    The standard library module I'm using to parse TOML,
+    :mod:`tomllib` was only added to Python in 3.11. I could
+    probably work around this for Python 3.10, but it seems
+    like it would be more work than it's worth.
+
+An example of the contents of a :mod:`mkname` configuration file::
+
+    [mkname]
+    consonants = "bcdfghjklmnpqrstvwxz"
+    db_path =
+    punctuation = "'-.?!/:@+|•"
+    scifi_letters = "kqxz"
+    vowels = "aeiouy"
+
+The following is true of a :mod:`mkname` configuration file:
+
+*   It must have a `[mkname]` section.
+*   It may have any of the following keys:
+    *   :ref:`consonants`,
+    *   :ref:`db_path`,
+    *   :ref:`punctuation`,
+    *   :ref:`scifi_letters`,
+    *   :ref:`vowels`.
+*   No keys are required.
+
+The keys are defined as follows.
+
+
+consonants
+----------
+This defines the characters used as "consonants" by :mod:`mkname`. This
+setting is primarily used to split names into syllables when generating
+new names from multiple names from the database. The default value is
+the standard list of English consonants, minus the letter `y`.
+
+
+db_path
+-------
+This sets the names database used by :mod:`mkname`. It can be used to
+have :mod:`mkname` use a custom names database rather than the default
+names database. The default value is an empty string, which causes
+:mod:`mkname` to go to the next step in the database search order.
+
+
+punctuations
+------------
+This defines the characters used as punctuation marks by :mod:`mkname`.
+This is primarily intended for use by :func:`mkname.mod.add_punctuation`
+when modifying names to add punctuation marks. The default values are
+listed in the example `mkname` section above.
+
+
+scifi_letters
+-------------
+The defines the characters used as "scifi letters" by :mod:`mkname`.
+This is primarily intended for use by :mod:`mkname.mod.make_scifi`
+when modifying names to make them seem more like names found in
+pulp science fiction. The default values are listed in the example
+`mkname` section above.
+
+
+vowels
+------
+This defines the characters used as "vowels" by :mod:`mkname`. This
+setting is primarily used to split names into syllables when generating
+new names from multiple names from the database. The default value is
+the list of English vowels, minus the letter `w`.
+
+.. note:
+    Yes, `w` is sometimes a vowel in English. It occurs in the Welsh
+    loan words `cwm` and `crwth`. Why bring it up when it's only a
+    few Welsh loan words and :mod:`mkname` doesn't define it as a
+    vowel? Well, because it's the internet and someone would eventually
+    complain if I didn't. Also, I just think it's a cool fact.
+
+
+.. config_loc:
+
+Configuration File Location
+===========================
+The following are the files where :mod:`mkname` looks for
+configuration files.
+
+*   In a dedicated `mkname.toml` or `mkname.cfg` file.
+*   Within a `pyproject.toml` or `setup.cfg` file.
+
+:mod:`mkname` will always look for these files in the current
+working directory. If the command line tool or API call you
+are using allows you to supply a configuration file path,
+it will look for files of those names in that path if you
+give it a path to a directory rather than a file.
+
+
+.. config_load:
+
+Loading Configuration
+=====================
+A configuration file doesn't need to have all keys for :mod:`mkname`
+defined. To build the configuration, :mod:`mkname` will look for a
+series of files, loading the configuration from each until it arrives
+at the final configuration. Since the default configuration file
+contains every key, this means that every key will eventually be
+set regardless of whether you define it in a particular custom
+config file or not.
+
+Configuration is loaded in the following order:
+
+*   The default configuration,
+*   A `setup.cfg` file in the current working directory,
+*   A `pyproject.toml` file in the current working directory (Python >= 3.11),
+*   A `mkname.cfg` file in the current working directory,
+*   A `mkname.toml` file in the current working directory (Python >= 3.11),
+*   If a config file is explicitly passed to :mod:`mkname`, that file,
+*   If a directory is explicitly passed to :mod:`mkname`, it will
+    look for the following in that directory:
+    *   `setup.cfg`,
+    *   `pyproject.toml` (Python >= 3.11),
+    *   `mkname.cfg`,
+    *   `mkname.toml` (Python >= 3.11).
+
+Since the values from the files are loaded on top of each other, files
+loaded later will override values in files loaded earlier.
+
+
+.. config_api:
+
+Configuration API
+=================
+
+The following are the basic initialization functions for :mod:`mkname`.
 
 .. autofunction:: mkname.get_config
 .. autofunction:: mkname.get_db
@@ -11,7 +167,12 @@ Basic initialization functions for :mod:`mkname`.
 from configparser import ConfigParser
 from importlib.resources import files
 from pathlib import Path
+from sys import version_info
 from typing import Union
+
+
+if version_info >= (3, 11):
+    import tomllib
 
 import mkname.data
 from mkname.model import Config, Section
@@ -20,16 +181,58 @@ from mkname.model import Config, Section
 # Common data.
 DB_NAME = 'names.db'
 DEFAULTS_CONF_NAME = 'defaults.cfg'
-EXTS = ('cfg', 'conf', 'ini',)
+CONF_NAMES = (
+    ('setup.cfg', (3, 10)),
+    ('pyproject.toml', (3, 11)),
+    ('mkname.cfg', (3, 10)),
+    ('mkname.toml', (3, 11)),
+)
+
+
+# Exceptions.
+class ConfigFileDoesNotExistError(IOError):
+    """The given configuration file does not exist."""
+
+class UnsupportedPythonVersionError(RuntimeError):
+    """The Python version doesn't support this action."""
 
 
 # Configuration functions.
+def build_search_paths(path: Path | None) -> list[Path]:
+    """Build the list of paths where config files might be.
+
+    :param path: Any path given by the user for a config file.
+    :returns: A :class:`list` object.
+    :rtype: list
+    """
+    # The core configuration files.
+    search_paths = [
+        Path.cwd() / filename for filename, version in CONF_NAMES
+        if version_info >= version
+    ]
+
+    # If the given path is a file, add that file to the search paths.
+    if path and path.is_file():
+        search_paths.append(path)
+
+    # If the given path is a directory, search for each of the
+    # filenames for the core configuration files in that directory.
+    elif path and path.is_dir():
+        search_paths.extend(
+            path / filename for filename, version in CONF_NAMES
+            if version_info >= version
+        )
+
+    # Return the search paths.
+    return search_paths
+
+
 def get_config(path: Path | str | None = None) -> Config:
     """Get the configuration.
 
     :param location: (Optional.) The path to the configuration file.
-        If no path is passed, it will default to using the default
-        configuration data from mkname.constants.
+        If no path is passed or the passed path doesn't exist, it will
+        fall back to a series of other files. See "Loading Configuration".
     :return: A :class:`dict` object.
     :rtype: dict
 
@@ -39,71 +242,27 @@ def get_config(path: Path | str | None = None) -> Config:
         >>> get_config(loc)                 # doctest: +ELLIPSIS
         {'mkname': {'consonants': 'bcd', 'db_path':...
 
-    Configuration File Format
-    =========================
-    The file structure of the configuration file is the Windows
-    INI-like structure used by Python's configparser module. The
-    configuration should have two sections: `mkname` and `mkname_files`.
-
-    mkname
-    ------
-    The `mkname` section can contain the following keys:
-
-    *   `consonants`: Characters you define as consonants.
-    *   `db_path`: The path to the names database.
-    *   `punctuation`: Characters you define as punctuation.
-    *   `scifi_letters`: A string of characters you define as being
-        characteristic of science fiction names.
-    *   `vowels`: Characters you define as vowels.
-
-    mkname_files
-    ------------
-    The `mkname_files` section can contain the following keys:
-
-    *   `config_file`: Name of the default configuration file.
-    *   `default_db`: Name of the default database file.
-    *   `local_config`: Default name when creating local configuration.
-    *   `local_db`: Default name when creating a local database file.
-
-    Example::
-
-        [mkname]
-        consonants = bcdfghjklmnpqrstvwxz
-        db_path = mkname/data/names.db
-        punctuation = '-
-        scifi_letters: kqxz
-        vowels = aeiou
-
-        [mkname_files]
-        config_file = defaults.cfg
-        default_db = names.db
-        local_config = mkname.cfg
-        local_db = names.db
     """
+    # Ensure any passed config file exists.
+    path = Path(path) if path else None
+    if path and not path.exists():
+        msg = f'File {path} does not exist.'
+        raise ConfigFileDoesNotExistError(msg)
+
     # Start the config with the default values.
     config = get_default_config()
 
-    # If there is a local setup.cfg file, override the default
-    # config with config from setup.cfg.
-    setup_path = Path.cwd() / 'setup.cfg'
-    if setup_path.exists():
-        new = read_config_file(setup_path)
-        config.update(new)
-
-    # If there is a local config file, override the default config
-    # with the config from the local file.
-    cwd = Path.cwd()
-    for ext in EXTS:
-        for local_path in cwd.glob(f'mkname.{ext}'):
-            new = read_config_file(local_path)
-            config.update(new)
-
-    # If there is a given configuration file, override any found
-    # config with the values from the given file.
-    if path:
-        given = Path(path)
-        new = read_config_file(given)
-        config.update(new)
+    # Search through possible config files and update the config.
+    search_paths = build_search_paths(path)
+    for search_path in search_paths:
+        if search_path and search_path.exists():
+            if search_path.suffix == '.toml':
+                new = read_toml(search_path)
+            else:
+                new = read_config(search_path)
+            for key in new:
+                config.setdefault(key, dict())
+                config[key].update(new[key])
 
     # Return the loaded configuration.
     return config
@@ -132,48 +291,20 @@ def read_config(path: Path) -> Config:
     return {k: dict(parser[k]) for k in parser if k in sections}
 
 
-def read_config_dir(path: Path, config: Union[dict, None] = None) -> Config:
-    """Read an "INI" formatted configuration files from a directory.
+def read_toml(path: Path) -> Config:
+    """Read the TOML file at the given path.
 
-    :param path: The path to the configuration directory.
-    :config: Default configuration values.
-    :return: The loaded configuration as a :class:`dict`.
+    :param path: The path to the TOML file.
+    :return: The configuration as a :class:`dict`.
     :rtype: dict
     """
-    if not config:
-        config = {}
-    for ext in EXTS:
-        for file_path in path.glob(f'*.{ext}'):
-            new = read_config_file(file_path)
-            config.update(new)
-    return config
-
-
-def read_config_file(path: Path) -> Config:
-    """Read an "INI" formatted configuration file.
-
-    :param path: The path to the configuration file.
-    :return: The contents of the configuration file as a :class:`dict`.
-    :rtype: dict
-    """
-    # If the file doesn't exist, create it and add the default
-    # config.
-    if not path.exists():
-        config = get_default_config()
-        write_config_file(path, config)
-        return config
-
-    # If the given path was a directory, either read the config files
-    # in the directory or add a new config file there.
-    elif path.is_dir():
-        config = read_config_dir(path)
-        if not config:
-            file_path = path / 'mkname.cfg'
-            return read_config_file(file_path)
-        return config
-
-    # Otherwise, read in the config file and return it as a dict.
-    return read_config(path)
+    if version_info < (3, 11):
+        msg = f'Python {version_info} does not support TOML.'
+        raise UnsupportedPythonVersionError(msg)
+    with open(path, 'rb') as fh:
+        data = tomllib.load(fh)
+    sections = ['mkname', 'mkname_files']
+    return {k: dict(data[k]) for k in data if k in sections}
 
 
 def write_config_file(path: Path, config: Config) -> Config:
