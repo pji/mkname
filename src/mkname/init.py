@@ -57,6 +57,8 @@ The following is true of a :mod:`mkname` configuration file:
 The keys are defined as follows.
 
 
+.. _consonants:
+
 consonants
 ----------
 This defines the characters used as "consonants" by :mod:`mkname`. This
@@ -64,6 +66,8 @@ setting is primarily used to split names into syllables when generating
 new names from multiple names from the database. The default value is
 the standard list of English consonants, minus the letter `y`.
 
+
+.. _db_path:
 
 db_path
 -------
@@ -73,13 +77,17 @@ names database. The default value is an empty string, which causes
 :mod:`mkname` to go to the next step in the database search order.
 
 
-punctuations
-------------
+.. _punctuation:
+
+punctuation
+-----------
 This defines the characters used as punctuation marks by :mod:`mkname`.
 This is primarily intended for use by :func:`mkname.mod.add_punctuation`
 when modifying names to add punctuation marks. The default values are
 listed in the example `mkname` section above.
 
+
+.. _scifi_letters:
 
 scifi_letters
 -------------
@@ -89,6 +97,8 @@ when modifying names to make them seem more like names found in
 pulp science fiction. The default values are listed in the example
 `mkname` section above.
 
+
+.. _vowels:
 
 vowels
 ------
@@ -192,6 +202,7 @@ CONF_NAMES = (
 # Exceptions.
 class ConfigFileDoesNotExistError(IOError):
     """The given configuration file does not exist."""
+
 
 class UnsupportedPythonVersionError(RuntimeError):
     """The Python version doesn't support this action."""

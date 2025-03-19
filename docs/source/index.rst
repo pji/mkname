@@ -13,7 +13,7 @@ Welcome to mkname's documentation!
    self
    /api.rst
    /model.rst
-   /customization.rst
+   /config.rst
    /tools.rst
    /requirements.rst
 

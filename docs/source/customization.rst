@@ -105,7 +105,7 @@ To import it into a new names database once changes have been made::
     mkname_tools import -f csv -i data/spam.csv -o data/spam.db --update
 
 
-.. _db_search
+.. _db_search:
 
 Database Search Order
 ---------------------

@@ -49,4 +49,6 @@ Initialization
 The following functions are used to configure :mod:`mkname`:
 
 .. autofunction:: mkname.get_config
+    :no-index:
 .. autofunction:: mkname.get_db
+    :no-index:
