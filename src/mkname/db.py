@@ -47,8 +47,8 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Union
 
+from mkname import init
 from mkname.constants import MSGS
-from mkname.init import get_db
 from mkname.model import Name
 
 
@@ -142,7 +142,7 @@ def makes_connection(fn: Callable) -> Callable:
         elif isinstance(given_con, sqlite3.Connection):
             con = given_con
         else:
-            default_path = get_db()
+            default_path = init.get_db()
             con = connect_db(default_path)
         result = fn(con, *args, **kwargs)
         if isinstance(given_con, (str, Path)):
@@ -339,7 +339,7 @@ def duplicate_db(dst_path: Path | str) -> None:
     dst_con = sqlite3.Connection(dst_path)
 
     # Create the connection to the original names DB.
-    src_path = get_db()
+    src_path = init.get_default_db()
     src_con = connect_db(src_path)
 
     # Copy the names DB into the new DB.

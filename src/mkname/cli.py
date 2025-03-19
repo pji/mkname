@@ -205,10 +205,12 @@ def mode_export(args: Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    db_path = get_db_from_invoation(args)
-    export(dst_path=args.output, src_path=db_path)
-    print(MSGS['en']['export_success'].format(path=args.output))
-    print()
+    lines = []
+    src_path = args.input if args.input else None
+    cfg_path = args.config if args.config else None
+    export(dst_path=args.output, src_path=src_path, cfg_path=cfg_path)
+    lines.append(MSGS['en']['export_success'].format(path=args.output))
+    write_output(lines)
 
 
 def mode_import(args: Namespace) -> None:
@@ -244,7 +246,9 @@ def mode_list(args: Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    db_path = get_db_from_invoation(args, args.db)
+    db_path = args.db if args.db else None
+    cfg_path = args.config if args.config else None
+    db_path = get_db(db_path, conf_path=cfg_path)
 
     if args.list_cultures:
         lines = list_cultures(db_path)
@@ -355,25 +359,6 @@ def write_output(lines: Sequence[str] | str) -> None:
         print(line)
 
 
-# Utilities for configuring from invocation.
-def get_db_from_invoation(args: Namespace, path: str | Path = '') -> Path:
-    """Get the database from the options used when invoking the script."""
-    config = load_config(args)
-    return load_db_from_config(config, path)
-
-
-def load_config(args: Namespace) -> Section:
-    """Get the config from a config file."""
-    config_file = args.config if args.config else ''
-    return get_config(config_file)['mkname']
-
-
-def load_db_from_config(config: Section, path: str | Path = '') -> Path:
-    """Get the database based on configuration and invocation."""
-    db_path = path if path else config['db_path']
-    return Path(get_db(db_path))
-
-
 # Command parsing.
 def parse_cli() -> None:
     """Response to commands passed through the CLI.
@@ -466,6 +451,12 @@ def parse_cli() -> None:
         type=str
     )
     g_config.add_argument(
+        '--db', '-d',
+        help='Use the given names database.',
+        action='store',
+        type=str
+    )
+    g_config.add_argument(
         '--num_names', '-n',
         help='The number of names to create.',
         action='store',
@@ -477,8 +468,10 @@ def parse_cli() -> None:
     args = p.parse_args()
 
     # Set up the configuration.
-    config = load_config(args)
-    db_loc = load_db_from_config(config)
+    src_path = args.db if args.db else None
+    cfg_path = args.config if args.config else None
+    config = get_config(cfg_path)['mkname']
+    db_loc = get_db(src_path, conf_path=cfg_path)
 
     # Get names for generation.
     if args.first_name:
@@ -637,6 +630,12 @@ def parse_export(spa: _SubParsersAction) -> None:
     sp = spa.add_parser(
         'export',
         description='Export name data to a CSV file.'
+    )
+    sp.add_argument(
+        '-i', '--input',
+        help='The path to export the data from.',
+        action='store',
+        type=str
     )
     sp.add_argument(
         '-o', '--output',

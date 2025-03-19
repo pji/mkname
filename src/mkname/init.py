@@ -18,11 +18,13 @@ from mkname.model import Config, Section
 
 
 # Common data.
+DB_NAME = 'names.db'
+DEFAULTS_CONF_NAME = 'defaults.cfg'
 EXTS = ('cfg', 'conf', 'ini',)
 
 
 # Configuration functions.
-def get_config(path: Union[Path, str] = '') -> Config:
+def get_config(path: Path | str | None = None) -> Config:
     """Get the configuration.
 
     :param location: (Optional.) The path to the configuration file.
@@ -81,6 +83,13 @@ def get_config(path: Union[Path, str] = '') -> Config:
     # Start the config with the default values.
     config = get_default_config()
 
+    # If there is a local setup.cfg file, override the default
+    # config with config from setup.cfg.
+    setup_path = Path.cwd() / 'setup.cfg'
+    if setup_path.exists():
+        new = read_config_file(setup_path)
+        config.update(new)
+
     # If there is a local config file, override the default config
     # with the config from the local file.
     cwd = Path.cwd()
@@ -106,7 +115,7 @@ def get_default_config() -> Config:
     :return: The default configuration as a :class:`dict`.
     :rtype: dict
     """
-    default_path = get_default_path() / 'defaults.cfg'
+    default_path = get_default_path() / DEFAULTS_CONF_NAME
     return read_config(default_path)
 
 
@@ -183,7 +192,10 @@ def write_config_file(path: Path, config: Config) -> Config:
 
 
 # Database functions.
-def get_db(path: Union[Path, str] = '') -> Path:
+def get_db(
+    path: Path | str | None = None,
+    conf_path: Path | str | None = None
+) -> Path:
     """Get the path to the names database.
 
     :param path: The path of the names database.
@@ -210,18 +222,42 @@ def get_db(path: Union[Path, str] = '') -> Path:
     *   `kind`: A tag for how the name is used, such as a given
         name or a surname.
     """
-    # By default use the default database.
-    if not path:
+    # Get the paths for the fall back databases.
+    local_db = Path.cwd() / DB_NAME
+    config = get_config(conf_path)
+    config_db: Path | None = None
+    if (
+        config
+        and 'mkname' in config
+        and 'db_path' in config['mkname']
+        and config['mkname']['db_path']
+    ):
+        config_db = Path(config['mkname']['db_path'])
+    default_db = get_default_db()
+
+    # If no path was given and there is a local names database,
+    # use the local names database.
+    if not path and local_db.exists():
+        path = local_db
+
+    # If no path was given and there is a configured database,
+    # fall back to the configured database.
+    elif not path and config_db and config_db.exists():
+        path = config_db
+
+    # If no path was given and there is no local database, fall back
+    # to the default db.
+    elif not path:
         path = get_default_db()
+
+    # If the path is a directory, return the database in the directory.
     path = Path(path)
+    if path.is_dir():
+        path = get_db_dir(path)
 
     # If the database doesn't exist, create it.
     if not path.exists():
         path = write_db_file(path)
-
-    # If the path is a directory, return the database in the directory.
-    if path.is_dir():
-        path = get_db_dir(path)
 
     # Return the path to the database.
     return path
@@ -236,7 +272,7 @@ def get_db_dir(path: Path) -> Path:
         :class:`pathlib.Path`.
     :rtype: pathlib.Path
     """
-    path = path / 'names.db'
+    path = path / DB_NAME
     return get_db(path)
 
 
@@ -247,7 +283,7 @@ def get_default_db() -> Path:
         :class:`pathlib.Path`.
     :rtype: pathlib.Path
     """
-    return get_default_path() / 'names.db'
+    return get_default_path() / DB_NAME
 
 
 def write_db_file(path: Path) -> Path:

@@ -5,8 +5,8 @@ Customization
 The `mkname` package is designed to allow you to customize the names
 it generates. This is done in two main ways:
 
-*   Customizing the `names.db` database,
-*   Customizing the script configuration.
+*   Customizing the names database,
+*   Customizing the configuration.
 
 
 .. _db_customization:
@@ -103,4 +103,57 @@ To export a copy of the default database to a CSV file::
 To import it into a new names database once changes have been made::
 
     mkname_tools import -f csv -i data/spam.csv -o data/spam.db --update
+
+
+.. _db_search
+
+Database Search Order
+---------------------
+When selecting a names database to use at runtime, :mod:`mkname`
+should search for a database in the following order:
+
+1.  A path given explicitly to :mod:`mkname`.
+2.  A path set in the :mod:`mkname` configuration.
+3.  A file named `names.db` in the current working directory.
+4.  The default names database.
+
+This means there are several different ways to use a customized
+database when using :mod:`mkname` to generate names:
+
+*   Place a custom names database in the current working directory.
+*   Provide a configuration file that points to a custom names database.
+*   Provide the path to the custom names database to :mod:`mkname`
+    when generating the name. How you do this will vary depending on
+    exactly what you are doing.
+
+
+.. _cfg_customization:
+
+Customizing the Configuration
+=============================
+Several functions of :mod:`mkname` can be configured using a configuration
+file. There is a default configuration supplied with the package, but I
+don't recommend modifying that file. Doing so may lead to unexpected
+issues when the package is updated. Instead, I recommend creating a
+custom configuration file.
+
+
+.. _cfg_load:
+
+Loading Configuration
+---------------------
+A configuration file doesn't need to have all keys for :mod:`mkname`
+defined. To build the configuration, :mod:`mkname` will look for a
+series of files, loading the configuration from each until it arrives
+at the final configuration. Since the default configuration file
+contains every key, this means that every key will eventually be
+set regardless of whether you define it in a particular custom
+config file or not.
+
+Configuration is loaded in the following order:
+
+*   The default configuration,
+*   A `setuo.cfg` file in the current working directory,
+*   A `mkname.cfg` file in the current working directory,
+*   A config file explicitly passed to :mod:`mkname`.
 

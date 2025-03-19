@@ -6,6 +6,7 @@ Common fixtures for :mod:`mkname` tests.
 """
 import os
 import sqlite3
+from configparser import ConfigParser
 from pathlib import Path
 
 import pytest as pt
@@ -27,7 +28,10 @@ __all__ = [
     'name',
     'names',
     'run_in_tmp',
+    'run_in_tmp_with_db',
     'prot_db',
+    'setup_conf',
+    'test_conf',
     'test_db',
     'tmp_db',
     'tmp_empty_db',
@@ -207,6 +211,52 @@ def run_in_tmp(tmp_path):
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(home)
+
+
+@pt.fixture
+def run_in_tmp_with_db(db_path, tmp_path):
+    """Run the test in a temporary directory with a names db
+    in that directory.
+    """
+    o_path = Path(db_path)
+    cp_path = tmp_path / 'names.db'
+    data = o_path.read_bytes()
+    cp_path.write_bytes(data)
+
+    home = Path.cwd()
+    os.chdir(tmp_path)
+    yield cp_path
+    os.chdir(home)
+
+
+@pt.fixture
+def setup_conf(conf_full_path, tmp_path):
+    """Run the test from a temporary directory with config in a
+    `setup.cfg` file.
+    """
+    home = Path.cwd()
+
+    cp_path = tmp_path / 'setup.cfg'
+    src_path = Path(conf_full_path)
+    text = src_path.read_text()
+    cp_path.write_text(text)
+
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(home)
+
+
+@pt.fixture
+def test_conf(mocker, conf_full_path):
+    """Point the default config to the test config."""
+    parser = ConfigParser()
+    parser.read(conf_full_path)
+    sections = ['mkname', 'mkname_files']
+    mocker.patch('mkname.init.get_config', return_value={
+        k: dict(parser[k]) for k in parser
+        if k in sections
+    })
+    yield conf_path
 
 
 @pt.fixture

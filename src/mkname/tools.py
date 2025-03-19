@@ -277,6 +277,7 @@ def add(
 def export(
     dst_path: Path | str,
     src_path: Path | str | None = None,
+    cfg_path: Path | str | None = None,
     overwrite: bool = False
 ) -> None:
     """Export names databases to CSV files for manual updating.
@@ -287,7 +288,8 @@ def export(
     :param overwrite: (Optional.) Whether to overwrite an existing
         destination path. Defaults to `False`.
     """
-    names = db.get_names(src_path)
+    db_path = init.get_db(src_path, conf_path=cfg_path)
+    names = db.get_names(db_path)
     write_as_csv(dst_path, names, overwrite=overwrite)
 
 

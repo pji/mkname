@@ -20,12 +20,13 @@ from tests.fixtures import *
 
 # Fixtures.
 @pytest.fixture
-def testletters(mocker):
+def testletters(mocker, db_path):
     """Change the consonants and vowels for a test."""
-    config = init.get_config()
-    config['mkname']['db_path'] = 'tests/data/names.db'
-    config['mkname']['consonants'] = 'bcdfghjkmnpqrstvwxz'
-    config['mkname']['vowels'] = 'aeiouyl'
+    config = {'mkname': {
+        'db_path': db_path,
+        'consonants': 'bcdfghjkmnpqrstvwxz',
+        'vowels': 'aeiouyl',
+    }}
     mocker.patch('mkname.cli.get_config', return_value=config)
 
 
@@ -80,12 +81,12 @@ class TestMkname:
         assert result == 'Athamwaffspam\n'
 
     def test_build_syllable_name_diff_consonants(
-        self, mocker, capsys, testletters
+        self, mocker, capsys, test_db, testletters
     ):
         """The consonants and vowels from the config should affect
         how the name is generated.
         """
-        cmd = ['python -m mkname', '-s 1']
+        cmd = ['mkname', '-s', '1']
         roll = [4, 1]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'Waf\n'
@@ -248,7 +249,7 @@ class TestMknameToolsExport:
         """
         csv_path = Path('./names.csv')
         cmd = ['mkname_tools', 'export',]
-        exp_msg = f'Database exported to {csv_path}.\n\n'
+        exp_msg = f'Database exported to {csv_path}.\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert csv_matches_names(csv_path, names)
 
@@ -260,7 +261,7 @@ class TestMknameToolsExport:
         csv_path = tmp_path / 'spam.csv'
         assert not csv_path.exists()
         cmd = ['mkname_tools', 'export', '-o', str(csv_path)]
-        exp_msg = f'Database exported to {csv_path}.\n\n'
+        exp_msg = f'Database exported to {csv_path}.\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert csv_matches_names(csv_path, names)
 
@@ -280,7 +281,7 @@ class TestMknameToolsExport:
             'export',
             '-o', f'{csv_path}',
         ]
-        exp_msg = f'Database exported to {csv_path}.\n\n'
+        exp_msg = f'Database exported to {csv_path}.\n'
         try:
             assert tools_cli_test(mocker, capsys, cmd) == exp_msg
             assert csv_matches_names(csv_path, names)

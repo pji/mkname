@@ -82,6 +82,17 @@ class TestExport:
         t.export(dst_path, src_path=db_path)
         assert csv_matches_names(dst_path, names)
 
+    def test_export_configured_db(self, conf_full_path, names, tmp_path):
+        """Given a destination and a config file with
+        a configured database,:func:`mkname.tools.export`
+        should export the names in the source names
+        database to a CSV file at the destination path.
+        """
+        dst_path = tmp_path / 'names.csv'
+        assert not dst_path.exists()
+        t.export(dst_path, cfg_path=conf_full_path)
+        assert csv_matches_names(dst_path, names)
+
     def test_will_not_overwrite(self, tmp_path):
         """Given a destination path that exists,
         :func:`mkname.tools.export` should raise

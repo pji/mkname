@@ -85,6 +85,13 @@ class TestGetConfig:
         """
         assert init.get_config() == default_config
 
+    def test_config_in_setup(self, given_config, setup_conf):
+        """If there is configuration in the `setup.cfg` file, load the
+        configuration from the default configuration file stored in
+        `mkname/mkname/data`.
+        """
+        assert init.get_config() == given_config
+
     def test_get_config_with_given_path(self, given_config):
         """If given a path to a configuration file,
         :func:`mkname.init.get_config` should load the
@@ -161,13 +168,42 @@ class TestGetConfig:
 
 # Test init_db.
 class TestGetDB:
-    def test_get_db(self):
+    def test_default(self):
         """By default, :func:`mkname.init.get_db` should return the path to
         the default database.
         """
-        assert init.get_db() == Path(c.DEFAULT_DB)
+#         assert init.get_db() == Path(c.DEFAULT_DB)
+        assert init.get_db() == Path('src/mkname/data/names.db').absolute()
 
-    def test_get_db_with_path_and_exists(self, db_path):
+    def test_db_in_cwd(self, run_in_tmp_with_db):
+        """When not given a path and there is a names database
+        in the current working directory, :fun:`mkname.init.get_db`
+        should return the path to the names database in the current
+        working directory.
+        """
+        assert init.get_db() == Path(run_in_tmp_with_db)
+
+    def test_db_in_config(self, db_path, test_conf):
+        """When not given a path and there is a names database
+        defined in the config, :fun:`mkname.init.get_db`
+        should return the path to the names database in the config.
+        """
+        assert not Path('./names.db').exists()
+        path = Path(db_path)
+        result = init.get_db()
+        assert result == path
+
+    def test_db_given_config(self, db_path, conf_full_path):
+        """When not given a path and there is a names database
+        defined in the given config, :fun:`mkname.init.get_db`
+        should return the path to the names database in the config.
+        """
+        assert not Path('./names.db').exists()
+        path = Path(db_path)
+        result = init.get_db(conf_path=conf_full_path)
+        assert result == path
+
+    def test_path_exists(self, db_path):
         """Given the path to a database as a :class:`pathlib.Path`,
         :func:`mkname.init.get_db` should check if the database exists
         and return the path to the db.
@@ -175,7 +211,7 @@ class TestGetDB:
         test_db_loc = Path(db_path)
         assert init.get_db(test_db_loc) == test_db_loc
 
-    def test_get_db_with_path_is_directory_and_db_exists(self, db_path):
+    def test_path_is_directory_and_db_exists(self, db_path):
         """Given the path to a database as a :class:`pathlib.Path`,
         :func:`mkname.init.get_db` should check if the database exists
         and return the path to the db. If the path is a directory
@@ -186,7 +222,7 @@ class TestGetDB:
         test_dir_loc = test_db_loc.parent
         assert init.get_db(test_dir_loc) == test_db_loc
 
-    def test_init_db_with_path_and_not_exists(self, test_db, tmp_path):
+    def test_path_does_not_exists(self, test_db, tmp_path):
         """Given the path to a database as a :class:`pathlib.Path`,
         :func:`mkname.init.get_db` should check if the database exists
         and return the path to the db. If the database doesn't exist,
@@ -198,7 +234,7 @@ class TestGetDB:
         assert init.get_db(db_path) == db_path
         assert filecmp.cmp(Path(test_db), db_path, shallow=False)
 
-    def test_get_db_with_str_and_exists(self, db_path):
+    def test_str_exists(self, db_path):
         """Given the path to a database as a :class:`str`,
         :func:`mkname.init.get_db` should check if the
         database exists and return the path to the db.
