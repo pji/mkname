@@ -47,11 +47,13 @@ The following is true of a :mod:`mkname` configuration file:
 
 *   It must have a `[mkname]` section.
 *   It may have any of the following keys:
+
     *   :ref:`consonants`,
     *   :ref:`db_path`,
     *   :ref:`punctuation`,
     *   :ref:`scifi_letters`,
     *   :ref:`vowels`.
+
 *   No keys are required.
 
 The keys are defined as follows.
@@ -185,6 +187,7 @@ if version_info >= (3, 11):
     import tomllib
 
 import mkname.data
+from mkname.exceptions import *
 from mkname.model import Config, Section
 
 
@@ -197,15 +200,6 @@ CONF_NAMES = (
     ('mkname.cfg', (3, 10)),
     ('mkname.toml', (3, 11)),
 )
-
-
-# Exceptions.
-class ConfigFileDoesNotExistError(IOError):
-    """The given configuration file does not exist."""
-
-
-class UnsupportedPythonVersionError(RuntimeError):
-    """The Python version doesn't support this action."""
 
 
 # Configuration functions.

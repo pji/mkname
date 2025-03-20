@@ -1,14 +1,215 @@
 """
-model
-~~~~~
+.. _model:
 
-The data model for :mod:`mkname`.
+##########
+Data Model
+##########
+
+This will discuss the data model for :mod:`mkname` and related topics:
+
+* :ref:`name_data`
+
+
+.. _name_data:
+
+Name Data
+=========
+The core feature of :mod:`mkname` is the selection or generation of
+names from a large list of names. The names used by :mod:`mkname`
+are stored as :class:`mkname.model.Name` objects. These objects
+store several pieces of information about its name in the following
+fields:
+
+*   :ref:`id`
+*   :ref:`name`
+*   :ref:`source`
+*   :ref:`culture`
+*   :ref:`date`
+*   :ref:`gender`
+*   :ref:`kind`
+
+For example,For example, let's say you want to add the name "Graham," as in
+the first name of "Graham Chapman" from Monty Python::
+
+    >>> from mkname.model import Name
+    >>>
+    >>> name = Name(
+    ...     id=0,
+    ...     name='Graham',
+    ...     source='https://montypython.com',
+    ...     culture='MontyPython',
+    ...     date=1941,
+    ...     gender='python',
+    ...     kind='given'
+    ... )
+    >>> name.name
+    'Graham'
+
+
+.. _name_fields:
+
+Name Data Fields
+----------------
+The following are the data fields stored for a name in the names
+database.
+
+
+.. _id:
+
+id
+^^
+This is a simple serial number used to uniquely identify the
+:class:`mkname.model.Name` object when it is serialized in a
+database or other output file.
+
+
+.. _name:
+
+name
+^^^^
+This is the name itself as a :class:`str` object.
+
+The only limitation on this, beyond any set by the :class:`str` class,
+is that it has a maximum size limit of 64 characters. This limit only
+exists to provide a boundary for the database. Future versions of
+:mod:`mkname` could increase it if there are cultures with names
+longer than 64 characters.
+
+
+.. _source:
+
+source
+^^^^^^
+This is the source where the name was found as a :class:`str` object.
+
+It's intended to be the specific URL for data the name was pulled from.
+For example, some of the names in the default database were pulled from
+the U.S. Census's list of most common surnames in 2010. The source field
+for those names is the URL for that report on the U.S. Census website::
+
+    https://www.census.gov/topics/population/genealogy/data/2010_surnames.html
+
+There are three main reasons the source data is kept with the name:
+
+*   It provides context for why the name is in the database.
+*   It credits the people or organization that gathered the name data.
+*   It allows data to be identified and pulled from the database if
+    needed for some reason in the future.
+
+The maximum length of a source is 128 characters.
+
+
+.. _culture
+
+culture
+^^^^^^^
+This is the culture the name is from as a :class:`str` object.
+
+As used in the default database, this is the nation associated with
+the source I got the name from. However, this is intended to be
+broader than that. It's, essentially, any grouping of people you
+wish to associate the name to. For example, if you were adding
+the names from the works of J. R. R. Tolkien, you may
+mark the names of hobbits as "Hobbit" and those of dwarves as
+"Dwarf." And, of course, you can split the elven names into "Sindar"
+and "Quenyan," and so on.
+
+The purpose of this field is to allow name generation to be narrowed
+by culture. If you want to generate the name of someone from the
+Roman Empire, you can limit name generation to just the "Roman"
+culture.
+
+The maximum length of a culture is 64 characters.
+
+
+.. _date:
+
+date
+^^^^
+The date associated with the data the name was taken from as an
+:class:`int` object.
+
+As used in the default database, this is the year for the name in
+the Common Era (C.E.). Negative values are Before Common Era (B.C.E.).
+
+The date is stored in the SQLite database as an `INTEGER`. This can be
+up to an 8 byte, signed number, in case you are projecting names that
+far into the future or the past.
+
+
+.. _gender:
+
+gender
+^^^^^^
+This is the "gender" of the name as a :class:`str` object.
+
+Name data, especially "given" name data, tends to associate a
+gender to a name. This gender is tracked in the gender field
+for the record, so it can be used to filter the names used
+when generating a name.
+
+.. note:
+    :mod:`mkname` wasn't built with the idea of surnames needing
+    to match the gender of the given name, which creates a
+    difficulty for names in cultures where that is needed, such
+    as Russian. At time of writing, the "male" and "female"
+    versions of Russian surnames are stored as separate names,
+    so you'll need to filter the surnames by gender during
+    generation to insure agreement between the gender of the
+    given and surnames. Future versions may correct this, if
+    it would be useful.
+
+The maximum length of a gender is 64 characters.
+
+
+.. _kind:
+
+kind
+^^^^
+This is the position or function of the name as a :class:`str`
+object.
+
+As used in the default database, there are two kinds of names:
+
+*   *given:* The name associated with the individual. In the United
+    States this tends to be the name listed first, i.e. the "first
+    name," but that's not true of all cultures.
+*   *surname:* The name associated with a family. In the United
+    States this tends to be the name listed last, i.e. the "last
+    name," but that is not true for all cultures.
+
+The maximum length of a kind is 16 characters.
+
+
+.. _model_api:
+
+Model API
+=========
+The following is a description of the public API for the data model.
+
+
+.. _core_data:
+
+Core Data
+---------
 
 .. autoclass:: mkname.model.Name
+
+
+Validating Descriptors
+----------------------
+The following descriptors are used by :mod:`mkname.model.Name` to
+validate and normalize data.
+
+.. autoclass:: mkname.model.IsInt
+.. autoclass:: mkname.model.IsStr
+
 
 """
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, astuple, dataclass
+
+from mkname.exceptions import StrExceedsUpperBound
 
 
 # Types.
@@ -20,7 +221,14 @@ NameCensusRecord = tuple[str, ...]
 
 # Descriptors.
 class IsInt:
-    """A data descriptor that ensures data is an :class:`int`."""
+    """A data descriptor that ensures data is an :class:`int`.
+
+
+    :param default: (Optional.) The default value, if any, of
+        described attribute. Defaults to `0`.
+    :returns: A :class:`mkname.model.IsInt` object.
+    :rtype: mkname.model.IsInt
+    """
     def __init__(self, *, default: int = 0) -> None:
         self._default = int(default)
 
@@ -39,9 +247,18 @@ class IsInt:
 
 
 class IsStr:
-    """A data descriptor that ensures data is an :class:`str`."""
-    def __init__(self, *, default: str = '') -> None:
+    """A data descriptor that ensures data is an :class:`str`.
+
+    :param default: (Optional.) The default value, if any, of
+        described attribute. Defaults to an empty :class:`str`.
+    :param size: (Optional.) The maximum length of the value
+        of the described attribute. Defaults to 65,595.
+    :returns: A :class:`mkname.model.IsStr` object.
+    :rtype: mkname.model.IsStr
+    """
+    def __init__(self, *, default: str = '', size: int = 65_595) -> None:
         self._default = str(default)
+        self.size = size
 
     def __set_name__(self, owner, name):
         self._name = '_' + name
@@ -50,6 +267,9 @@ class IsStr:
         return getattr(obj, self._name)
 
     def __set__(self, obj, value) -> None:
+        if len(value) > self.size:
+            msg = f'String longer than {self.size} characters.'
+            raise StrExceedsUpperBound(msg)
         setattr(obj, self._name, str(value))
 
 
@@ -81,12 +301,12 @@ class Name:
         Name(id=1138, name='Graham', source='Monty Python'...
     """
     id: IsInt = IsInt()
-    name: IsStr = IsStr()
-    source: IsStr = IsStr()
-    culture: IsStr = IsStr()
+    name: IsStr = IsStr(size=64)
+    source: IsStr = IsStr(size=128)
+    culture: IsStr = IsStr(size=64)
     date: IsInt = IsInt()
-    gender: IsStr = IsStr()
-    kind: IsStr = IsStr()
+    gender: IsStr = IsStr(size=64)
+    kind: IsStr = IsStr(size=16)
 
     @classmethod
     def from_name_census(

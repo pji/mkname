@@ -29,15 +29,12 @@ from pathlib import Path
 from mkname import db, init
 from mkname import model as m
 from mkname.constants import MSGS
+from mkname.exceptions import *
 from mkname.utility import recapitalize
 
 
 # Names exported with *.
 __all__ = [
-    'DefaultDatabaseWriteError',
-    'InvalidImportFormatError',
-    'PathDoesNotExistError',
-    'PathExistsError',
     'add',
     'export',
     'import_',
@@ -46,32 +43,6 @@ __all__ = [
 
 # Constants.
 INPUT_FORMATS = ['csv', 'census.name', 'census.gov',]
-
-
-# Exceptions.
-class DefaultDatabaseWriteError(IOError):
-    """There was an attempt to write directly to the default database.
-    This is prevented because updates to this package would overwrite
-    any changes to the default database, causing confusion.
-    """
-
-
-class InvalidImportFormatError(ValueError):
-    """The format assigned to the file to be imported was not a
-    format that :mod:`mkname` knows how to format.
-    """
-
-
-class PathDoesNotExistError(FileNotFoundError):
-    """Raised when a path unexpectedly doesn't exist. This is usually
-    used to handle requests to read from non-existing files.
-    """
-
-
-class PathExistsError(IOError):
-    """Raised when a path exists unexpectedly. This is usually used to
-    prevent overwriting existing files when writing data.
-    """
 
 
 # Public functions.

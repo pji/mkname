@@ -11,6 +11,7 @@ import pytest
 
 from mkname import db
 from mkname import model as m
+from mkname.exceptions import DefaultDatabaseWriteError
 from tests.common import db_matches_names
 from tests.fixtures import *
 
@@ -298,7 +299,7 @@ class TestCreateActions:
         :func:`mkname.db.add_name_to_db` should raise an exception to
         prevent accidental changes to the default database.
         """
-        with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+        with pytest.raises(DefaultDatabaseWriteError) as e_info:
             db.add_name_to_db(None, names[0])
 
     def test_add_names_to_db(self, empty_db, names):
@@ -321,7 +322,7 @@ class TestCreateActions:
         :func:`mkname.db.add_name_to_db` should raise an exception to
         prevent accidental changes to the default database.
         """
-        with pytest.raises(db.CannotUpdateDefaultDBError) as e_info:
+        with pytest.raises(DefaultDatabaseWriteError) as e_info:
             db.add_names_to_db(None, names)
 
     def test_add_names_to_db_with_updates(self, change_db, names):

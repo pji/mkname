@@ -34,6 +34,7 @@ from pathlib import Path
 from mkname import db
 from mkname import mkname as mn
 from mkname.constants import MSGS
+from mkname.exceptions import *
 from mkname.init import get_config, get_db
 from mkname.mod import mods
 from mkname.model import Name, Section

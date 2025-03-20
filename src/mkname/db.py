@@ -49,6 +49,7 @@ from typing import Any, Union
 
 from mkname import init
 from mkname.constants import MSGS
+from mkname.exceptions import DefaultDatabaseWriteError, IDCollisionError
 from mkname.model import Name
 
 
@@ -61,21 +62,6 @@ __all__ = [
     'get_names',
     'get_names_by_kind',
 ]
-
-
-# Exceptions.
-class CannotUpdateDefaultDBError(Exception):
-    """Update operations are not allowed to update the package's
-    default database without being explicitly pointed to that
-    database. This is to prevent accidental updates to the default
-    database that will be overwritten when the package is updated.
-    """
-
-
-class IDCollisionError(ValueError):
-    """The ID of the Name you tried to add to the database matches
-    the ID of a name already in the database.
-    """
 
 
 # Connection functions.
@@ -171,7 +157,7 @@ def protects_connection(fn: Callable) -> Callable:
             con = given_con
         else:
             msg = 'Must explicitly connect to a DB for this action.'
-            raise CannotUpdateDefaultDBError(msg)
+            raise DefaultDatabaseWriteError(msg)
         result = fn(con, *args, **kwargs)
         if isinstance(given_con, (str, Path)):
             disconnect_db(con)
