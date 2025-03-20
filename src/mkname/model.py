@@ -8,6 +8,7 @@ Data Model
 This will discuss the data model for :mod:`mkname` and related topics:
 
 * :ref:`name_data`
+* :ref:`model_api`
 
 
 .. _name_data:
@@ -99,7 +100,7 @@ There are three main reasons the source data is kept with the name:
 The maximum length of a source is 128 characters.
 
 
-.. _culture
+.. _culture:
 
 culture
 ^^^^^^^
@@ -203,7 +204,6 @@ validate and normalize data.
 
 .. autoclass:: mkname.model.IsInt
 .. autoclass:: mkname.model.IsStr
-
 
 """
 from collections.abc import Callable, Sequence

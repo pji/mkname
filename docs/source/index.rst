@@ -3,17 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to mkname's documentation!
-==================================
+######
+mkname
+######
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
    self
-   /api.rst
-   /model.rst
    /config.rst
+   /model.rst
+   /db.rst
+   /api.rst
    /tools.rst
    /requirements.rst
 

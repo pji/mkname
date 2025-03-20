@@ -34,14 +34,8 @@ The following functions modify names:
 
 Data Enumeration
 ================
-The following functions pull relevant information from the `names`
-database used in generating or selecting names:
-
-.. autofunction:: mkname.get_cultures
-.. autofunction:: mkname.get_genders
-.. autofunction:: mkname.get_kinds
-.. autofunction:: mkname.get_names
-.. autofunction:: mkname.get_names_by_kind
+Information on the data enumeration functions can be found in
+:ref:`db_read`.
 
 
 Initialization

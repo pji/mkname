@@ -1,13 +1,94 @@
 """
-db
-~~
+.. _names_db:
 
-Functions for handling the database for the names package.
+##################
+The Names Database
+##################
 
+The *names database* is a SQLite database used by :mod:`mkname` to
+store the data used to generate names. It consists of a single table:
+
+.. list-table::
+   :widths: 100
+   :header-rows: 1
+
+   * - names
+   * - (PK) id
+   * - name
+   * - source
+   * - culture
+   * - data
+   * - gender
+   * - kind
+
+A description of each field can be found in :ref:`name_data`.
+
+
+.. _default_db:
+
+Default Database
+================
+The *default database* is a names database that comes with the
+:mod:`mkname` package. It's intended to provide a basic set of
+names data for the generation of names.
+
+The default database is definitely biased towards the culture of
+the midwestern United States in 2025, but I'd be happy to expand
+its usefulness. The main limitation right now is my inability to
+read languages other than English well enough to be able to track
+down and understand census data in other languages. Though,
+admittedly, I haven't looked at census data for Canada, the United
+Kingdom, Australia, or New Zealand yet, either.
+
+The data from `Name Census <https://census.name>`_ looks promising,
+but it also looks like it requires licensing to use. This is
+understandable. Collecting name data from around the world isn't
+easy. However, it means I can't include data from Name Census in
+the default database. :mod:`mkname.tools` does have the ability
+to import data from Name Census to a new names database, though,
+so if you would rather use their data than the default database,
+you should be able to acquire the needed licenses and do so.
+
+
+.. _db_api:
+
+The DB API
+==========
+The following is a description of the API for working directly
+with a names database.
+
+*   :ref:`db_connect`
+*   :ref:`db_read`
+*   :ref:`db_create`
+*   :ref:`db_admin`
+
+
+.. _db_connect:
+
+Connecting to the Database
+--------------------------
+For the most part, functions that need to connect to a names
+database should manage that connection through one of these
+decorators. Specifically, anything that just reads should use
+:func:`mkname.db.makes_connection`, and anything that needs to
+create, update, or delete should use
+:func:`mkname.db.protects_connection`.
+
+.. autofunction:: mkname.db.makes_connection
+.. autofunction:: mkname.db.protects_connection
+
+However, if you want to make a manual connection to the database, you
+can use the following functions to open and close the connection.
+
+.. autofunction:: mkname.db.connect_db
+.. autofunction:: mkname.db.disconnect_db
+
+
+.. _db_read:
 
 Read Data
-=========
-The following functions all pull data out of the database. While you
+---------
+The following functions all read records in the database. While you
 can manually pass a database connection to these functions if you
 ever need to, they will create their own connection if you don't.
 
@@ -18,27 +99,42 @@ ever need to, they will create their own connection if you don't.
 .. autofunction:: mkname.get_kinds
 
 
-Create Database
-===============
+.. _db_create:
+
+Create and Update Data
+----------------------
+The following functions will create and update records in the
+database. While you can manually pass a database connection to
+these functions if you ever need to, they will create their own
+connection if you don't.
+
+.. warning:
+    These functions are only intended to be used by :mod:`mkname`.
+    Other code should use the functions provided by :mod:`mkname.tools`.
+
+.. warning:
+    These functions attempt to prevent changes to the :ref:`default_db`
+    to avoid unexpected behavior when the package is updated. It's not
+    foolproof, and you can cause yourself a lot of problems if you
+    want to.
+
+.. autofunction:: mkname.db.add_name_to_db
+.. autofunction:: mkname.db.add_names_to_db
+
+
+.. _db_admin:
+
+Database Administration
+-----------------------
 The following functions create new databases.
 
-.. autofunction:: mkname.duplicate_db
-.. autofunction:: mkname.create_empty_db
+.. warning:
+    These functions are only intended to be used by :mod:`mkname`.
+    Other code should use the functions provided by :mod:`mkname.tools`.
 
-
-Connecting to the Database
-==========================
-The "read" functions detailed above use the
-:func:`mkname.db.makes_connection` decorator to
-automatically create database connections.
-
-.. autofunction:: mkname.db.makes_connection.
-
-However, if you want to make a manual connection to the database, you
-can use the following functions to open and close the connection.
-
-.. autofunction:: mkname.connect_db
-.. autofunction:: mkname.disconnect_db
+.. autofunction:: mkname.db.duplicate_db
+.. autofunction:: mkname.db.create_empty_db
+.. autofunction:: mkname.db.get_max_id
 
 """
 import sqlite3
@@ -243,25 +339,6 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
 
 
 @makes_connection
-def get_max_id(con: sqlite3.Connection) -> int:
-    """Get the highest ID in the database.
-
-    :param con: The connection to the database. It defaults to
-        creating a new connection to the default database if no
-        connection is passed.
-    :return: An :class:`int` object.
-    :rtype: tuple
-    """
-    q = 'SELECT id FROM names ORDER BY id DESC LIMIT 1'
-    cur = con.execute(q)
-    result = cur.fetchone()
-    if result is None:
-        return 0
-    else:
-        return result[0]
-
-
-@makes_connection
 def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
     """Deserialize the names from the database.
 
@@ -312,7 +389,85 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     return tuple(Name(*args) for args in result)
 
 
-# Create functions.
+# Create and update functions.
+@protects_connection
+def add_name_to_db(
+    con: sqlite3.Connection,
+    name: Name,
+    update: bool = False
+) -> None:
+    """Add a name to the given database. If the name has the same
+    ID as a name already in the database, update the values in the
+    database to match the values for the given name.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :returns: `None`.
+    :rtype: NoneType
+
+    .. warning:
+        This function will not update the default database by default.
+        You can still explicitly point it to the default database, but
+        that is probably a bad idea because updates will be lost when
+        the package is updated.
+    """
+    q = (
+        'INSERT INTO names '
+        '(id, name, source, culture, date, gender, kind) '
+        'VALUES(:id, :name, :source, :culture, :date, :gender, :kind)'
+    )
+
+    try:
+        cur = con.execute(q, name.asdict())
+        con.commit()
+    except sqlite3.IntegrityError:
+        if not update:
+            msg = MSGS['en']['id_collision'].format(id=name.id)
+            raise IDCollisionError(msg)
+        else:
+            q = (
+                'UPDATE names '
+                'SET name = :name, '
+                'source = :source, '
+                'culture = :culture, '
+                'date = :date, '
+                'gender = :gender, '
+                'kind = :kind '
+                'WHERE id = :id'
+            )
+            cur = con.execute(q, name.asdict())
+            con.commit()
+
+
+@protects_connection
+def add_names_to_db(
+    con: sqlite3.Connection,
+    names: Sequence[Name],
+    update: bool = False
+) -> None:
+    """Add multiple names to the database. If any of those names have
+    the same ID as names already existing in the database, update the
+    values for those names in the database to the values for the given
+    names.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :returns: `None`.
+    :rtype: NoneType
+
+    .. warning:
+        This function will not update the default database by default.
+        You can still explicitly point it to the default database, but
+        that is probably a bad idea because updates will be lost when
+        the package is updated.
+    """
+    for name in names:
+        add_name_to_db(con, name, update)
+
+
+# Administration functions.
 def duplicate_db(dst_path: Path | str) -> None:
     """Create a duplicate of the `names.db` database.
 
@@ -359,62 +514,20 @@ def create_empty_db(path: Path | str) -> None:
     con.close()
 
 
-# Update functions.
-@protects_connection
-def add_name_to_db(
-    con: sqlite3.Connection,
-    name: Name,
-    update: bool = False
-) -> None:
-    """Add a name to the given database.
+@makes_connection
+def get_max_id(con: sqlite3.Connection) -> int:
+    """Get the highest ID in the database.
 
-    .. warning:
-        This function will not update the default database by default.
-        You can still explicitly point it to the default database, but
-        that is probably a bad idea because updates will be lost when
-        the package is updated.
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: An :class:`int` object.
+    :rtype: tuple
     """
-    q = (
-        'INSERT INTO names '
-        '(id, name, source, culture, date, gender, kind) '
-        'VALUES(:id, :name, :source, :culture, :date, :gender, :kind)'
-    )
-
-    try:
-        cur = con.execute(q, name.asdict())
-        con.commit()
-    except sqlite3.IntegrityError:
-        if not update:
-            msg = MSGS['en']['id_collision'].format(id=name.id)
-            raise IDCollisionError(msg)
-        else:
-            q = (
-                'UPDATE names '
-                'SET name = :name, '
-                'source = :source, '
-                'culture = :culture, '
-                'date = :date, '
-                'gender = :gender, '
-                'kind = :kind '
-                'WHERE id = :id'
-            )
-            cur = con.execute(q, name.asdict())
-            con.commit()
-
-
-@protects_connection
-def add_names_to_db(
-    con: sqlite3.Connection,
-    names: Sequence[Name],
-    update: bool = False
-) -> None:
-    """Add multiple names to the database.
-
-    .. warning:
-        This function will not update the default database by default.
-        You can still explicitly point it to the default database, but
-        that is probably a bad idea because updates will be lost when
-        the package is updated.
-    """
-    for name in names:
-        add_name_to_db(con, name, update)
+    q = 'SELECT id FROM names ORDER BY id DESC LIMIT 1'
+    cur = con.execute(q)
+    result = cur.fetchone()
+    if result is None:
+        return 0
+    else:
+        return result[0]
