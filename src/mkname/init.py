@@ -248,6 +248,7 @@ def build_search_paths(path: Path | None) -> list[Path]:
         Path.cwd() / filename for filename, version in CONF_NAMES
         if version_info >= version
     ]
+    search_paths = [get_default_config(), *search_paths]
 
     # If the given path is a file, add that file to the search paths.
     if path and path.is_file():
@@ -288,7 +289,7 @@ def get_config(path: Path | str | None = None) -> Config:
         raise ConfigFileDoesNotExistError(msg)
 
     # Start the config with the default values.
-    config = get_default_config()
+    config: Config = dict()
 
     # Search through possible config files and update the config.
     search_paths = build_search_paths(path)
@@ -306,14 +307,14 @@ def get_config(path: Path | str | None = None) -> Config:
     return config
 
 
-def get_default_config() -> Config:
+def get_default_config() -> Path:
     """Get the default configuration values.
 
     :return: The default configuration as a :class:`dict`.
     :rtype: dict
     """
     default_path = get_default_path() / DEFAULTS_CONF_NAME
-    return read_config(default_path)
+    return default_path
 
 
 def read_config(path: Path) -> Config:

@@ -26,6 +26,7 @@ __all__ = [
     'conf_full_path',
     'csv_path',
     'db_path',
+    'empty_conf',
     'empty_db',
     'mkname_cfg',
     'mkname_cfg_partial',
@@ -152,6 +153,15 @@ def csv_path():
 @pt.fixture
 def db_path():
     return 'tests/data/names.db'
+
+
+@pt.fixture
+def empty_conf(mocker, tmp_path):
+    """Set the default config to an empty file."""
+    cfg_path = tmp_path / 'default.cfg'
+    cfg_path.touch()
+    mocker.patch('mkname.init.get_default_config', return_value=cfg_path)
+    yield cfg_path
 
 
 @pt.fixture
@@ -362,11 +372,11 @@ def test_conf(mocker, conf_full_path):
     parser = ConfigParser()
     parser.read(conf_full_path)
     sections = ['mkname', 'mkname_files']
-    mocker.patch('mkname.init.get_config', return_value={
-        k: dict(parser[k]) for k in parser
-        if k in sections
-    })
-    yield conf_path
+    mocker.patch(
+        'mkname.init.get_default_config',
+        return_value=conf_full_path
+    )
+    yield conf_full_path
 
 
 @pt.fixture

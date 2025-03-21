@@ -92,11 +92,13 @@ The following functions all read records in the database. While you
 can manually pass a database connection to these functions if you
 ever need to, they will create their own connection if you don't.
 
-.. autofunction:: mkname.get_names
-.. autofunction:: mkname.get_names_by_kind
 .. autofunction:: mkname.get_cultures
+.. autofunction:: mkname.get_dates
 .. autofunction:: mkname.get_genders
 .. autofunction:: mkname.get_kinds
+.. autofunction:: mkname.get_names
+.. autofunction:: mkname.get_names_by_kind
+.. autofunction:: mkname.get_sources
 
 
 .. _db_create:
@@ -153,10 +155,12 @@ from mkname.model import Name
 __all__ = [
     'duplicate_db',
     'get_cultures',
+    'get_dates',
     'get_genders',
     'get_kinds',
     'get_names',
     'get_names_by_kind',
+    'get_sources',
 ]
 
 

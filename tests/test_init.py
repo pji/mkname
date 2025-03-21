@@ -28,15 +28,6 @@ def config_directory(conf_full_path, tmp_path):
 
 
 @pytest.fixture
-def default_config():
-    """Pulls the default configuration values from the config file."""
-    config = configparser.ConfigParser()
-    config.read(c.DEFAULT_CONFIG)
-    keys = ['mkname', 'mkname_files']
-    return {k: dict(config[k]) for k in config if k in keys}
-
-
-@pytest.fixture
 def given_config():
     """Pulls the default configuration values from the config file."""
     config = configparser.ConfigParser()
@@ -64,31 +55,31 @@ def partial_local_config(conf_path, run_in_tmp):
 
 # Test cases.
 class TestGetConfig:
-    def test_get_config(self, default_config):
+    def test_get_config(self, test_conf, conf_full):
         """By default, load the configuration from the default configuration
         file stored in `mkname/mkname/data`.
         """
-        assert init.get_config() == default_config
+        assert init.get_config() == conf_full
 
     def test_config_in_mkname_toml(
-        self, conf_full, default_config, mkname_toml
+        self, conf_full, empty_conf, mkname_toml
     ):
         """If there is configuration in the `mkname.toml` file,
         load the configuration from the `mkname.toml` file.`.
         """
         if version_info < (3, 11):
-            assert init.get_config() == default_config
+            assert init.get_config() == dict()
         else:
             assert init.get_config() == conf_full
 
     def test_config_in_pyproject(
-        self, conf_full, default_config, pyproject_toml
+        self, conf_full, empty_conf, pyproject_toml
     ):
         """If there is configuration in the `pyproject.toml` file,
         load the configuration from the `pyproject.toml` file.`.
         """
         if version_info < (3, 11):
-            assert init.get_config() == default_config
+            assert init.get_config() == dict()
         else:
             assert init.get_config() == conf_full
 

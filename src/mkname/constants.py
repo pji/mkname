@@ -4,12 +4,8 @@ constants
 
 Default configuration values for mknames.
 """
-from mkname.init import get_config, get_default_path
+from mkname.init import get_config
 
-
-# Path roots.
-DATA_ROOT = get_default_path()
-DEFAULT_CONFIG = DATA_ROOT / 'defaults.cfg'
 
 # Read default config.
 config = get_config()
