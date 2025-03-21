@@ -16,6 +16,7 @@ mkname
    /model.rst
    /db.rst
    /api.rst
+   /customization.rst
    /tools.rst
    /requirements.rst
 
@@ -116,7 +117,7 @@ name using the names from the default database::
     >>> names = mkname.get_names()
     >>> name = mkname.build_compound_name(names)
 
-View the API documentation for more information.
+View the :ref:`API documentation <api>` for more information.
 
 
 What about cultural bias in :mod:`mkname`?
@@ -143,24 +144,19 @@ more people.
 
 How do I run the tests?
 =======================
-I'm using the `pytest` library for the unit tests. To just run those tests,
-go to the root of your clone of the `mkname` repository and use the following
-command::
+Testing is automated with a combination of `make`, :mod:`pytest`,
+and :mod:`tox`. To run a quick set of tests that just check
+against your current version of Python::
 
-    python3 -m pytest
+    make test
 
-The full suite of style checks, :mod:`mypy`, and such I use can be run
-using a shortcut I have set up in the Makefile::
+To get the verbose output::
+
+    make testv
+
+To run the full suite of pre-commit tests::
 
     make pre
-
-.. note::
-    `precommit.py` requires itself to be run from a virtual environment
-    located in the `.venv` directory at the root of the repository. This
-    is so I don't accidentally run it using my system's Python and then
-    waste hours troubleshooting that mess again. If you want to disable
-    this, you'll have to modify the script. The easiest way is probably
-    commenting out the `check_venv()` call in `main()`.
 
 
 Indices and tables

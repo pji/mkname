@@ -37,6 +37,7 @@ MSGS = {
         'new_path_exists': 'Create DB failed. Path {dst_path} exists.',
         'option_conflict': 'Options {opts} cannot be used at the same time.',
         'read_path_not_exists': 'Read failed. Path {path} does not exist.',
+        'unknown_field': 'Unknown list field {field}.',
         'write_path_exists': 'Write failed. Path {path} exists',
     },
 }

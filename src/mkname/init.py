@@ -165,6 +165,39 @@ Since the values from the files are loaded on top of each other, files
 loaded later will override values in files loaded earlier.
 
 
+.. db_load:
+
+Loading the Names Database
+==========================
+While :mod:`mkname` provides a :ref:`default_db`, it allows you to
+create and supply your own names database. This means :mod:`mkname`
+needs to have a way to decide which names database to use at runtime.
+
+
+.. _db_search:
+
+Database Search Order
+---------------------
+When selecting a names database to use at runtime, :mod:`mkname`
+should search for a database in the following order:
+
+1.  A file path given explicitly to :mod:`mkname`,
+2.  A directory path that contains a file named `names.db` given
+    explicitly to :mod:`mkname`,
+3.  A path set in the :ref:`db_path` key in the configuration,
+4.  A file named `names.db` in the current working directory,
+5.  The default names database.
+
+This means there are several different ways to use a customized
+database when using :mod:`mkname` to generate names:
+
+*   Place a custom names database in the current working directory.
+*   Provide a configuration file that points to a custom names database.
+*   Provide the path to the custom names database to :mod:`mkname`
+    when generating the name. How you do this will vary depending on
+    exactly what you are doing.
+
+
 .. config_api:
 
 Configuration API
@@ -358,58 +391,46 @@ def get_db(
     *   `kind`: A tag for how the name is used, such as a given
         name or a surname.
     """
-    # Get the paths for the fall back databases.
-    local_db = Path.cwd() / DB_NAME
+    # Get the config.
     config = get_config(conf_path)
-    config_db: Path | None = None
-    if (
-        config
-        and 'mkname' in config
-        and 'db_path' in config['mkname']
-        and config['mkname']['db_path']
-    ):
-        config_db = Path(config['mkname']['db_path'])
-    default_db = get_default_db()
+    cfg_path = config['mkname']['db_path']
 
-    # If no path was given and there is a local names database,
-    # use the local names database.
-    if not path and local_db.exists():
-        path = local_db
+    # The search paths.
+    explicit_path = Path(path) if path else None
+    config_path = Path(cfg_path) if cfg_path else None
+    local_path = Path.cwd() / DB_NAME
+    default_path = get_default_db()
 
-    # If no path was given and there is a configured database,
-    # fall back to the configured database.
-    elif not path and config_db and config_db.exists():
-        path = config_db
+    # If we are passed an explicit database path, use that database.
+    if explicit_path:
+        if explicit_path.is_dir():
+            explicit_path = explicit_path / DB_NAME
+        db_path = explicit_path
 
-    # If no path was given and there is no local database, fall back
-    # to the default db.
-    elif not path:
-        path = get_default_db()
+    # If there is no explicit database given, check if one was
+    # configured.
+    elif config_path:
+        db_path = config_path
 
-    # If the path is a directory, return the database in the directory.
-    path = Path(path)
-    if path.is_dir():
-        path = get_db_dir(path)
+    # If we weren't given a database, check if there is one in
+    # the current working directory.
+    elif local_path.is_file():
+        db_path = local_path
 
-    # If the database doesn't exist, create it.
-    if not path.exists():
-        path = write_db_file(path)
+    # If all alse fails, use the default database.
+    else:
+        db_path = default_path
+
+    # Double check to make sure the path could be a database.
+    # Yelp if it isn't.
+    if not db_path.is_file():
+        msg = f'{path} is not a file.'
+        if db_path == default_path:
+            msg = f'The default database is missing. Reinstall mkname.'
+        raise NotADatabaseError(msg)
 
     # Return the path to the database.
-    return path
-
-
-def get_db_dir(path: Path) -> Path:
-    """Get the database file from the given directory. If it doesn't
-    exist in the directory, create it.
-
-    :param path: The path of the directory.
-    :return: The path to the names database as a
-        :class:`pathlib.Path`.
-    :rtype: pathlib.Path
-    """
-    path = path / DB_NAME
-    return get_db(path)
+    return db_path
 
 
 def get_default_db() -> Path:
@@ -420,22 +441,6 @@ def get_default_db() -> Path:
     :rtype: pathlib.Path
     """
     return get_default_path() / DB_NAME
-
-
-def write_db_file(path: Path) -> Path:
-    """Write the default named database to the given path.
-
-    :param path: The path for the new names database.
-    :return: The path to the new names database as a
-        :class:`pathlib.Path`.
-    :rtype: pathlib.Path
-    """
-    default_path = get_default_db()
-    with open(default_path, 'rb') as fh:
-        contents = fh.read()
-    with open(path, 'wb') as fh:
-        fh.write(contents)
-    return path
 
 
 # Utility functions.

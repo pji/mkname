@@ -41,13 +41,22 @@ from mkname.model import Name, Section
 from mkname.tools import *
 
 
+# Constants.
+LIST_FIELDS = {
+    'cultures': db.get_cultures,
+    'genders': db.get_genders,
+    'kinds': db.get_kinds,
+    'names': db.get_names,
+}
+
+
 # Typing.
 Subparser = Callable[[_SubParsersAction], None]
 Registry = dict[str, dict[str, Subparser]]
 
 
 # Command registration.
-subparsers: Registry = {'mkname_tools': {}}
+subparsers: Registry = {'mkname': {}, 'mkname_tools': {}}
 
 
 def subparser(script: str) -> Callable[
@@ -69,72 +78,104 @@ def subparser(script: str) -> Callable[
     return decorator
 
 
-# mkname commands.
-def build_compound_name(names: Sequence[Name], config: Section) -> str:
-    """Command script for constructing a name from two names in
-    the database.
+# Common mkname actions.
+def config_mkname(args: Namespace) -> tuple[Section, Path]:
+    cfg_path = Path(args.config) if args.config else None
+    db_path = Path(args.db) if args.db else None
+    config = get_config(cfg_path)['mkname']
+    db_loc = get_db(db_path, conf_path=cfg_path)
+    return config, db_loc
 
-    :param names: A list of Name objects to use for constructing
-        the new name.
-    :param config: The configuration data for :mod:`mkname`.
+
+def filter_mkname(names: Sequence[Name], args: Namespace) -> list[Name]:
+    """Filter the names based on the invocation arguments."""
+    if args.culture:
+        names = [name for name in names if name.culture == args.culture]
+    if args.date:
+        names = [name for name in names if name.date == args.date]
+    if args.gender:
+        names = [name for name in names if name.gender == args.gender]
+    if args.kind:
+        names = [name for name in names if name.kind == args.kind]
+    return list(names)
+
+
+def postprocess_mkname(
+    names: Sequence[str],
+    args: Namespace
+) -> list[str]:
+    """Use the given simple mod on the names.
+
+    :param name: The names to modify.
+    :param args: The invocation arguments.
     :returns: A :class:`str` object.
     :rtype: str
     """
-    name = mn.build_compound_name(
+    if args.modify_name:
+        mod = mods[args.modify_name]
+        names = [mod(name) for name in names]
+    return list(names)
+
+
+# mkname command modes.
+def mode_compound_name(args: Namespace) -> None:
+    config, db_loc = config_mkname(args)
+    names = db.get_names(db_loc)
+    names = filter_mkname(names, args)
+    lines = [mn.build_compound_name(
         names,
         config['consonants'],
         config['vowels']
-    )
-    return name
+    ) for _ in range(args.num_names)]
+    lines = postprocess_mkname(lines, args)
+    write_output(lines)
 
 
-def build_syllable_name(
-    names: Sequence[Name],
-    config: Section,
-    num_syllables: int
-) -> str:
-    """Command script for constructing a name from the syllables of
-    names in the database.
+def mode_list(args: Namespace) -> None:
+    """Execute the `list` command for `mkname`.
 
-    :param names: A list of Name objects to use for constructing
-        the new name.
-    :param config: The configuration data for :mod:`mkname`.
-    :param num_syllables: The number of syllables in the constructed
-        name.
-    :returns: A :class:`str` object.
-    :rtype: str
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
     """
-    name = mn.build_from_syllables(
-        num_syllables,
+    config, db_path = config_mkname(args)
+
+    if args.field in LIST_FIELDS:
+        if args.field == 'names':
+            names = LIST_FIELDS[args.field](db_path)
+            names = filter_mkname(names, args)
+            lines = [name.name for name in names]
+        else:
+            lines = LIST_FIELDS[args.field](db_path)
+
+    else:
+        msg = MSGS['en']['unknown_field'].format(field=args.field)
+        lines = [msg,]
+
+    write_output(lines)
+
+
+def mode_pick(args: Namespace) -> None:
+    config, db_loc = config_mkname(args)
+    names = db.get_names(db_loc)
+    names = filter_mkname(names, args)
+    lines = [mn.select_name(names) for _ in range(args.num_names)]
+    lines = postprocess_mkname(lines, args)
+    write_output(lines)
+
+
+def mode_syllable_name(args: Namespace) -> None:
+    config, db_loc = config_mkname(args)
+    names = db.get_names(db_loc)
+    names = filter_mkname(names, args)
+    lines = [mn.build_from_syllables(
+        args.num_syllables,
         names,
         config['consonants'],
         config['vowels']
-    )
-    return name
-
-
-def modify_name(name: str, mod_name: str) -> str:
-    """A command script to use the given simple mod on the name.
-
-    :param name: The name to modify.
-    :param mod: The mod to use on the name.
-    :returns: A :class:`str` object.
-    :rtype: str
-    """
-    mod = mods[mod_name]
-    return mod(name)
-
-
-def pick_name(names: Sequence[Name]) -> str:
-    """The command script to select a name from the database.
-
-    :param names: A list of Name objects to use for constructing
-        the new name.
-    :returns: A :class:`str` object.
-    :rtype: str
-    """
-    name = mn.select_name(names)
-    return name
+    ) for _ in range(args.num_names)]
+    lines = postprocess_mkname(lines, args)
+    write_output(lines)
 
 
 # mkname_tools command modes.
@@ -175,27 +216,13 @@ def mode_copy(args: Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    lines = []
-
-    # Determine the path for the copy.
-    path = Path('names.db')
-    if args.output:
-        path = Path(args.output)
-    if path.is_dir():
-        path = path / 'names.db'
-
-    # Do not overwrite existing files.
-    if path.exists():
+    path = Path(args.output) if args.output else None
+    try:
+        new_path = copy(path)
+        msg = MSGS['en']['dup_success'].format(dst_path=new_path.resolve())
+    except PathExistsError:
         msg = MSGS['en']['dup_path_exists'].format(dst_path=path)
-        lines.append(msg)
-
-    # Copy the database to the path.
-    else:
-        db.duplicate_db(path)
-        msg = MSGS['en']['dup_success'].format(dst_path=path.resolve())
-        lines.append(msg)
-
-    # Write any messages to standard out.
+    lines = (msg,)
     write_output(lines)
 
 
@@ -240,39 +267,6 @@ def mode_import(args: Namespace) -> None:
     print()
 
 
-def mode_list(args: Namespace) -> None:
-    """Execute the `list` command for `mkname_tools`.
-
-    :param args: The arguments passed to the script on invocation.
-    :returns: `None`.
-    :rtype: NoneType
-    """
-    db_path = args.db if args.db else None
-    cfg_path = args.config if args.config else None
-    db_path = get_db(db_path, conf_path=cfg_path)
-
-    if args.list_cultures:
-        lines = list_cultures(db_path)
-
-    elif args.list_genders:
-        lines = list_genders(db_path)
-
-    elif args.list_kinds:
-        lines = list_kinds(db_path)
-
-    else:
-        names = db.get_names(db_path)
-        if args.culture:
-            names = [name for name in names if name.culture == args.culture]
-        if args.gender:
-            names = [name for name in names if name.gender == args.gender]
-        if args.kind:
-            names = [name for name in names if name.kind == args.kind]
-        lines = list_all_names(names)
-
-    write_output(lines)
-
-
 def mode_new(args: Namespace) -> None:
     """Execute the `new` command for `mkname_tools`.
 
@@ -280,41 +274,17 @@ def mode_new(args: Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    lines = []
-
-    # Determine the path for the copy.
-    path = Path('names.db')
-    if args.output:
-        path = Path(args.output)
-    if path.is_dir():
-        path = path / 'names.db'
-
-    # Do not overwrite existing files.
-    if path.exists():
+    path = args.output if args.output else None
+    try:
+        new_path = new(path)
+        msg = MSGS['en']['new_success'].format(dst_path=new_path.resolve())
+    except PathExistsError:
         msg = MSGS['en']['new_path_exists'].format(dst_path=path)
-        lines.append(msg)
-
-    # Copy the database to the path.
-    else:
-        db.create_empty_db(path)
-        msg = MSGS['en']['new_success'].format(dst_path=path.resolve())
-        lines.append(msg)
-
-    # Write any messages to standard out.
+    lines = (msg,)
     write_output(lines)
 
 
 # mkname_tools commands.
-def list_all_names(names: Sequence[Name]) -> tuple[str, ...]:
-    """Command script to list all the names in the database.
-
-    :param names: A list of Name objects in the database.
-    :returns: A :class:`tuple` object.
-    :rtype: tuple
-    """
-    return tuple(name.name for name in names)
-
-
 def list_cultures(db_loc: Path) -> tuple[str, ...]:
     """A command script to list the unique cultures in the database.
 
@@ -367,143 +337,24 @@ def parse_cli() -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    # Set up the command line interface.
+    subparsers_list = ', '.join(key for key in subparsers['mkname'])
+
     p = ArgumentParser(
         description=(
-            'Generate a random name. By default this selects a '
-            'random name from the built-in database.'
+            'Generate a random names or read data from a names '
+            'database.'
         ),
         prog='mkname',
     )
-
-    # Name generation modes.
-    g_genmodes = p.add_argument_group(
-        'Alternate Name Generation Modes',
-        description=(
-            'Options how the name is generated. The default is to '
-            'just select a name from the database.'
-        )
+    spa = p.add_subparsers(
+        help=f'Available modes: {subparsers_list}',
+        metavar='mode',
+        required=True
     )
-    g_exclude = g_genmodes.add_mutually_exclusive_group()
-    g_exclude.add_argument(
-        '--compound_name', '-c',
-        help='Construct a name from two names in the database.',
-        action='store_true'
-    )
-    g_exclude.add_argument(
-        '--syllable_name', '-s',
-        help=(
-            'Construct a name from the syllables of names in the database. '
-            'The value of the option is the number of syllables to use.'
-        ),
-        action='store',
-        type=int
-    )
-
-    # Post processing.
-    g_post = p.add_argument_group(
-        'Post Processing',
-        description='Options for what happens after a name is generated.'
-    )
-    g_post.add_argument(
-        '--modify_name', '-m',
-        help='Modify the name.',
-        action='store',
-        choices=mods
-    )
-
-    # Name selection modification.
-    g_filter = p.add_argument_group(
-        'Filtering',
-        description='Options for filtering data used to generate the name.'
-    )
-    g_filter.add_argument(
-        '--first_name', '-f',
-        help='Generate a given name.',
-        action='store_true'
-    )
-    g_filter.add_argument(
-        '--gender', '-g',
-        help='Generate a name from the given gender.',
-        action='store',
-        type=str
-    )
-    g_filter.add_argument(
-        '--last_name', '-l',
-        help='Generate a surname.',
-        action='store_true'
-    )
-    g_filter.add_argument(
-        '--culture', '-k',
-        help='Generate a name from the given culture.',
-        action='store',
-        type=str
-    )
-
-    # Script configuration.
-    g_config = p.add_argument_group(
-        'Configuration',
-        description='Options for configuring the run.'
-    )
-    g_config.add_argument(
-        '--config', '-C',
-        help='Use the given custom config file.',
-        action='store',
-        type=str
-    )
-    g_config.add_argument(
-        '--db', '-d',
-        help='Use the given names database.',
-        action='store',
-        type=str
-    )
-    g_config.add_argument(
-        '--num_names', '-n',
-        help='The number of names to create.',
-        action='store',
-        type=int,
-        default=1
-    )
-
-    # Parse the invocation arguments.
+    for subparser in subparsers['mkname']:
+        subparsers['mkname'][subparser](spa)
     args = p.parse_args()
-
-    # Set up the configuration.
-    src_path = args.db if args.db else None
-    cfg_path = args.config if args.config else None
-    config = get_config(cfg_path)['mkname']
-    db_loc = get_db(src_path, conf_path=cfg_path)
-
-    # Get names for generation.
-    if args.first_name:
-        names = db.get_names_by_kind(db_loc, 'given')
-    elif args.last_name:
-        names = db.get_names_by_kind(db_loc, 'surname')
-    else:
-        names = db.get_names(db_loc)
-    if args.culture:
-        names = [name for name in names if name.culture == args.culture]
-    if args.gender:
-        names = [name for name in names if name.gender == args.gender]
-
-    # Generate the names, storing the output.
-    lines = []
-    for _ in range(args.num_names):
-        if args.compound_name:
-            name = build_compound_name(names, config)
-            lines.append(name)
-        elif args.syllable_name:
-            name = build_syllable_name(names, config, args.syllable_name)
-            lines.append(name)
-        else:
-            name = pick_name(names)
-            lines.append(name)
-
-    if args.modify_name:
-        lines = [modify_name(line, args.modify_name) for line in lines]
-
-    # Write out the output.
-    write_output(lines)
+    args.func(args)
 
 
 def parse_mkname_tools() -> None:
@@ -538,6 +389,182 @@ def parse_mkname_tools() -> None:
         subparsers['mkname_tools'][subparser](spa)
     args = p.parse_args()
     args.func(args)
+
+
+# Common mkname arguments.
+def add_config_args(
+    p: ArgumentParser,
+    include_num: bool = True
+) -> ArgumentParser:
+    """Add the configuration arguments for name generation."""
+    g_config = p.add_argument_group(
+        'Configuration',
+        description='Options for configuring the run.'
+    )
+    g_config.add_argument(
+        '--config', '-f',
+        help='Use the given custom config file.',
+        action='store',
+        type=str
+    )
+    g_config.add_argument(
+        '--db', '-d',
+        help='Use the given names database.',
+        action='store',
+        type=str
+    )
+    if include_num:
+        g_config.add_argument(
+            '--num_names', '-n',
+            help='The number of names to create.',
+            action='store',
+            type=int,
+            default=1
+        )
+    return p
+
+
+def add_filter_args(
+    p: ArgumentParser,
+    include_num: bool = True
+) -> ArgumentParser:
+    """Add the filtering arguments for name generation."""
+    g_filter = p.add_argument_group(
+        'Filtering',
+        description='Options for filtering data used to generate the name.'
+    )
+    g_filter.add_argument(
+        '--culture', '-c',
+        help='Generate a name from the given culture.',
+        action='store',
+        type=str
+    )
+    g_filter.add_argument(
+        '--gender', '-g',
+        help='Generate a name from the given gender.',
+        action='store',
+        type=str
+    )
+    g_filter.add_argument(
+        '--kind', '-k',
+        help='Generate a name from the given kind.',
+        action='store',
+        type=str
+    )
+    g_filter.add_argument(
+        '--date', '-y',
+        help='Generate a name from the given date.',
+        action='store',
+        type=int
+    )
+    return p
+
+
+def add_postprocessing_args(
+    p: ArgumentParser,
+    include_num: bool = True
+) -> ArgumentParser:
+    """Add the postprocessing arguments for name generation."""
+    g_post = p.add_argument_group(
+        'Post Processing',
+        description='Options for what happens after a name is generated.'
+    )
+    g_post.add_argument(
+        '--modify_name', '-m',
+        help='Modify the name.',
+        action='store',
+        choices=mods
+    )
+    return p
+
+
+# mkname command subparsing.
+@subparser('mkname')
+def parse_compound_name(spa: _SubParsersAction) -> None:
+    """Parse the `compound_name` command for `mkname`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'compound_name',
+        aliases=['compound', 'c'],
+        description='Build a compound name from the database.'
+    )
+    sp = add_config_args(sp)
+    sp = add_filter_args(sp)
+    sp = add_postprocessing_args(sp)
+    sp.set_defaults(func=mode_compound_name)
+
+
+@subparser('mkname')
+def parse_pick(spa: _SubParsersAction) -> None:
+    """Parse the `pick` command for `mkname`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'pick',
+        aliases=['p',],
+        description='Pick a random name from the database.'
+    )
+    sp = add_config_args(sp)
+    sp = add_filter_args(sp)
+    sp = add_postprocessing_args(sp)
+    sp.set_defaults(func=mode_pick)
+
+
+@subparser('mkname')
+def parse_list(spa: _SubParsersAction) -> None:
+    """Parse the `list` command for `mkname_tools`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'list',
+        description='List data in names databases.'
+    )
+    sp.add_argument(
+        'field',
+        help='Which field\'s values to list.',
+        action='store',
+        choices=LIST_FIELDS,
+        type=str
+    )
+    sp = add_config_args(sp, include_num=False)
+    sp = add_filter_args(sp)
+
+    sp.set_defaults(func=mode_list)
+
+
+@subparser('mkname')
+def parse_syllable_name(spa: _SubParsersAction) -> None:
+    """Parse the `syllable_name` command for `mkname`.
+
+    :param spa: The subparsers action for `mkname_tools`.
+    :returns: `None`.
+    :rtype: NoneType
+    """
+    sp = spa.add_parser(
+        'syllable_name',
+        aliases=['syllable', 'syl', 's'],
+        description='Pick a random name from the database.'
+    )
+    sp.add_argument(
+        'num_syllables',
+        help='The number of syllables in the name.',
+        action='store',
+        type=int
+    )
+    sp = add_config_args(sp)
+    sp = add_filter_args(sp)
+    sp = add_postprocessing_args(sp)
+    sp.set_defaults(func=mode_syllable_name)
 
 
 # mkname_tools command subparsing.
@@ -709,75 +736,6 @@ def parse_import(spa: _SubParsersAction) -> None:
         action='store_true'
     )
     sp.set_defaults(func=mode_import)
-
-
-@subparser('mkname_tools')
-def parse_list(spa: _SubParsersAction) -> None:
-    """Parse the `list` command for `mkname_tools`.
-
-    :param spa: The subparsers action for `mkname_tools`.
-    :returns: `None`.
-    :rtype: NoneType
-    """
-    sp = spa.add_parser(
-        'list',
-        description='List data in names databases.'
-    )
-    sp.add_argument(
-        '--db', '-d',
-        help='The database to get data from.',
-        action='store',
-        default='',
-        type=str
-    )
-
-    # Unique value lists.
-    g_values = sp.add_argument_group(
-        'List Unique Values',
-        description='List the unique values for a specific field.'
-    )
-    g_exclude = g_values.add_mutually_exclusive_group()
-    g_exclude.add_argument(
-        '--list_cultures', '-C',
-        help='List the cultures.',
-        action='store_true'
-    )
-    g_exclude.add_argument(
-        '--list_genders', '-G',
-        help='List the genders.',
-        action='store_true'
-    )
-    g_exclude.add_argument(
-        '--list_kinds', '-K',
-        help='List the kinds.',
-        action='store_true'
-    )
-
-    # Data filters.
-    g_filter = sp.add_argument_group(
-        'Data filters',
-        description='Filter for the data to be listed.'
-    )
-    g_filter.add_argument(
-        '--culture', '-c',
-        help='List names from the given culture.',
-        action='store',
-        type=str
-    )
-    g_filter.add_argument(
-        '--gender', '-g',
-        help='List names from the given gender.',
-        action='store',
-        type=str
-    )
-    g_filter.add_argument(
-        '--kind', '-k',
-        help='List names from the given kind.',
-        action='store',
-        type=str
-    )
-
-    sp.set_defaults(func=mode_list)
 
 
 @subparser('mkname_tools')

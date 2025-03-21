@@ -12,6 +12,7 @@ from sys import version_info
 import pytest
 
 import mkname.constants as c
+import mkname.exceptions as mkexc
 from mkname import init
 from tests.fixtures import *
 
@@ -211,13 +212,12 @@ class TestGetDB:
         """Given the path to a database as a :class:`pathlib.Path`,
         :func:`mkname.init.get_db` should check if the database exists
         and return the path to the db. If the database doesn't exist,
-        the database should be created with default data, and the path
-        to the new database returned.
+        raise a NotADatabaseError.
         """
         db_path = tmp_path / 'names.db'
         assert not db_path.exists()
-        assert init.get_db(db_path) == db_path
-        assert filecmp.cmp(Path(test_db), db_path, shallow=False)
+        with pytest.raises(mkexc.NotADatabaseError):
+            init.get_db(db_path) == db_path
 
     def test_str_exists(self, db_path):
         """Given the path to a database as a :class:`str`,

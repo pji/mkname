@@ -48,25 +48,23 @@ The following changes were made in v0.2.4:
 *   Added ability to duplicate the names database for customization.
 *   Added tools for adding names to a names database.
 *   Added `mkname_tools` script for administering the names database.
+*   Explicitly pointing to a non-existent database will no longer
+    create a new names database in that location.
 *   More documentation!
 
 
 How do I run the tests?
 =======================
-I'm using the `pytest` library for the unit tests. To just run those tests,
-go to the root of your clone of the `mkname` repository and use the following
-command::
+Testing is automated with a combination of `make`, :mod:`pytest`,
+and :mod:`tox`. To run a quick set of tests that just check
+against your current version of Python::
 
-    python3 -m pytest
+    make test
 
-The full suite of style checks, mypy, and such I use can be run using a
-shortcut I have set up in the Makefile::
+To get the verbose output::
+
+    make testv
+
+To run the full suite of pre-commit tests::
 
     make pre
-
-Note: `precommit.py` requires itself to be run from a virtual environment
-located in the `.venv` directory at the root of the repository. This is so
-I don't accidentally run it using my system's Python and then waste hours
-troubleshooting that mess. If you want to disable this, you'll have to
-modify the script. The easiest way is probably commenting out the
-`check_venv()` call in `main()`.

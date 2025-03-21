@@ -24,6 +24,7 @@ __all__ = [
     'DefaultDatabaseWriteError',
     'IDCollisionError',
     'InvalidImportFormatError',
+    'NotADatabaseError',
     'PathDoesNotExistError',
     'PathExistsError',
     'StrExceedsUpperBound',
@@ -52,6 +53,12 @@ class IDCollisionError(ValueError):
 class InvalidImportFormatError(ValueError):
     """The format assigned to the file to be imported was not a
     format that :mod:`mkname` knows how to format.
+    """
+
+
+class NotADatabaseError(FileNotFoundError):
+    """The path that should have been a names database is not
+    a names database.
     """
 
 

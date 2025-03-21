@@ -52,48 +52,66 @@ def tools_cli_test(mocker, capsys, cmd):
 
 
 # Test cases.
-class TestMkname:
+class TestMknameCompound:
     def test_build_compound_name(self, mocker, capsys, test_db):
-        """When called with the -c option, construct a name from
-        compounding two names from the database.
+        """When called, construct a name from compounding two names from
+        the database.
         """
-        cmd = ['python -m mkname', '-c']
+        cmd = ['mkname', 'compound_name',]
         roll = [3, 2]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'Tam\n'
 
-    def test_build_syllable_name(self, mocker, capsys, test_db):
-        """When called with the -s 3 option, construct a name from
-        a syllable from three names in the database.
-        """
-        cmd = ['python -m mkname', '-s 3']
-        roll = [3, 2, 4, 2, 1, 1]
-        result = cli_test(mocker, capsys, cmd, roll)
-        assert result == 'Athamwaff\n'
 
-    def test_build_syllable_name_4_syllables(self, mocker, capsys, test_db):
-        """When called with the -s 4 option, construct a name from
-        a syllable from four names in the database.
+class TestMknamePick:
+    def test_pick(self, mocker, capsys, test_db):
+        """When called, select a random name
+        from the list of names.
         """
-        cmd = ['python -m mkname', '-s 4']
-        roll = [3, 2, 4, 1, 2, 1, 1, 1]
+        cmd = ['mkname', 'pick',]
+        roll = [3,]
         result = cli_test(mocker, capsys, cmd, roll)
-        assert result == 'Athamwaffspam\n'
+        assert result == 'tomato\n'
 
-    def test_build_syllable_name_diff_consonants(
-        self, mocker, capsys, test_db, testletters
-    ):
-        """The consonants and vowels from the config should affect
-        how the name is generated.
+    def test_filter_culture(self, mocker, capsys, test_db):
+        """When called with `-c` and a culture of name, pick
+        a random name from the names of that type.
         """
-        cmd = ['mkname', '-s', '1']
-        roll = [4, 1]
+        cmd = ['mkname', 'pick', '-c', 'porridge']
+        roll = [1,]
         result = cli_test(mocker, capsys, cmd, roll)
-        assert result == 'Waf\n'
+        assert result == 'waffles\n'
+
+    def test_filter_date(self, mocker, capsys, test_db):
+        """When called with `-y` and a date of name, pick
+        a random name from the names of that type.
+        """
+        cmd = ['mkname', 'pick', '-y', '2000']
+        roll = [2,]
+        result = cli_test(mocker, capsys, cmd, roll)
+        assert result == 'waffles\n'
+
+    def test_filter_gender(self, mocker, capsys, test_db):
+        """When called with `-g` and a gender of name, pick
+        a random name from the names of that type.
+        """
+        cmd = ['mkname', 'pick', '-g', 'sausage']
+        roll = [2,]
+        result = cli_test(mocker, capsys, cmd, roll)
+        assert result == 'tomato\n'
+
+    def test_filter_kind(self, mocker, capsys, test_db):
+        """When called with `-k` and a kind of name, pick
+        a random name from the names of that type.
+        """
+        cmd = ['mkname', 'pick', '-k', 'given']
+        roll = [3,]
+        result = cli_test(mocker, capsys, cmd, roll)
+        assert result == 'waffles\n'
 
     def test_make_multiple_names(self, mocker, capsys, test_db):
         """When called with the -n 3 option, create three names."""
-        cmd = ['python -m mkname', '-n', '3']
+        cmd = ['mkname', 'pick', '-n', '3']
         roll = [3, 1, 4]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == (
@@ -106,35 +124,166 @@ class TestMkname:
         """When called with the -m garble option, perform the garble
         mod on the name.
         """
-        cmd = ['python -m mkname', '-m', 'garble']
+        cmd = ['mkname', 'pick', '-m', 'garble']
         roll = [3, 5]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'Tomadao\n'
 
-    def test_pick_name(self, mocker, capsys, test_db):
-        """When called with the -p option, select a random name
-        from the list of names.
-        """
-        cmd = ['python -m mkname',]
-        roll = [3,]
-        result = cli_test(mocker, capsys, cmd, roll)
-        assert result == 'tomato\n'
-
     def test_use_config(self, mocker, capsys, conf_path):
-        """When called with the -C option followed by a path to a
+        """When called with the -f option followed by a path to a
         configuration file, use the configuration in that file when
         running the script.
         """
         cmd = [
-            'python -m mkname',
-            '-C', str(conf_path),
+            'mkname',
+            'pick',
+            '-f', str(conf_path),
+        ]
+        roll = [3,]
+        result = cli_test(mocker, capsys, cmd, roll)
+        assert result == 'tomato\n'
+
+    def test_use_db(self, mocker, capsys, test_db):
+        """When called with the -d option followed by a path to a
+        database file, use the database in that file when
+        running the script.
+        """
+        cmd = [
+            'mkname',
+            'pick',
+            '-d', str(test_db),
         ]
         roll = [3,]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'tomato\n'
 
 
-class TestMknameAdd:
+class TestMknameList:
+    def test_all_names(self, mocker, capsys, test_db):
+        """When called with no options, write all the names from
+        the database to standard out.
+        """
+        cmd = ['mkname', 'list', 'names',]
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'ham\n'
+            'tomato\n'
+            'waffles\n'
+        )
+
+    def test_all_names_in_given_db(self, mocker, capsys, db_path):
+        """When called with `-d` and the path to a database, write
+        all the names from the database to standard out.
+        """
+        cmd = ['mkname_tools', 'list', 'names', '-d', str(db_path)]
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'ham\n'
+            'tomato\n'
+            'waffles\n'
+        )
+
+    def test_all_names_with_config(self, mocker, capsys, conf_path):
+        """When called with `-f` and the path to a config file,
+        write all the names from the configured database to
+        standard out.
+        """
+        cmd = [
+            'mkname',
+            'list', 'names',
+            '-f', str(conf_path),
+        ]
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'ham\n'
+            'tomato\n'
+            'waffles\n'
+        )
+
+    def test_culture(self, mocker, capsys, test_db):
+        """When called with the -k option and a culture, use only
+        names from that culture for the list.
+        """
+        cmd = ['mkname', 'list', 'names', '-c', 'bacon']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'ham\n'
+        )
+
+    def test_gender(self, mocker, capsys, test_db):
+        """When called with the -k option and a culture, use only
+        names from that culture for the generation.
+        """
+        cmd = ['mkname', 'list', 'names', '-g', 'sausage']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'tomato\n'
+        )
+
+    def test_kinds(self, mocker, capsys, test_db):
+        """When called with the -k option and a kind of name, use
+        only given names for the generation.
+        """
+        cmd = ['mkname', 'list', 'names', '-k', 'given',]
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'spam\n'
+            'ham\n'
+            'waffles\n'
+        )
+
+    def test_list_cultures(self, mocker, capsys, test_db):
+        """When called with -C, write the unique cultures from the
+        database to standard out.
+        """
+        cmd = ['mkname', 'list', 'cultures']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'bacon\n'
+            'pancakes\n'
+            'porridge\n'
+        )
+
+    def test_list_genders(self, mocker, capsys, test_db):
+        """When called with -G, write the unique genders from the
+        database to standard out.
+        """
+        cmd = ['mkname', 'list', 'genders']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'sausage\n'
+            'baked beans\n'
+        )
+
+    def test_list_kinds(self, mocker, capsys, test_db):
+        """When called with -K, write the unique kinds from the
+        database to standard out.
+        """
+        cmd = ['mkname', 'list', 'kinds']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'given\n'
+            'surname\n'
+        )
+
+
+class TestMknameSyllable:
+    def test_build_syllable_name(self, mocker, capsys, test_db):
+        """When called with 3, construct a name from
+        a syllable from three names in the database.
+        """
+        cmd = ['mkname', 's', '3']
+        roll = [3, 2, 4, 2, 1, 1]
+        result = cli_test(mocker, capsys, cmd, roll)
+        assert result == 'Athamwaff\n'
+
+
+class TestMknameToolsAdd:
     def test_add(self, mocker, capsys, name, names, tmp_db):
         """Given a database and information for a name,
         `mkname_tools add` should add the name to the
@@ -235,6 +384,7 @@ class TestMknameToolsCopy:
             '-o', str(tmp_path),
         ]
         exp_msg = f'The database has been copied to {path.absolute()}.\n'
+        assert not path.exists()
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(path, names)
 
@@ -406,120 +556,6 @@ class TestMknameToolsImport:
         exp_msg = f'Imported {census_name_given_path} to {empty_db}.\n\n'
         assert tools_cli_test(mocker, capsys, cmd) == exp_msg
         assert db_matches_names(empty_db, census_name_given_names)
-
-
-class TestMknameToolsList:
-    def test_all_names(self, mocker, capsys, test_db):
-        """When called with no options, write all the names from
-        the database to standard out.
-        """
-        cmd = ['python -m mkname', 'list']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'ham\n'
-            'tomato\n'
-            'waffles\n'
-        )
-
-    def test_all_names_in_given_db(self, mocker, capsys, db_path):
-        """When called with `-d` and the path to a database, write
-        all the names from the database to standard out.
-        """
-        cmd = ['mkname_tools', 'list', '-d', str(db_path)]
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'ham\n'
-            'tomato\n'
-            'waffles\n'
-        )
-
-    def test_all_names_with_config(self, mocker, capsys, conf_path):
-        """When called with `-f` and the path to a config file,
-        write all the names from the configured database to
-        standard out.
-        """
-        cmd = [
-            'mkname_tools',
-            '-f', str(conf_path),
-            'list',
-        ]
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'ham\n'
-            'tomato\n'
-            'waffles\n'
-        )
-
-    def test_culture(self, mocker, capsys, test_db):
-        """When called with the -k option and a culture, use only
-        names from that culture for the list.
-        """
-        cmd = ['mkname_tools', 'list', '-c', 'bacon']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'ham\n'
-        )
-
-    def test_gender(self, mocker, capsys, test_db):
-        """When called with the -k option and a culture, use only
-        names from that culture for the generation.
-        """
-        cmd = ['mkname_tools', 'list', '-g', 'sausage']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'tomato\n'
-        )
-
-    def test_kinds(self, mocker, capsys, test_db):
-        """When called with the -k option and a kind of name, use
-        only given names for the generation.
-        """
-        cmd = ['mkname_tools', 'list', '-k', 'given',]
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'spam\n'
-            'ham\n'
-            'waffles\n'
-        )
-
-    def test_list_cultures(self, mocker, capsys, test_db):
-        """When called with -C, write the unique cultures from the
-        database to standard out.
-        """
-        cmd = ['mkname_tools', 'list', '-C']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'bacon\n'
-            'pancakes\n'
-            'porridge\n'
-        )
-
-    def test_list_genders(self, mocker, capsys, test_db):
-        """When called with -G, write the unique genders from the
-        database to standard out.
-        """
-        cmd = ['mkname_tools', 'list', '-G']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'sausage\n'
-            'baked beans\n'
-        )
-
-    def test_list_kinds(self, mocker, capsys, test_db):
-        """When called with -K, write the unique kinds from the
-        database to standard out.
-        """
-        cmd = ['mkname_tools', 'list', '-K']
-        result = tools_cli_test(mocker, capsys, cmd)
-        assert result == (
-            'given\n'
-            'surname\n'
-        )
 
 
 class TestMknameToolsNew:

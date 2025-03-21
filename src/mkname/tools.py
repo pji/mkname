@@ -1,31 +1,61 @@
 """
-.. customization:
+.. _tools_api:
 
-#############
-Customization
-#############
+#####
+Tools
+#####
+
+This provides the API for creating custom :ref:`names databases <names_db>`.
+
+.. note:
+    Before writing code to create custom :ref:`names databases <names_db>`,
+    take a look at the `mkname_tools` command line script to see if it
+    will do what you need.
 
 
-tools
-~~~~~
+.. _cmd_scripts:
 
-Tools for working with alternate sources of name data.
+Command Scripts
+---------------
+The following are the core command scripts that automate the main
+actions :mod:`mkname.tools` is intended to perform.
+
+.. autofunction:: mkname.tools.add
+.. autofunction:: mkname.tools.copy
+.. autofunction:: mkname.tools.export
+.. autofunction:: mkname.tools.import_
+.. autofunction:: mkname.tools.new
+
+
+.. _read_source:
+
+Read Source Data
+----------------
+These functions can read common sources of name data for use in
+a :ref:`name databases <names_db>`.
 
 .. autofunction:: mkname.tools.read_csv
 .. autofunction:: mkname.tools.read_name_census
 .. autofunction:: mkname.tools.read_us_census
-.. autofunction:: mkname.tools.reindex
+
+
+.. _write_data:
+
+Write Data
+----------
+This function writes a :ref:`name databases <names_db>` out to a file
+for editing.
+
 .. autofunction:: mkname.tools.write_as_csv
 
 
-Command Scripts
-===============
-The following are the core command scripts that allow easy use of
-:mod:`mkname.tools` from the command line.
+.. _utility_tools:
 
-.. autofunction:: mkname.tools.add
-.. autofunction:: mkname.tools.export
-.. autofunction:: mkname.tools.import_
+Utility Functions
+-----------------
+This function manipulates names data in useful ways.
+
+.. autofunction:: mkname.tools.reindex
 
 """
 import csv
@@ -43,13 +73,15 @@ from mkname.utility import recapitalize
 # Names exported with *.
 __all__ = [
     'add',
+    'copy',
     'export',
-    'import_',
     'INPUT_FORMATS',
+    'import_',
+    'new',
 ]
 
 # Constants.
-INPUT_FORMATS = ['csv', 'census.name', 'census.gov',]
+INPUT_FORMATS = ('csv', 'census.name', 'census.gov',)
 
 
 # Public functions.
@@ -252,6 +284,28 @@ def add(
     db.add_name_to_db(dst_path, new)
 
 
+def copy(dst_path: Path | str | None) -> Path:
+    """Copy a names database to a new location.
+
+    :param dst_path: The destination of the copy.
+    :returns: A :class:`pathlib.Path` object.
+    :rtype: pathlib.Path
+    """
+    # Determine the destination path for the copy.
+    dst_path = Path(dst_path) if dst_path else Path('names.db')
+    if dst_path.is_dir():
+        dst_path = dst_path / 'names.db'
+
+    # Do not overwrite existing files.
+    if dst_path.exists():
+        msg = MSGS['en']['dup_path_exists'].format(dst_path=dst_path)
+        raise PathExistsError(msg)
+
+    # Copy the default database.
+    db.duplicate_db(dst_path)
+    return dst_path
+
+
 def export(
     dst_path: Path | str,
     src_path: Path | str | None = None,
@@ -330,3 +384,25 @@ def import_(
     if i and not update:
         names = reindex(names, offset=i + 1)
     db.add_names_to_db(dst_path, names, update=update)
+
+
+def new(dst_path: Path | str | None = None) -> Path:
+    """Create an empty names database.
+
+    :param dst_path: The database destination for the import.
+    :returns: A :class:`pathlib.Path` object.
+    :rtype: pathlib.Path
+    """
+    # Determine the path for the database.
+    dst_path = Path(dst_path) if dst_path else Path('names.db')
+    if dst_path.is_dir():
+        dst_path = dst_path / 'names.db'
+
+    # Do not overwrite existing files.
+    if dst_path.exists():
+        msg = MSGS['en']['new_path_exists'].format(dst_path=dst_path)
+        raise PathExistsError(msg)
+
+    # Create the new database.
+    db.create_empty_db(dst_path)
+    return dst_path
