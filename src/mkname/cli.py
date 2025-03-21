@@ -44,9 +44,11 @@ from mkname.tools import *
 # Constants.
 LIST_FIELDS = {
     'cultures': db.get_cultures,
+    'dates': db.get_dates,
     'genders': db.get_genders,
     'kinds': db.get_kinds,
     'names': db.get_names,
+    'sources': db.get_sources,
 }
 
 
@@ -80,6 +82,12 @@ def subparser(script: str) -> Callable[
 
 # Common mkname actions.
 def config_mkname(args: Namespace) -> tuple[Section, Path]:
+    """Configure based on the invocation arguments.
+
+    :param args: The invocation arguments.
+    :returns: A :class:`list` object.
+    :rtype: list
+    """
     cfg_path = Path(args.config) if args.config else None
     db_path = Path(args.db) if args.db else None
     config = get_config(cfg_path)['mkname']
@@ -88,7 +96,13 @@ def config_mkname(args: Namespace) -> tuple[Section, Path]:
 
 
 def filter_mkname(names: Sequence[Name], args: Namespace) -> list[Name]:
-    """Filter the names based on the invocation arguments."""
+    """Filter the names based on the invocation arguments.
+
+    :param names: The names to modify.
+    :param args: The invocation arguments.
+    :returns: A :class:`list` object.
+    :rtype: list
+    """
     if args.culture:
         names = [name for name in names if name.culture == args.culture]
     if args.date:
@@ -106,10 +120,10 @@ def postprocess_mkname(
 ) -> list[str]:
     """Use the given simple mod on the names.
 
-    :param name: The names to modify.
+    :param names: The names to modify.
     :param args: The invocation arguments.
-    :returns: A :class:`str` object.
-    :rtype: str
+    :returns: A :class:`list` object.
+    :rtype: list
     """
     if args.modify_name:
         mod = mods[args.modify_name]
@@ -119,6 +133,12 @@ def postprocess_mkname(
 
 # mkname command modes.
 def mode_compound_name(args: Namespace) -> None:
+    """Execute the `compound_name` command for `mkname`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     config, db_loc = config_mkname(args)
     names = db.get_names(db_loc)
     names = filter_mkname(names, args)
@@ -156,6 +176,12 @@ def mode_list(args: Namespace) -> None:
 
 
 def mode_pick(args: Namespace) -> None:
+    """Execute the `pick` command for `mkname`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     config, db_loc = config_mkname(args)
     names = db.get_names(db_loc)
     names = filter_mkname(names, args)
@@ -165,6 +191,12 @@ def mode_pick(args: Namespace) -> None:
 
 
 def mode_syllable_name(args: Namespace) -> None:
+    """Execute the `syllable_name` command for `mkname`.
+
+    :param args: The arguments passed to the script on invocation.
+    :returns: `None`.
+    :rtype: NoneType
+    """
     config, db_loc = config_mkname(args)
     names = db.get_names(db_loc)
     names = filter_mkname(names, args)
@@ -284,37 +316,6 @@ def mode_new(args: Namespace) -> None:
     write_output(lines)
 
 
-# mkname_tools commands.
-def list_cultures(db_loc: Path) -> tuple[str, ...]:
-    """A command script to list the unique cultures in the database.
-
-    :param db_loc: The path to the mkname database.
-    :returns: A :class:`tuple` object.
-    :rtype: tuple
-    """
-    return db.get_cultures(db_loc)
-
-
-def list_genders(db_loc: Path) -> tuple[str, ...]:
-    """A command script to list the unique genders in the database.
-
-    :param db_loc: The path to the mkname database.
-    :returns: A :class:`tuple` object.
-    :rtype: tuple
-    """
-    return db.get_genders(db_loc)
-
-
-def list_kinds(db_loc: Path) -> tuple[str, ...]:
-    """A command script to list the unique kinds in the database.
-
-    :param db_loc: The path to the mkname database.
-    :returns: A :class:`tuple` object.
-    :rtype: tuple
-    """
-    return db.get_kinds(db_loc)
-
-
 # Output.
 def write_output(lines: Sequence[str] | str) -> None:
     """Write the output to the terminal.
@@ -340,10 +341,7 @@ def parse_cli() -> None:
     subparsers_list = ', '.join(key for key in subparsers['mkname'])
 
     p = ArgumentParser(
-        description=(
-            'Generate a random names or read data from a names '
-            'database.'
-        ),
+        description=MSGS['en']['desc_mkname'],
         prog='mkname',
     )
     spa = p.add_subparsers(
@@ -368,7 +366,7 @@ def parse_mkname_tools() -> None:
 
     # Set up the command line interface.
     p = ArgumentParser(
-        description='Randomized name construction.',
+        description=MSGS['en']['desc_tools'],
         prog='mkname',
     )
     p.add_argument(
@@ -396,7 +394,14 @@ def add_config_args(
     p: ArgumentParser,
     include_num: bool = True
 ) -> ArgumentParser:
-    """Add the configuration arguments for name generation."""
+    """Add the configuration arguments for name generation.
+
+    :param p: The :class:`ArgumentParser` to modify.
+    :param include_num: (Optional.) Whether to include the
+        argument `--num_names`.
+    :returns: A :class:`argparse.ArgumentParser` object.
+    :rtype: argparse.ArgumentParser
+    """
     g_config = p.add_argument_group(
         'Configuration',
         description='Options for configuring the run.'
@@ -424,11 +429,13 @@ def add_config_args(
     return p
 
 
-def add_filter_args(
-    p: ArgumentParser,
-    include_num: bool = True
-) -> ArgumentParser:
-    """Add the filtering arguments for name generation."""
+def add_filter_args(p: ArgumentParser) -> ArgumentParser:
+    """Add the filtering arguments for name generation.
+
+    :param p: The :class:`ArgumentParser` to modify.
+    :returns: A :class:`argparse.ArgumentParser` object.
+    :rtype: argparse.ArgumentParser
+    """
     g_filter = p.add_argument_group(
         'Filtering',
         description='Options for filtering data used to generate the name.'
@@ -460,11 +467,13 @@ def add_filter_args(
     return p
 
 
-def add_postprocessing_args(
-    p: ArgumentParser,
-    include_num: bool = True
-) -> ArgumentParser:
-    """Add the postprocessing arguments for name generation."""
+def add_postprocessing_args(p: ArgumentParser) -> ArgumentParser:
+    """Add the postprocessing arguments for name generation.
+
+    :param p: The :class:`ArgumentParser` to modify.
+    :returns: A :class:`argparse.ArgumentParser` object.
+    :rtype: argparse.ArgumentParser
+    """
     g_post = p.add_argument_group(
         'Post Processing',
         description='Options for what happens after a name is generated.'
@@ -622,7 +631,6 @@ def parse_add(spa: _SubParsersAction) -> None:
         action='store',
         type=str
     )
-
     sp.set_defaults(func=mode_add)
 
 

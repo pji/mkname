@@ -27,6 +27,10 @@ MSGS = {
         'add_success': 'Added {name} to {dst_path}.',
         'add_default_db': 'Cannot add to the default database.',
         'default_db_write': 'Cannot import to the default database.',
+        'desc_mkname': (
+            'Generate a random names or read data from a names database.'
+        ),
+        'desc_tools': 'Tools to work with mkname names databases.',
         'dup_success': 'The database has been copied to {dst_path}.',
         'dup_path_exists': 'Copy failed. Path {dst_path} exists.',
         'export_success': 'Database exported to {path}.',

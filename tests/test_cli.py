@@ -249,6 +249,17 @@ class TestMknameList:
             'porridge\n'
         )
 
+    def test_list_dates(self, mocker, capsys, test_db):
+        """When called with "dates", write the unique dates from the
+        database to standard out.
+        """
+        cmd = ['mkname', 'list', 'dates']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            '1970\n'
+            '2000\n'
+        )
+
     def test_list_genders(self, mocker, capsys, test_db):
         """When called with -G, write the unique genders from the
         database to standard out.
@@ -269,6 +280,17 @@ class TestMknameList:
         assert result == (
             'given\n'
             'surname\n'
+        )
+
+    def test_list_sources(self, mocker, capsys, test_db):
+        """When called with "sources", write the unique dates from the
+        database to standard out.
+        """
+        cmd = ['mkname', 'list', 'sources']
+        result = cli_test(mocker, capsys, cmd)
+        assert result == (
+            'eggs\n'
+            'mushrooms\n'
         )
 
 

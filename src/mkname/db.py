@@ -295,6 +295,28 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
 
 
 @makes_connection
+def get_dates(con: sqlite3.Connection) -> tuple[str, ...]:
+    """Get a list of unique dates in the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:`tuple` of :class:`Name` objects.
+    :rtype: tuple
+
+    Usage:
+
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_dates(loc)               # doctest: +ELLIPSIS
+        (1970, 2000)
+    """
+    query = 'select distinct date from names'
+    return _run_query_for_single_column(con, query)
+
+
+@makes_connection
 def get_genders(con: sqlite3.Connection) -> tuple[str, ...]:
     """Get a list of unique genders in the database.
 
@@ -387,6 +409,28 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     params = (kind, )
     result = con.execute(query, params)
     return tuple(Name(*args) for args in result)
+
+
+@makes_connection
+def get_sources(con: sqlite3.Connection) -> tuple[str, ...]:
+    """Get a list of unique sources in the database.
+
+    :param con: The connection to the database. It defaults to
+        creating a new connection to the default database if no
+        connection is passed.
+    :return: A :class:`tuple` of :class:`Name` objects.
+    :rtype: tuple
+
+    Usage:
+
+        >>> # @makes_connection allows you to pass the path of
+        >>> # the database file rather than a connection.
+        >>> loc = 'tests/data/names.db'
+        >>> get_sources(loc)               # doctest: +ELLIPSIS
+        ('eggs', 'mushrooms')
+    """
+    query = 'select distinct source from names'
+    return _run_query_for_single_column(con, query)
 
 
 # Create and update functions.

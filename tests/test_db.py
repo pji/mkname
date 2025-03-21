@@ -138,6 +138,11 @@ class TestGetCultures(DeserializationTest):
     exp = ('bacon', 'pancakes', 'porridge',)
 
 
+class TestGetDates(DeserializationTest):
+    fn = 'get_dates'
+    exp = (1970, 2000,)
+
+
 class TestGetGenders(DeserializationTest):
     fn = 'get_genders'
     exp = ('sausage', 'baked beans')
@@ -146,6 +151,11 @@ class TestGetGenders(DeserializationTest):
 class TestGetKinds(DeserializationTest):
     fn = 'get_kinds'
     exp = ('given', 'surname',)
+
+
+class TestGetSources(DeserializationTest):
+    fn = 'get_sources'
+    exp = ('eggs', 'mushrooms',)
 
 
 def test_get_names(con, names):
