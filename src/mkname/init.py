@@ -444,6 +444,20 @@ def get_default_db() -> Path:
     return get_default_path() / DB_NAME
 
 
+# Text functions.
+def get_text(path: Path | str) -> str:
+    """Get text from a text file in the package data.
+
+    :param path: The relative path to the text file within the
+        package data.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
+    pkg_data = get_default_path()
+    path = pkg_data / path
+    return path.read_text()
+
+
 # Utility functions.
 def get_default_path() -> Path:
     """Get the path to the default data files.

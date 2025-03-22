@@ -57,7 +57,7 @@ class TestMknameCompound:
         """When called, construct a name from compounding two names from
         the database.
         """
-        cmd = ['mkname', 'compound_name',]
+        cmd = ['mkname', 'compound',]
         roll = [3, 2]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'Tam\n'
@@ -299,7 +299,7 @@ class TestMknameSyllable:
         """When called with 3, construct a name from
         a syllable from three names in the database.
         """
-        cmd = ['mkname', 's', '3']
+        cmd = ['mkname', 'syllable', '3']
         roll = [3, 2, 4, 2, 1, 1]
         result = cli_test(mocker, capsys, cmd, roll)
         assert result == 'Athamwaff\n'

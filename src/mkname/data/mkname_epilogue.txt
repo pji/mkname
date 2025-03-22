@@ -1,0 +1,19 @@
+modes:
+  The broad behavior of `mkname` is determined by the mode you choose,
+  and choosing a mode is required.
+
+  compound
+    Creates a name using the parts of different names from the names
+    database.
+
+  pick
+    Picks a random name from the names database.
+
+  list
+    Lists the values for a particular field in the names database.
+
+  syllable
+    Creates a name from the syllables of different names selected
+    randomly from the names database.
+
+  View the help for the specific mode for details on their options.

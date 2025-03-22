@@ -29,12 +29,13 @@ def names():
 
 
 # Building names test cases.
-def test_build_compound_name(names, mocker):
-    """Given a sequence of names, build_compound_name() returns a
-    name constructed from the list.
-    """
-    mocker.patch('yadr.roll', side_effect=[4, 3])
-    assert mn.build_compound_name(names) == 'Dallory'
+class TestBuildCompoundNames:
+    def test_build_compound_name(self, names, mocker):
+        """Given a sequence of names, build_compound_name() returns a
+        name constructed from the list.
+        """
+        mocker.patch('yadr.roll', side_effect=[4, 3])
+        assert mn.build_compound_name(names) == 'Dallory'
 
 
 def test_build_from_syllables(names, mocker):
@@ -46,7 +47,8 @@ def test_build_from_syllables(names, mocker):
     assert mn.build_from_syllables(num_syllables, names) == 'Ertalan'
 
 
-def test_select_random_name(names, mocker):
-    """Given a list of names, return a random name."""
-    mocker.patch('yadr.roll', side_effect=[4,])
-    assert mn.select_name(names) == 'Donatello'
+class TestSelectRandomName:
+    def test_select_random_name(self, names, mocker):
+        """Given a list of names, return a random name."""
+        mocker.patch('yadr.roll', side_effect=[4,])
+        assert mn.select_name(names) == 'Donatello'

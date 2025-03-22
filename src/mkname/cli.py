@@ -11,7 +11,7 @@ The :mod:`mkname` package has two command line utilities:
 The `mkname` utility allows you to generate random names at the command
 line::
 
-    $ mkname
+    $ mkname pick
     Barron
 
 The available options and what they do can be found in the help::
@@ -27,7 +27,7 @@ for `mkname`. For more information, view the help::
     $ mkname_tools -h
 
 """
-from argparse import ArgumentParser, Namespace, _SubParsersAction
+import argparse as ap
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -35,7 +35,7 @@ from mkname import db
 from mkname import mkname as mn
 from mkname.constants import MSGS
 from mkname.exceptions import *
-from mkname.init import get_config, get_db
+from mkname.init import get_config, get_db, get_text
 from mkname.mod import mods
 from mkname.model import Name, Section
 from mkname.tools import *
@@ -53,7 +53,7 @@ LIST_FIELDS = {
 
 
 # Typing.
-Subparser = Callable[[_SubParsersAction], None]
+Subparser = Callable[[ap._SubParsersAction], None]
 Registry = dict[str, dict[str, Subparser]]
 
 
@@ -62,12 +62,12 @@ subparsers: Registry = {'mkname': {}, 'mkname_tools': {}}
 
 
 def subparser(script: str) -> Callable[
-    [Callable[[_SubParsersAction], None]],
-    Callable[[_SubParsersAction], None]
+    [Callable[[ap._SubParsersAction], None]],
+    Callable[[ap._SubParsersAction], None]
 ]:
     def decorator(
-        fn: Callable[[_SubParsersAction], None]
-    ) -> Callable[[_SubParsersAction], None]:
+        fn: Callable[[ap._SubParsersAction], None]
+    ) -> Callable[[ap._SubParsersAction], None]:
         """A decorator for registering subparsers.
 
         :param fn: The function being registered.
@@ -81,7 +81,7 @@ def subparser(script: str) -> Callable[
 
 
 # Common mkname actions.
-def config_mkname(args: Namespace) -> tuple[Section, Path]:
+def config_mkname(args: ap.Namespace) -> tuple[Section, Path]:
     """Configure based on the invocation arguments.
 
     :param args: The invocation arguments.
@@ -95,7 +95,7 @@ def config_mkname(args: Namespace) -> tuple[Section, Path]:
     return config, db_loc
 
 
-def filter_mkname(names: Sequence[Name], args: Namespace) -> list[Name]:
+def filter_mkname(names: Sequence[Name], args: ap.Namespace) -> list[Name]:
     """Filter the names based on the invocation arguments.
 
     :param names: The names to modify.
@@ -116,7 +116,7 @@ def filter_mkname(names: Sequence[Name], args: Namespace) -> list[Name]:
 
 def postprocess_mkname(
     names: Sequence[str],
-    args: Namespace
+    args: ap.Namespace
 ) -> list[str]:
     """Use the given simple mod on the names.
 
@@ -132,7 +132,7 @@ def postprocess_mkname(
 
 
 # mkname command modes.
-def mode_compound_name(args: Namespace) -> None:
+def mode_compound(args: ap.Namespace) -> None:
     """Execute the `compound_name` command for `mkname`.
 
     :param args: The arguments passed to the script on invocation.
@@ -151,7 +151,7 @@ def mode_compound_name(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_list(args: Namespace) -> None:
+def mode_list(args: ap.Namespace) -> None:
     """Execute the `list` command for `mkname`.
 
     :param args: The arguments passed to the script on invocation.
@@ -175,7 +175,7 @@ def mode_list(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_pick(args: Namespace) -> None:
+def mode_pick(args: ap.Namespace) -> None:
     """Execute the `pick` command for `mkname`.
 
     :param args: The arguments passed to the script on invocation.
@@ -190,7 +190,7 @@ def mode_pick(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_syllable_name(args: Namespace) -> None:
+def mode_syllable(args: ap.Namespace) -> None:
     """Execute the `syllable_name` command for `mkname`.
 
     :param args: The arguments passed to the script on invocation.
@@ -211,7 +211,7 @@ def mode_syllable_name(args: Namespace) -> None:
 
 
 # mkname_tools command modes.
-def mode_add(args: Namespace) -> None:
+def mode_add(args: ap.Namespace) -> None:
     """Execute the `add` command for `mkname_tools`.
 
     :param args: The arguments passed to the script on invocation.
@@ -241,7 +241,7 @@ def mode_add(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_copy(args: Namespace) -> None:
+def mode_copy(args: ap.Namespace) -> None:
     """Execute the `copy` command for `mkname_tools`.
 
     :param args: The arguments passed to the script on invocation.
@@ -258,7 +258,7 @@ def mode_copy(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_export(args: Namespace) -> None:
+def mode_export(args: ap.Namespace) -> None:
     """Execute the `export` command for `mkname_tools`.
 
     :param args: The arguments passed to the script on invocation.
@@ -273,7 +273,7 @@ def mode_export(args: Namespace) -> None:
     write_output(lines)
 
 
-def mode_import(args: Namespace) -> None:
+def mode_import(args: ap.Namespace) -> None:
     """Execute the `import` command for `mkname_tools`.
 
     :param args: The arguments passed to the script on invocation.
@@ -299,7 +299,7 @@ def mode_import(args: Namespace) -> None:
     print()
 
 
-def mode_new(args: Namespace) -> None:
+def mode_new(args: ap.Namespace) -> None:
     """Execute the `new` command for `mkname_tools`.
 
     :param args: The arguments passed to the script on invocation.
@@ -340,9 +340,11 @@ def parse_cli() -> None:
     """
     subparsers_list = ', '.join(key for key in subparsers['mkname'])
 
-    p = ArgumentParser(
+    p = ap.ArgumentParser(
         description=MSGS['en']['desc_mkname'],
         prog='mkname',
+        epilog=get_text('mkname_epilogue.txt'),
+        formatter_class=ap.RawDescriptionHelpFormatter
     )
     spa = p.add_subparsers(
         help=f'Available modes: {subparsers_list}',
@@ -365,7 +367,7 @@ def parse_mkname_tools() -> None:
     subparsers_list = ', '.join(key for key in subparsers['mkname_tools'])
 
     # Set up the command line interface.
-    p = ArgumentParser(
+    p = ap.ArgumentParser(
         description=MSGS['en']['desc_tools'],
         prog='mkname',
     )
@@ -391,16 +393,16 @@ def parse_mkname_tools() -> None:
 
 # Common mkname arguments.
 def add_config_args(
-    p: ArgumentParser,
+    p: ap.ArgumentParser,
     include_num: bool = True
-) -> ArgumentParser:
+) -> ap.ArgumentParser:
     """Add the configuration arguments for name generation.
 
-    :param p: The :class:`ArgumentParser` to modify.
+    :param p: The :class:`ap.ArgumentParser` to modify.
     :param include_num: (Optional.) Whether to include the
         argument `--num_names`.
-    :returns: A :class:`argparse.ArgumentParser` object.
-    :rtype: argparse.ArgumentParser
+    :returns: A :class:`argparse.ap.ArgumentParser` object.
+    :rtype: argparse.ap.ArgumentParser
     """
     g_config = p.add_argument_group(
         'Configuration',
@@ -429,12 +431,12 @@ def add_config_args(
     return p
 
 
-def add_filter_args(p: ArgumentParser) -> ArgumentParser:
+def add_filter_args(p: ap.ArgumentParser) -> ap.ArgumentParser:
     """Add the filtering arguments for name generation.
 
-    :param p: The :class:`ArgumentParser` to modify.
-    :returns: A :class:`argparse.ArgumentParser` object.
-    :rtype: argparse.ArgumentParser
+    :param p: The :class:`ap.ArgumentParser` to modify.
+    :returns: A :class:`argparse.ap.ArgumentParser` object.
+    :rtype: argparse.ap.ArgumentParser
     """
     g_filter = p.add_argument_group(
         'Filtering',
@@ -467,12 +469,12 @@ def add_filter_args(p: ArgumentParser) -> ArgumentParser:
     return p
 
 
-def add_postprocessing_args(p: ArgumentParser) -> ArgumentParser:
+def add_postprocessing_args(p: ap.ArgumentParser) -> ap.ArgumentParser:
     """Add the postprocessing arguments for name generation.
 
-    :param p: The :class:`ArgumentParser` to modify.
-    :returns: A :class:`argparse.ArgumentParser` object.
-    :rtype: argparse.ArgumentParser
+    :param p: The :class:`ap.ArgumentParser` to modify.
+    :returns: A :class:`argparse.ap.ArgumentParser` object.
+    :rtype: argparse.ap.ArgumentParser
     """
     g_post = p.add_argument_group(
         'Post Processing',
@@ -489,7 +491,7 @@ def add_postprocessing_args(p: ArgumentParser) -> ArgumentParser:
 
 # mkname command subparsing.
 @subparser('mkname')
-def parse_compound_name(spa: _SubParsersAction) -> None:
+def parse_compound(spa: ap._SubParsersAction) -> None:
     """Parse the `compound_name` command for `mkname`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -504,11 +506,11 @@ def parse_compound_name(spa: _SubParsersAction) -> None:
     sp = add_config_args(sp)
     sp = add_filter_args(sp)
     sp = add_postprocessing_args(sp)
-    sp.set_defaults(func=mode_compound_name)
+    sp.set_defaults(func=mode_compound)
 
 
 @subparser('mkname')
-def parse_pick(spa: _SubParsersAction) -> None:
+def parse_pick(spa: ap._SubParsersAction) -> None:
     """Parse the `pick` command for `mkname`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -527,7 +529,7 @@ def parse_pick(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname')
-def parse_list(spa: _SubParsersAction) -> None:
+def parse_list(spa: ap._SubParsersAction) -> None:
     """Parse the `list` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -552,7 +554,7 @@ def parse_list(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname')
-def parse_syllable_name(spa: _SubParsersAction) -> None:
+def parse_syllable(spa: ap._SubParsersAction) -> None:
     """Parse the `syllable_name` command for `mkname`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -573,12 +575,12 @@ def parse_syllable_name(spa: _SubParsersAction) -> None:
     sp = add_config_args(sp)
     sp = add_filter_args(sp)
     sp = add_postprocessing_args(sp)
-    sp.set_defaults(func=mode_syllable_name)
+    sp.set_defaults(func=mode_syllable)
 
 
 # mkname_tools command subparsing.
 @subparser('mkname_tools')
-def parse_add(spa: _SubParsersAction) -> None:
+def parse_add(spa: ap._SubParsersAction) -> None:
     """Parse the `add` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -635,7 +637,7 @@ def parse_add(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname_tools')
-def parse_copy(spa: _SubParsersAction) -> None:
+def parse_copy(spa: ap._SubParsersAction) -> None:
     """Parse the `copy` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -656,7 +658,7 @@ def parse_copy(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname_tools')
-def parse_export(spa: _SubParsersAction) -> None:
+def parse_export(spa: ap._SubParsersAction) -> None:
     """Parse the `export` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -684,7 +686,7 @@ def parse_export(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname_tools')
-def parse_import(spa: _SubParsersAction) -> None:
+def parse_import(spa: ap._SubParsersAction) -> None:
     """Parse the `import` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
@@ -747,7 +749,7 @@ def parse_import(spa: _SubParsersAction) -> None:
 
 
 @subparser('mkname_tools')
-def parse_new(spa: _SubParsersAction) -> None:
+def parse_new(spa: ap._SubParsersAction) -> None:
     """Parse the `new` command for `mkname_tools`.
 
     :param spa: The subparsers action for `mkname_tools`.
