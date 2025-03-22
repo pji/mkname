@@ -1,5 +1,5 @@
 """
-.. config:
+.. _config:
 
 #############
 Configuration
@@ -198,7 +198,7 @@ database when using :mod:`mkname` to generate names:
     exactly what you are doing.
 
 
-.. config_api:
+.. _config_api:
 
 Configuration API
 =================
@@ -275,10 +275,12 @@ def get_config(path: Path | str | None = None) -> Config:
     :return: A :class:`dict` object.
     :rtype: dict
 
-    Usage:
+    USAGE:
+
+    .. doctest:: config
 
         >>> loc = 'tests/data/test_load_config.conf'
-        >>> get_config(loc)                 # doctest: +ELLIPSIS
+        >>> get_config(loc)
         {'mkname': {'consonants': 'bcd', 'db_path':...
 
     """
@@ -373,7 +375,9 @@ def get_db(
         :class:`pathlib.Path`.
     :rtype: pathlib.Path
 
-    Usage::
+    USAGE:
+
+    .. doctest:: config
 
         >>> loc = 'src/mkname/data/names.db'
         >>> get_db(loc)

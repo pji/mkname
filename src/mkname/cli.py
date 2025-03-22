@@ -31,7 +31,7 @@ import argparse as ap
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from mkname import db
+from mkname import core, db
 from mkname import mkname as mn
 from mkname.constants import MSGS
 from mkname.exceptions import *
@@ -80,57 +80,6 @@ def subparser(script: str) -> Callable[
     return decorator
 
 
-# Common mkname actions.
-def config_mkname(args: ap.Namespace) -> tuple[Section, Path]:
-    """Configure based on the invocation arguments.
-
-    :param args: The invocation arguments.
-    :returns: A :class:`list` object.
-    :rtype: list
-    """
-    cfg_path = Path(args.config) if args.config else None
-    db_path = Path(args.db) if args.db else None
-    config = get_config(cfg_path)['mkname']
-    db_loc = get_db(db_path, conf_path=cfg_path)
-    return config, db_loc
-
-
-def filter_mkname(names: Sequence[Name], args: ap.Namespace) -> list[Name]:
-    """Filter the names based on the invocation arguments.
-
-    :param names: The names to modify.
-    :param args: The invocation arguments.
-    :returns: A :class:`list` object.
-    :rtype: list
-    """
-    if args.culture:
-        names = [name for name in names if name.culture == args.culture]
-    if args.date:
-        names = [name for name in names if name.date == args.date]
-    if args.gender:
-        names = [name for name in names if name.gender == args.gender]
-    if args.kind:
-        names = [name for name in names if name.kind == args.kind]
-    return list(names)
-
-
-def postprocess_mkname(
-    names: Sequence[str],
-    args: ap.Namespace
-) -> list[str]:
-    """Use the given simple mod on the names.
-
-    :param names: The names to modify.
-    :param args: The invocation arguments.
-    :returns: A :class:`list` object.
-    :rtype: list
-    """
-    if args.modify_name:
-        mod = mods[args.modify_name]
-        names = [mod(name) for name in names]
-    return list(names)
-
-
 # mkname command modes.
 def mode_compound(args: ap.Namespace) -> None:
     """Execute the `compound_name` command for `mkname`.
@@ -139,15 +88,16 @@ def mode_compound(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    config, db_loc = config_mkname(args)
-    names = db.get_names(db_loc)
-    names = filter_mkname(names, args)
-    lines = [mn.build_compound_name(
-        names,
-        config['consonants'],
-        config['vowels']
-    ) for _ in range(args.num_names)]
-    lines = postprocess_mkname(lines, args)
+    lines = core.create_compound_name(
+        num_names=args.num_names,
+        mod=mods[args.modify_name] if args.modify_name else None,
+        culture=args.culture,
+        date=args.date,
+        gender=args.gender,
+        kind=args.kind,
+        cfg_path=args.config,
+        db_path=args.db
+    )
     write_output(lines)
 
 
@@ -158,14 +108,18 @@ def mode_list(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    config, db_path = config_mkname(args)
-
     if args.field in LIST_FIELDS:
         if args.field == 'names':
-            names = LIST_FIELDS[args.field](db_path)
-            names = filter_mkname(names, args)
-            lines = [name.name for name in names]
+            lines = core.list_names(
+                culture=args.culture,
+                date=args.date,
+                gender=args.gender,
+                kind=args.kind,
+                cfg_path=args.config,
+                db_path=args.db
+            )
         else:
+            _, db_path = core.configure(args.config, args.db)
             lines = LIST_FIELDS[args.field](db_path)
 
     else:
@@ -182,11 +136,16 @@ def mode_pick(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    config, db_loc = config_mkname(args)
-    names = db.get_names(db_loc)
-    names = filter_mkname(names, args)
-    lines = [mn.select_name(names) for _ in range(args.num_names)]
-    lines = postprocess_mkname(lines, args)
+    lines = core.pick_name(
+        num_names=args.num_names,
+        mod=mods[args.modify_name] if args.modify_name else None,
+        culture=args.culture,
+        date=args.date,
+        gender=args.gender,
+        kind=args.kind,
+        cfg_path=args.config,
+        db_path=args.db
+    )
     write_output(lines)
 
 
@@ -197,16 +156,17 @@ def mode_syllable(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    config, db_loc = config_mkname(args)
-    names = db.get_names(db_loc)
-    names = filter_mkname(names, args)
-    lines = [mn.build_from_syllables(
-        args.num_syllables,
-        names,
-        config['consonants'],
-        config['vowels']
-    ) for _ in range(args.num_names)]
-    lines = postprocess_mkname(lines, args)
+    lines = core.create_syllable_name(
+        num_syllables=args.num_syllables,
+        num_names=args.num_names,
+        mod=mods[args.modify_name] if args.modify_name else None,
+        culture=args.culture,
+        date=args.date,
+        gender=args.gender,
+        kind=args.kind,
+        cfg_path=args.config,
+        db_path=args.db
+    )
     write_output(lines)
 
 

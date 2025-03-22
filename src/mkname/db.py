@@ -1,4 +1,9 @@
 """
+.. testsetup::
+
+    from mkname import *
+    from mkname.db import connect_db, disconnect_db
+
 .. _names_db:
 
 ##################
@@ -174,13 +179,16 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
 
     Usage:
 
-        >>> loc = 'src/mkname/data/names.db'
+    .. doctest::
+
+        >>> loc = 'tests/data/names.db'
         >>> query = 'select name from names where id = 1;'
         >>> con = connect_db(loc)
         >>> result = con.execute(query)
         >>> tuple(result)
-        (('Liam',),)
+        (('spam',),)
         >>> disconnect_db(con)
+
     """
     # Check to make sure the file exists, since sqlite3 fails silently.
     path = Path(location)
@@ -205,7 +213,7 @@ def disconnect_db(
     :return: None.
     :rtype: :class:NoneType
 
-    See connect_db() for usage.
+    See :func:`mkname.db.connect_db` for usage.
     """
     if con.in_transaction and not override_commit:
         msg = 'Connection has uncommitted changes.'
@@ -288,10 +296,12 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_cultures(loc)               # doctest: +ELLIPSIS
+        >>> get_cultures(loc)
         ('bacon', 'pancakes', 'porridge')
     """
     query = 'select distinct culture from names'
@@ -310,10 +320,12 @@ def get_dates(con: sqlite3.Connection) -> tuple[str, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_dates(loc)               # doctest: +ELLIPSIS
+        >>> get_dates(loc)
         (1970, 2000)
     """
     query = 'select distinct date from names'
@@ -332,11 +344,14 @@ def get_genders(con: sqlite3.Connection) -> tuple[str, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_genders(loc)                  # doctest: +ELLIPSIS
+        >>> get_genders(loc)
         ('sausage', 'baked beans')
+
     """
     query = 'select distinct gender from names'
     return _run_query_for_single_column(con, query)
@@ -354,36 +369,73 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_kinds(loc)                  # doctest: +ELLIPSIS
+        >>> get_kinds(loc)
         ('given', 'surname')
+
     """
     query = 'select distinct kind from names'
     return _run_query_for_single_column(con, query)
 
 
 @makes_connection
-def get_names(con: sqlite3.Connection) -> tuple[Name, ...]:
+def get_names(
+    con: sqlite3.Connection,
+    source: str | None = None,
+    culture: str | None = None,
+    date: int | None = None,
+    gender: str | None = None,
+    kind: str | None = None,
+) -> tuple[Name, ...]:
     """Deserialize the names from the database.
 
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
+    :param source: (Optional.) A filtering value for the `source`
+        field. Defaults to a wildcard.
+    :param culture: (Optional.) A filtering value for the `culture`
+        field. Defaults to a wildcard.
+    :param date: (Optional.) A filtering value for the `date`
+        field. Defaults to a wildcard.
+    :param gender: (Optional.) A filtering value for the `gender`
+        field. Defaults to a wildcard.
+    :param kind: (Optional.) A filtering value for the `kind`
+        field. Defaults to a wildcard.
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
     Usage:
+
+    .. doctest::
 
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_names(loc)                  # doctest: +ELLIPSIS
         (Name(id=1, name='spam', source='eggs', ... kind='given'))
+
     """
-    query = 'select * from names'
-    result = con.execute(query)
+    query = (
+        'SELECT * FROM names WHERE '
+        'source LIKE :source AND '
+        'culture LIKE :culture AND '
+        'date LIKE :date AND '
+        'gender LIKE :gender AND '
+        'kind LIKE :kind;'
+    )
+    params = {
+        'source': source if source is not None else '%',
+        'culture': culture if culture is not None else '%',
+        'date': date if date is not None else '%',
+        'gender': gender if gender is not None else '%',
+        'kind': kind if kind is not None else '%',
+    }
+    result = con.execute(query, params)
     return tuple(Name(*args) for args in result)
 
 
@@ -402,12 +454,15 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> kind = 'given'
-        >>> get_names_by_kind(loc, kind)    # doctest: +ELLIPSIS
+        >>> get_names_by_kind(loc, kind)
         (Name(id=1, name='spam', source='eggs', ... kind='given'))
+
     """
     query = 'select * from names where kind == ?'
     params = (kind, )
@@ -427,11 +482,14 @@ def get_sources(con: sqlite3.Connection) -> tuple[str, ...]:
 
     Usage:
 
+    .. doctest::
+
         >>> # @makes_connection allows you to pass the path of
         >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_sources(loc)               # doctest: +ELLIPSIS
+        >>> get_sources(loc)
         ('eggs', 'mushrooms')
+
     """
     query = 'select distinct source from names'
     return _run_query_for_single_column(con, query)

@@ -4,6 +4,7 @@ build:
 	python -m build
 	twine check dist/*
 
+
 .PHONY: clean
 clean:
 	rm -rf docs/build/html
@@ -13,10 +14,13 @@ clean:
 	rm -rf src/mkname/__pycache__
 	rm -rf src/mkname/*.pyc
 
+
 .PHONY: docs
 docs:
 	rm -rf docs/build/html
+	sphinx-build -b doctest docs/source/ docs/build/html
 	sphinx-build -b html docs/source/ docs/build/html
+
 
 .PHONY: pre
 pre:
@@ -24,10 +28,10 @@ pre:
 	python precommit.py
 	git status
 
+
 .PHONY: test
 test:
 	python -m pytest
-	python -m pytest --doctest-modules src
 
 
 .PHONY: testv

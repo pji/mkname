@@ -56,7 +56,6 @@ commands_pre =
     poetry sync --no-root
 commands =
     poetry run pytest tests/ --import-mode importlib
-    pytest --doctest-modules src
     isort ./src/mkname --check-only --diff --skip .tox --lai 2 -m 3
     isort ./tests --check-only --diff --skip .tox --lai 2 -m 3
 deps = -rrequirements.txt

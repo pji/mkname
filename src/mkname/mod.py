@@ -92,7 +92,9 @@ def double_vowel(name: str):
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -115,7 +117,9 @@ def garble(name: str):
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -153,7 +157,9 @@ def make_scifi(name: str) -> str:
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -176,7 +182,9 @@ def vulcanize(name: str) -> str:
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -209,7 +217,9 @@ def add_letters(
     :param letters: The letters to add for the modification.
     :param vowels: The letters to define as vowels.
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -225,6 +235,8 @@ def add_letters(
     it will often try to put a letter before or after a vowel.
     This means you can alter the behavior by passing different
     values to the letters and vowels.:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -304,7 +316,9 @@ def add_punctuation(
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -318,6 +332,8 @@ def add_punctuation(
     The cap_before and cap_after parameters set whether the substrings
     before or after the added punctuation should be capitalized. It
     defaults to capitalizing them both:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -336,6 +352,8 @@ def add_punctuation(
     If you want to specify were the punctuation goes, you can use
     the index parameter. The punctuation parameter also allows you
     to specify what punctuation is allowed:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -378,7 +396,9 @@ def compound_names(
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Generate the name.
         >>> mod_name = 'Spam'
@@ -390,6 +410,8 @@ def compound_names(
     each name is a vowel or a consonant when determining how to
     create the name. You can affect this by changing which letters
     it treats as consonants or vowels:
+
+    .. doctest:: api
 
         >>> # Treat 'e' as a consonant and 'g' as a vowel.
         >>> consonants = 'bcdfhjklmnpqrstvwxze'
@@ -462,7 +484,9 @@ def double_letter(name: str, letters: Sequence[str] = '') -> str:
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -475,6 +499,8 @@ def double_letter(name: str, letters: Sequence[str] = '') -> str:
 
     You can limit the numbers that it will double by passing a string
     of valid letters:
+
+    .. doctest:: api
 
         >>> # Seed the RNG to make the example predictable. Don't do
         >>> # this if you want the modification to be random.
@@ -516,7 +542,9 @@ def translate_characters(
     :return: A :class:str object.
     :rtype: str
 
-    Usage:
+    :usage:
+
+    .. doctest:: api
 
         >>> # The translation map is a dict.
         >>> char_map = {'s': 'e', 'p': 'g', 'm': 's'}
