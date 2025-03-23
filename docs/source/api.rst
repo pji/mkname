@@ -25,7 +25,7 @@ The following functions generate names:
 
 
 Manually Configured Generation and Selection
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------
 The following functions can also generate names, but they require
 a little more work on your part to manage the configuration. Only
 use these if, for some reason, you need to get between the process

@@ -94,16 +94,18 @@ def double_vowel(name: str):
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: double_vowel
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
+        from mkname import double_vowel
+        import yadr.operator as yop
+        yop.random.seed('spam')
+
+    .. doctest:: double_vowel
+
         >>> name = 'Bacon'
         >>> double_vowel(name)
         'Baacon'
+
     """
     letters = VOWELS
     return double_letter(name, letters)
@@ -119,16 +121,18 @@ def garble(name: str):
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: garble
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
+        from mkname import garble
+        import yadr.operator as yop
+        yop.random.seed('spam')
+
+    .. doctest:: garble
+
         >>> name = 'Eggs'
         >>> garble(name)
         'Rqggs'
+
     """
     # Determine which character should be garbled.
     index = roll(f'1d{len(name)}') - 1
@@ -159,16 +163,18 @@ def make_scifi(name: str) -> str:
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: make_scifi
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
+        from mkname import make_scifi
+        import yadr.operator as yop
+        yop.random.seed('spam')
+
+    .. doctest:: make_scifi
+
         >>> name = 'Eggs'
         >>> make_scifi(name)
         'Keggs'
+
     """
     return add_letters(name)
 
@@ -184,16 +190,18 @@ def vulcanize(name: str) -> str:
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: vulcanize
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
+        from mkname import vulcanize
+        import yadr.operator as yop
+        yop.random.seed('spam')
+
+    .. doctest:: vulcanize
+
         >>> name = 'Bacon'
         >>> vulcanize(name)
         "T'Bacon"
+
     """
     letter = 't'
     if roll('1d6') > 5:
@@ -219,13 +227,14 @@ def add_letters(
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: add_letters
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
+        from mkname import add_letters
+        import yadr.operator as yop
+        yop.random.seed('spam')
+
+    .. doctest:: add_letters
+
         >>> name = 'Eggs'
         >>> add_letters(name)
         'Keggs'
@@ -236,20 +245,15 @@ def add_letters(
     This means you can alter the behavior by passing different
     values to the letters and vowels.:
 
-    .. doctest:: api
+    .. doctest:: add_letters
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam')
-        >>>
         >>> # Treat 'e' as a consonant and don't use 'k'.
         >>> letter = 'qxz'
         >>> vowels = 'aiou'
-        >>>
         >>> name = 'Eggs'
         >>> add_letters(name, letter, vowels)
-        'Qggs'
+        'Eggz'
+
     """
     # Determine the letter and where the letter should go in the name.
     letter_index = roll(f'1d{len(letters)}') - 1
@@ -318,13 +322,15 @@ def add_punctuation(
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: add_punctuation
+
+        from mkname import add_punctuation
+        import yadr.operator as yop
+        yop.random.seed('spam123')
+
+    .. doctest:: add_punctuation
 
         >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam123')
-        >>>
         >>> name = 'eggs'
         >>> add_punctuation(name)
         'E|Ggs'
@@ -333,16 +339,11 @@ def add_punctuation(
     before or after the added punctuation should be capitalized. It
     defaults to capitalizing them both:
 
-    .. doctest:: api
+    .. doctest:: add_punctuation
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam123')
-        >>>
         >>> name = 'eggs'
         >>> add_punctuation(name, cap_before=False)
-        'e|Ggs'
+        'eg@Gs'
         >>>
         >>> yop.random.seed('spam123')
         >>> name = 'eggs'
@@ -353,13 +354,8 @@ def add_punctuation(
     the index parameter. The punctuation parameter also allows you
     to specify what punctuation is allowed:
 
-    .. doctest:: api
+    .. doctest:: add_punctuation
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam1')
-        >>>
         >>> name = 'eggs'
         >>> punctuation = ':'
         >>> index = 2
@@ -486,33 +482,30 @@ def double_letter(name: str, letters: Sequence[str] = '') -> str:
 
     :usage:
 
-    .. doctest:: api
+    .. testsetup:: double_letter
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam2345')
-        >>>
+        from mkname import double_letter
+        import yadr.operator as yop
+        yop.random.seed('spam12345')
+
+    .. doctest:: double_letter
+
         >>> name = 'Bacon'
         >>> double_letter(name)
-        'Bacoon'
+        'Baacon'
 
     You can limit the numbers that it will double by passing a string
     of valid letters:
 
-    .. doctest:: api
+    .. doctest:: double_letter
 
-        >>> # Seed the RNG to make the example predictable. Don't do
-        >>> # this if you want the modification to be random.
-        >>> import yadr.operator as yop
-        >>> yop.random.seed('spam1')
-        >>>
         >>> # The valid letters to double.
         >>> letters = 'bcn'
         >>>
         >>> name = 'Bacon'
         >>> double_letter(name, letters)
-        'Baconn'
+        'Baccon'
+
     """
     if letters and not set(name).intersection(set(letters)):
         return name
@@ -552,6 +545,7 @@ def translate_characters(
         >>> name = 'spam'
         >>> translate_characters(name, char_map)
         'egas'
+
     """
     if casefold:
         name = name.casefold()

@@ -58,7 +58,7 @@ def calc_cv_pattern(
     :returns: A :class:`str` object.
     :rtype: str
 
-    Usage::
+    :usage:
 
         >>> # Determine which characters in "spammy eggs" are
         >>> # consonants and which are vowels.
@@ -86,7 +86,7 @@ def recapitalize(s: str) -> str:
     :returns: A :class:`str` object.
     :rtype: str
 
-    Usage:
+    :usage:
 
         >>> name = 'GRAHAM'
         >>> recapitalize(name)
@@ -98,6 +98,7 @@ def recapitalize(s: str) -> str:
         >>> name = 'mccoy'
         >>> recapitalize(name)
         'McCoy'
+
     """
     normal = s.casefold()
     if normal.startswith('mc'):
@@ -125,14 +126,16 @@ def split_into_syllables(
     :returns: A :class:`tuple` object.
     :rtype: tuple
 
-    Usage::
+    :usage:
 
-        >>> # Split the word "tomato" into "syllables." These
-        >>> # won't match the actual syllables for the word.
-        >>> # It just breaks the work into syllable-like chunks.
+    Split the word "tomato" into "syllables." These
+    won't match the actual syllables for the word.
+    It just breaks the work into syllable-like chunks:
+
         >>> name = 'tomato'
         >>> split_into_syllables(name)
         ('tom', 'at', 'o')
+
     """
     # Find the locations of all vowels in the word.
     pattern = calc_cv_pattern(name, consonants, vowels)

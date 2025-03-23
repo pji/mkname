@@ -1,4 +1,8 @@
 """
+.. testsetup:: model
+
+    from mkname.model import Name
+
 .. _model:
 
 ##########
@@ -30,10 +34,10 @@ fields:
 *   :ref:`kind`
 
 For example,For example, let's say you want to add the name "Graham," as in
-the first name of "Graham Chapman" from Monty Python::
+the first name of "Graham Chapman" from Monty Python:
 
-    >>> from mkname.model import Name
-    >>>
+.. doctest:: model
+
     >>> name = Name(
     ...     id=0,
     ...     name='Graham',
@@ -288,9 +292,11 @@ class Name:
     :param kind: A tag for how the name is used, such as a given
         name or a surname.
 
-    Usage::
+    :usage:
 
-        >>> id = 1138                       # doctest: +ELLIPSIS
+    .. doctest:: model
+
+        >>> id = 1138
         >>> name = 'Graham'
         >>> src = 'Monty Python'
         >>> culture = 'UK'
@@ -299,6 +305,7 @@ class Name:
         >>> kind = 'given'
         >>> Name(id, name, src, culture, date, gender, kind)
         Name(id=1138, name='Graham', source='Monty Python'...
+
     """
     id: IsInt = IsInt()
     name: IsStr = IsStr(size=64)
