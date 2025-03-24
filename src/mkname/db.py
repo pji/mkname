@@ -149,6 +149,7 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from pathlib import Path
 from typing import Any, Union
+from warnings import warn
 
 from mkname import init
 from mkname.constants import MSGS
@@ -477,6 +478,10 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
         (Name(id=1, name='spam', source='eggs', ... kind='given'))
 
     """
+    # Provide a deprecation warning.
+    msg = 'Use the "kind" parameter of get_names instead.'
+    warn(msg, DeprecationWarning)
+
     query = 'select * from names where kind == ?'
     params = (kind, )
     result = con.execute(query, params)
