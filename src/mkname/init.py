@@ -275,7 +275,7 @@ def get_config(path: Path | str | None = None) -> Config:
     :return: A :class:`dict` object.
     :rtype: dict
 
-    USAGE:
+    :usage:
 
     .. doctest:: config
 
@@ -375,7 +375,7 @@ def get_db(
         :class:`pathlib.Path`.
     :rtype: pathlib.Path
 
-    USAGE:
+    :usage:
 
     .. doctest:: config
 

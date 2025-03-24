@@ -177,7 +177,7 @@ def connect_db(location: Union[str, Path]) -> sqlite3.Connection:
     :return: A :class:sqlite3.Connection object.
     :rtype: sqlite3.Connection
 
-    Usage:
+    :usage:
 
     .. doctest::
 
@@ -294,15 +294,17 @@ def get_cultures(con: sqlite3.Connection) -> tuple[str, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_cultures(loc)
         ('bacon', 'pancakes', 'porridge')
+
     """
     query = 'select distinct culture from names'
     return _run_query_for_single_column(con, query)
@@ -318,15 +320,17 @@ def get_dates(con: sqlite3.Connection) -> tuple[str, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_dates(loc)
         (1970, 2000)
+
     """
     query = 'select distinct date from names'
     return _run_query_for_single_column(con, query)
@@ -342,12 +346,13 @@ def get_genders(con: sqlite3.Connection) -> tuple[str, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_genders(loc)
         ('sausage', 'baked beans')
@@ -367,12 +372,13 @@ def get_kinds(con: sqlite3.Connection) -> tuple[str, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_kinds(loc)
         ('given', 'surname')
@@ -409,14 +415,15 @@ def get_names(
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
-        >>> get_names(loc)                  # doctest: +ELLIPSIS
+        >>> get_names(loc)
         (Name(id=1, name='spam', source='eggs', ... kind='given'))
 
     """
@@ -443,6 +450,11 @@ def get_names(
 def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     """Deserialize the names from the database.
 
+    .. warning:
+        This function is deprecated. If you need to get the names
+        of a certain kind from the database, you should use the
+        `kind` parameter of :func:`mkname.db.get_name` instead.
+
     :param con: The connection to the database. It defaults to
         creating a new connection to the default database if no
         connection is passed.
@@ -452,12 +464,13 @@ def get_names_by_kind(con: sqlite3.Connection, kind: str) -> tuple[Name, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> kind = 'given'
         >>> get_names_by_kind(loc, kind)
@@ -480,12 +493,13 @@ def get_sources(con: sqlite3.Connection) -> tuple[str, ...]:
     :return: A :class:`tuple` of :class:`Name` objects.
     :rtype: tuple
 
-    Usage:
+    :usage:
+
+    @makes_connection allows you to pass the path of
+    the database file rather than a connection:
 
     .. doctest::
 
-        >>> # @makes_connection allows you to pass the path of
-        >>> # the database file rather than a connection.
         >>> loc = 'tests/data/names.db'
         >>> get_sources(loc)
         ('eggs', 'mushrooms')

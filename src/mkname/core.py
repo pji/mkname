@@ -108,6 +108,9 @@ def create_compound_name(
 
     .. testsetup:: create_compound_name
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import create_compound_name
         import yadr.operator as yop
         yop.random.seed('spam123')
@@ -151,6 +154,13 @@ def create_compound_name(
 
         >>> create_compound_name(cfg_path='tests/data/test_config_full.toml')
         ['Haffles']
+
+    To generate a name from only male given names:
+
+    .. doctest:: create_compound_name
+
+        >>> create_compound_name(gender='male', kind='given')
+        ['Llike']
 
     """
     config, db_path = configure(cfg_path, db_path)
@@ -214,15 +224,54 @@ def create_syllable_name(
 
     .. testsetup:: create_syllable_name
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import create_syllable_name
         import yadr.operator as yop
         yop.random.seed('spam123')
 
     .. doctest:: create_syllable_name
 
-        >>> num_syllables = 3
-        >>> create_syllable_name(num_syllables)
+        >>> create_syllable_name(3)
         ['Yerethar']
+
+    To generate three compound names:
+
+    .. doctest:: create_syllable_name
+
+        >>> create_syllable_name(3, num_names=3)
+        ['Wilhurgar', 'Bassjuane', 'Bertollan']
+
+    To force :func:`mkname.create_syllable_name` to use
+    a custom names database you built. It will also use
+    this database if it's the first found during a search,
+    but this will override that search:
+
+    .. doctest:: create_syllable_name
+
+        >>> create_syllable_name(3, db_path='tests/data/names.db')
+        ['Spamlesham']
+
+    To force :func:`mkname.create_syllable_name` to use
+    a custom configuration you built. It will also use
+    this configuration if it's the last found during
+    a search, but this will override that search. This
+    can be used to change how :func:`mkname.create_compound_name`
+    combines the names:
+
+    .. doctest:: create_syllable_name
+
+        >>> path = 'tests/data/test_config_full.toml'
+        >>> create_syllable_name(3, cfg_path=path)
+        ['Spamhamspam']
+
+    To generate a four syllable name from only male given names:
+
+    .. doctest:: create_syllable_name
+
+        >>> create_syllable_name(4, gender='male', kind='given')
+        ['Hontinryal']
 
     """
     config, db_path = configure(cfg_path, db_path)
@@ -274,12 +323,40 @@ def list_names(
 
     :usage:
 
-    To list all the names in the names database:
+    To list all the names in the default names database:
 
     .. doctest:: api
 
         >>> list_names()
         ['Noah', 'Liam', 'Jacob', 'Will...
+
+    To list all the names in a custom names database. You can also
+    list the names in a custom database if it is the first found
+    during the :ref:`database search<db_search>`, but this will
+    override that search:
+
+    .. doctest:: api
+
+        >>> list_names(db_path='tests/data/names.db')
+        ['spam', 'ham', 'tomato'...
+
+    To force :func:`mkname.list_names` to use
+    a custom configuration you built. It will also use
+    this configuration if it's the last found during
+    a search, but this will override that search.
+
+    .. doctest:: api
+
+        >>> list_names(cfg_path='tests/data/test_config_full.toml')
+        ['spam', 'ham', 'tomato'...
+
+    To list the male given names:
+
+    .. doctest:: api
+
+        >>> list_names(gender='male', kind='given')
+        ['Noah', 'Liam', 'Jacob'...
+
     """
     config, db_path = configure(cfg_path, db_path)
     names = get_names(db_path, source, culture, date, gender, kind)
@@ -334,6 +411,9 @@ def pick_name(
 
     .. testsetup:: pick_name
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import pick_name
         import yadr.operator as yop
         yop.random.seed('spam123')
@@ -342,6 +422,42 @@ def pick_name(
 
         >>> pick_name()
         ['Sawyer']
+
+    To pick three names:
+
+    .. doctest:: pick_name
+
+        >>> pick_name(3)
+        ['Ethel', 'Harper', 'Erika']
+
+    To force :func:`mkname.pick_name` to use
+    a custom names database you built. It will also use
+    this database if it's the first found during a search,
+    but this will override that search:
+
+    .. doctest:: pick_name
+
+        >>> pick_name(db_path='tests/data/names.db')
+        ['ham']
+
+    To force :func:`mkname.pick_name` to use
+    a custom configuration you built. It will also use
+    this configuration if it's the last found during
+    a search, but this will override that search:
+
+    .. doctest:: pick_name
+
+        >>> path = 'tests/data/test_config_full.toml'
+        >>> pick_name(cfg_path=path)
+        ['spam']
+
+    To pick a name from only male given names:
+
+    .. doctest:: pick_name
+
+        >>> pick_name(gender='male', kind='given')
+        ['Clarence']
+
     """
     config, db_path = configure(cfg_path, db_path)
     names = get_names(db_path, source, culture, date, gender, kind)

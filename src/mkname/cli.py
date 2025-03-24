@@ -6,8 +6,8 @@ The :mod:`mkname` package has two command line utilities:
 *   `mkname`
 *   `mkname_tools`
 
-`mkname`
-========
+mkname
+======
 The `mkname` utility allows you to generate random names at the command
 line::
 
@@ -19,8 +19,8 @@ The available options and what they do can be found in the help::
     $ mkname -h
 
 
-`mkname_tools`
-=============
+mkname_tools
+============
 The `mkname_tools` utility allows you to perform administrative actions
 for `mkname`. For more information, view the help::
 

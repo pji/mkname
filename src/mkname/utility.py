@@ -60,11 +60,13 @@ def calc_cv_pattern(
 
     :usage:
 
-        >>> # Determine which characters in "spammy eggs" are
-        >>> # consonants and which are vowels.
+    To determine which characters in "spammy eggs" are consonants and
+    which are vowels:
+
         >>> name = 'spammy eggs'
         >>> calc_cv_pattern(name)
         'ccvccvxvccc'
+
     """
     name = name.casefold()
     pattern = ''
@@ -88,12 +90,14 @@ def recapitalize(s: str) -> str:
 
     :usage:
 
+    To recapitalize a string:
+
         >>> name = 'GRAHAM'
         >>> recapitalize(name)
         'Graham'
 
     It will also recognize the "Mc" pattern at the beginning of names
-    and capitalize accordingly.
+    and capitalize accordingly:
 
         >>> name = 'mccoy'
         >>> recapitalize(name)

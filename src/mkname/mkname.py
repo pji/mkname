@@ -49,6 +49,9 @@ def build_compound_name(
 
     .. testsetup:: build_compound_name
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import build_compound_name
         from mkname.model import Name
         import yadr.operator as yop
@@ -119,6 +122,9 @@ def build_from_syllables(
 
     .. testsetup:: build_from_syllables
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import build_from_syllables
         from mkname.model import Name
         import yadr.operator as yop
@@ -184,6 +190,9 @@ def select_name(names: Sequence[Name]) -> str:
 
     .. testsetup:: select_name
 
+        from unittest.mock import patch
+        test_db = 'tests/data/big_names.db'
+        patch('mkname.init.get_default_db', return_value=test_db)
         from mkname import select_name
         from mkname.model import Name
         import yadr.operator as yop
