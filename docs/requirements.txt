@@ -1,4 +1,3 @@
 sphinx
 furo
 yadr
-../
