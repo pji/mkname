@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mkname"
-version = "0.2.4"
+version = "0.2.5"
 authors = [
     {name="Paul J. Iutzi", email="pji@mac.com"},
 ]
@@ -16,6 +16,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    'yadr',
 ]
 
 
@@ -42,7 +45,7 @@ ignore_directives = ["autoclass", "autofunction"]
 
 
 [tool.setuptools.package-data]
-mkname = ['data/names.db', "data/defaults.cfg",]
+mkname = ['data/names.db', "data/defaults.cfg", "mkname_epilogue.txt"]
 
 
 [tool.tox]
