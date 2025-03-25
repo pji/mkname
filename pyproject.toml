@@ -45,7 +45,7 @@ ignore_directives = ["autoclass", "autofunction"]
 
 
 [tool.setuptools.package-data]
-mkname = ['data/names.db', "data/defaults.cfg", "mkname_epilogue.txt"]
+mkname = ['data/names.db', "data/defaults.cfg", "data/mkname_epilogue.txt"]
 
 
 [tool.tox]
