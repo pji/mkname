@@ -88,14 +88,14 @@ The following changes were made in v0.2.4:
 Names are influenced by the culture and experience of those doing
 the naming. What sounds like a plausible name to me may not sound
 like a plausible name to you. Even worse, what seems like an
-acceptable name to my may be offensive to you. :mod:`mkname` is
+acceptable name to my may be offensive to you. `mkname` is
 sticking pieces of names together at random, it's very possible
 the output could have undesirable connotations in its final
 context.
 
 The default names database supplied with
 `mkname` is unavoidably biased by my culture, experience,
-and the data I could find. To make :mod:`mkname` more useful
+and the data I could find. To make `mkname` more useful
 to more people, it also has the ability to use custom names
 databases you create. The `mkname.tools` module and the
 `mkname_tools` command line tool have features to help with this.
