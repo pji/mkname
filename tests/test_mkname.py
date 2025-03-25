@@ -35,7 +35,7 @@ class TestBuildCompoundNames:
         name constructed from the list.
         """
         mocker.patch('yadr.roll', side_effect=[4, 3])
-        assert mn.build_compound_name(names) == 'Dallory'
+        assert mn.build_compound_name_from_names(names) == 'Dallory'
 
 
 def test_build_from_syllables(names, mocker):
@@ -44,11 +44,13 @@ def test_build_from_syllables(names, mocker):
     """
     mocker.patch('yadr.roll', side_effect=[2, 1, 5, 2, 1, 3])
     num_syllables = 3
-    assert mn.build_from_syllables(num_syllables, names) == 'Ertalan'
+    assert mn.build_syllable_name_from_names(
+        num_syllables, names
+    ) == 'Ertalan'
 
 
 class TestSelectRandomName:
     def test_select_random_name(self, names, mocker):
         """Given a list of names, return a random name."""
         mocker.patch('yadr.roll', side_effect=[4,])
-        assert mn.select_name(names) == 'Donatello'
+        assert mn.select_name_from_names(names) == 'Donatello'

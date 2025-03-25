@@ -4,89 +4,13 @@
     from mkname import *
     from mkname.db import connect_db, disconnect_db
 
-.. _names_db:
-
-##################
-The Names Database
-##################
-
-The *names database* is a SQLite database used by :mod:`mkname` to
-store the data used to generate names. It consists of a single table:
-
-.. list-table::
-   :widths: 100
-   :header-rows: 1
-
-   * - names
-   * - (PK) id
-   * - name
-   * - source
-   * - culture
-   * - data
-   * - gender
-   * - kind
-
-A description of each field can be found in :ref:`name_data`.
-
-
-.. _default_db:
-
-Default Database
-================
-The *default database* is a names database that comes with the
-:mod:`mkname` package. It's intended to provide a basic set of
-names data for the generation of names.
-
-The default database is definitely biased towards the culture of
-the midwestern United States in 2025, but I'd be happy to expand
-its usefulness. The main limitation right now is my inability to
-read languages other than English well enough to be able to track
-down and understand census data in other languages. Though,
-admittedly, I haven't looked at census data for Canada, the United
-Kingdom, Australia, or New Zealand yet, either.
-
-The data from `Name Census <https://census.name>`_ looks promising,
-but it also looks like it requires licensing to use. This is
-understandable. Collecting name data from around the world isn't
-easy. However, it means I can't include data from Name Census in
-the default database. :mod:`mkname.tools` does have the ability
-to import data from Name Census to a new names database, though,
-so if you would rather use their data than the default database,
-you should be able to acquire the needed licenses and do so.
-
 
 .. _db_api:
 
-The DB API
-==========
+Data Gathering
+==============
 The following is a description of the API for working directly
 with a names database.
-
-*   :ref:`db_connect`
-*   :ref:`db_read`
-*   :ref:`db_create`
-*   :ref:`db_admin`
-
-
-.. _db_connect:
-
-Connecting to the Database
---------------------------
-For the most part, functions that need to connect to a names
-database should manage that connection through one of these
-decorators. Specifically, anything that just reads should use
-:func:`mkname.db.makes_connection`, and anything that needs to
-create, update, or delete should use
-:func:`mkname.db.protects_connection`.
-
-.. autofunction:: mkname.db.makes_connection
-.. autofunction:: mkname.db.protects_connection
-
-However, if you want to make a manual connection to the database, you
-can use the following functions to open and close the connection.
-
-.. autofunction:: mkname.db.connect_db
-.. autofunction:: mkname.db.disconnect_db
 
 
 .. _db_read:
@@ -106,10 +30,40 @@ ever need to, they will create their own connection if you don't.
 .. autofunction:: mkname.get_sources
 
 
+.. _db_admin:
+
+Database Administration
+-----------------------
+The following functions are used to create and update data in a
+:ref:`names database <names_db>` or otherwise administer those
+databases.
+
+
+.. _db_connect:
+
+Connecting to the Database
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+For the most part, functions that need to connect to a names
+database should manage that connection through one of these
+decorators. Specifically, anything that just reads should use
+:func:`mkname.db.makes_connection`, and anything that needs to
+create, update, or delete should use
+:func:`mkname.db.protects_connection`.
+
+.. autofunction:: mkname.db.makes_connection
+.. autofunction:: mkname.db.protects_connection
+
+However, if you want to make a manual connection to the database, you
+can use the following functions to open and close the connection.
+
+.. autofunction:: mkname.db.connect_db
+.. autofunction:: mkname.db.disconnect_db
+
+
 .. _db_create:
 
 Create and Update Data
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 The following functions will create and update records in the
 database. While you can manually pass a database connection to
 these functions if you ever need to, they will create their own
@@ -125,14 +79,15 @@ connection if you don't.
     foolproof, and you can cause yourself a lot of problems if you
     want to.
 
+.. autofunction:: mkname.db.get_max_id
 .. autofunction:: mkname.db.add_name_to_db
 .. autofunction:: mkname.db.add_names_to_db
 
 
-.. _db_admin:
+.. _db_creation:
 
-Database Administration
------------------------
+Database Creation
+^^^^^^^^^^^^^^^^^
 The following functions create new databases.
 
 .. warning:
@@ -141,7 +96,6 @@ The following functions create new databases.
 
 .. autofunction:: mkname.db.duplicate_db
 .. autofunction:: mkname.db.create_empty_db
-.. autofunction:: mkname.db.get_max_id
 
 """
 import sqlite3
@@ -159,7 +113,6 @@ from mkname.model import Name
 
 # Names that will be imported when using *.
 __all__ = [
-    'duplicate_db',
     'get_cultures',
     'get_dates',
     'get_genders',

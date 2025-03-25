@@ -1,12 +1,16 @@
 """
-mod
-~~~
+.. _mod_api:
 
-Functions for modifying names.
+Modifying Names
+===============
 
+Functions for modifying names after they've been generated.
+
+
+.. _simple_mod:
 
 Simple Mods
-===========
+-----------
 Simple mods only require one parameter: the name to modify. This
 makes them a bit limited in what they do, but it's easier to call
 them from the command line.
@@ -16,17 +20,20 @@ them from the command line.
 .. autofunction:: mkname.make_scifi
 .. autofunction:: mkname.vulcanize
 
-Simple mods can be registered for use in the `mkname.mods.mods`
+
+Registration
+------------
+Simple mods can be registered for use in the `mkname.mods`
 registry by using the :class:`mkname.simple_mods` decorator.
 
 .. autoclass:: mkname.simple_mod
 
 
 Complex Mods
-============
+------------
 Any mod that requires multiple parameters is a complex mod. These
-allow more flexible behavior but require a specific options be added
-to use them directly from the command line.
+allow more flexible behavior but cannot be used directly through
+the `mkname` command line tool.
 
 .. autofunction:: mkname.add_letters
 .. autofunction:: mkname.add_punctuation
@@ -68,11 +75,35 @@ mods: dict[str, SimpleMod] = {}
 
 
 class simple_mod:
-    """Register a simple modifier.
+    """A decorator for registering a simple modifies to `mkname.mods`.
 
     :param key: The `dict` key the mod will be registered under.
     :returns: A :class:`function` object.
     :rtype: function
+
+    :usage:
+
+    You can add a :ref:`simple_mod` you create to the `mkname.mods`
+    registery by using :class:`simple_mod` as a decorator for that
+    function. You can then access that modifier from the `mkname.mods`
+    registry withe its key:
+
+    .. testsetup:: simple_mod
+
+        from mkname.mod import mods, simple_mod
+
+    .. testcode:: simple_mod
+
+        @simple_mod('spam')
+        def spam(name):
+            return f'SPAM {name} SPAM!'
+
+        mods['spam']('Graham') == 'SPAM Graham SPAM!'
+
+    .. testoutput::
+
+        True
+
     """
     def __init__(self, key: str) -> None:
         self.key = key
@@ -89,7 +120,7 @@ def double_vowel(name: str):
     Star Wars™ franchise the kids are talking about.
 
     :param name: The name to modify.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -116,7 +147,7 @@ def garble(name: str):
     """Garble some characters in the name by base 64 encoding them.
 
     :param name: The name to modify.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -155,10 +186,10 @@ def garble(name: str):
 
 @simple_mod('make_scifi')
 def make_scifi(name: str) -> str:
-    """A simple version of add_scifi_letters.
+    """A simple version of :func:`mkname.mod.add_scifi_letters`.
 
     :param name: The name to modify.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -185,7 +216,7 @@ def vulcanize(name: str) -> str:
     in Vulcan characters in the Star Trek™ franchise.
 
     :param name: The name to modify.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -224,6 +255,8 @@ def add_letters(
     :param name: The name to modify.
     :param letters: The letters to add for the modification.
     :param vowels: The letters to define as vowels.
+    :return: A :class:`str` object.
+    :rtype: str
 
     :usage:
 
@@ -317,7 +350,7 @@ def add_punctuation(
         punctuation mark should be capitalized. Defaults to capitalizing.
     :param index: (Optional.) Where to insert the punctuation. Defaults
         to picking an index at random.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -389,12 +422,12 @@ def compound_names(
     :param consonants: (Optional.) The characters to consider as
         consonants.
     :param vowels: (Optional.) The characters to consider as vowels.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
 
-    .. doctest:: api
+    .. doctest:: mod
 
         >>> # Generate the name.
         >>> mod_name = 'Spam'
@@ -407,7 +440,7 @@ def compound_names(
     create the name. You can affect this by changing which letters
     it treats as consonants or vowels:
 
-    .. doctest:: api
+    .. doctest:: mod
 
         >>> # Treat 'e' as a consonant and 'g' as a vowel.
         >>> consonants = 'bcdfhjklmnpqrstvwxze'
@@ -477,7 +510,7 @@ def double_letter(name: str, letters: Sequence[str] = '') -> str:
     :param name: The name to modify.
     :param letters: (Optional.) The letters allowed to double. This
         defaults to all letters in the name.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
@@ -532,12 +565,12 @@ def translate_characters(
         name. The keys are the original letters and the values are
         the characters to change them to.
     :param casefold: Whether case should be ignored for the transform.
-    :return: A :class:str object.
+    :return: A :class:`str` object.
     :rtype: str
 
     :usage:
 
-    .. doctest:: api
+    .. doctest:: mod
 
         >>> # The translation map is a dict.
         >>> char_map = {'s': 'e', 'p': 'g', 'm': 's'}
@@ -563,7 +596,22 @@ def _insert_substr(
     cap_after: bool = False,
     replace: bool = False
 ) -> str:
-    """Insert a substring into the text."""
+    """Insert a substring into the text.
+
+    :param text: The string to modify.
+    :param substr: The substring to insert into the text.
+    :param index: The location to insert substr into the text.
+    :param cap_before: (Optional.) Whether to capitalize the first
+        letter of the section of text before the insertion. Defaults
+        to `False`.
+    :param cap_after: (Optional.) Whether to capitalize the first
+        letter of the section of text after the insertion. Defaults
+        to `False`.
+    :param replace: (Optional.) Whether to capitalize the first
+        letter of the inserted substring. Defaults to `False`.
+    :returns: A :class:`str` object.
+    :rtype: str
+    """
     before = text[0:index]
     if replace:
         index += 1

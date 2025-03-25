@@ -82,7 +82,9 @@ def check_rst(file_paths, ignore):
                 lines = fh.read()
             result = list(rstchecker.check_source(lines))
             if result:
-                results.append(file, *result)
+                msg = f'{file} {result}'
+                results.append(msg)
+#                 results.append(file, *result)
         return results
 
     def result_handler(result):

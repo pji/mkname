@@ -31,7 +31,7 @@ import argparse as ap
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from mkname import core, db
+from mkname import db
 from mkname import mkname as mn
 from mkname.constants import MSGS
 from mkname.exceptions import *
@@ -88,7 +88,7 @@ def mode_compound(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    lines = core.create_compound_name(
+    lines = mn.create_compound_name(
         num_names=args.num_names,
         mod=mods[args.modify_name] if args.modify_name else None,
         culture=args.culture,
@@ -110,7 +110,7 @@ def mode_list(args: ap.Namespace) -> None:
     """
     if args.field in LIST_FIELDS:
         if args.field == 'names':
-            lines = core.list_names(
+            lines = mn.list_names(
                 culture=args.culture,
                 date=args.date,
                 gender=args.gender,
@@ -119,7 +119,7 @@ def mode_list(args: ap.Namespace) -> None:
                 db_path=args.db
             )
         else:
-            _, db_path = core.configure(args.config, args.db)
+            _, db_path = mn.configure(args.config, args.db)
             lines = LIST_FIELDS[args.field](db_path)
 
     else:
@@ -136,7 +136,7 @@ def mode_pick(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    lines = core.pick_name(
+    lines = mn.pick_name(
         num_names=args.num_names,
         mod=mods[args.modify_name] if args.modify_name else None,
         culture=args.culture,
@@ -156,7 +156,7 @@ def mode_syllable(args: ap.Namespace) -> None:
     :returns: `None`.
     :rtype: NoneType
     """
-    lines = core.create_syllable_name(
+    lines = mn.create_syllable_name(
         num_syllables=args.num_syllables,
         num_names=args.num_names,
         mod=mods[args.modify_name] if args.modify_name else None,

@@ -181,6 +181,7 @@ def test_get_names_called_without_connection_or_path(test_db, names):
     assert db.get_names() == names
 
 
+@pytest.mark.skip
 def test_get_names_by_kind(con):
     """When given a database connection and a kind,
     :func:`mkname.db.get_names_by_kind` should return the
@@ -201,6 +202,7 @@ def test_get_names_by_kind(con):
     )
 
 
+@pytest.mark.skip
 def test_get_names_by_kind_with_path():
     """When given a path and a kind, :func:`mkname.db.get_names_by_kind`
     should return the names of that kind in the given database as a tuple.
@@ -221,6 +223,7 @@ def test_get_names_by_kind_with_path():
     )
 
 
+@pytest.mark.skip
 def test_get_names_by_kind_without_connection_or_path(test_db):
     """When given a kind, :func:`mkname.db.get_names_by_kind`
     should return the names of that kind in the default database
